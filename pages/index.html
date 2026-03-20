@@ -84,33 +84,9 @@
     <h2 style="margin-top: var(--space-xl);">AI 질문</h2>
     <div class="card">
       <textarea id="question-input" placeholder="질문을 입력하세요..." style="width: 100%; height: 80px; padding: var(--space-md); border: 1px solid var(--text-secondary); border-radius: var(--radius-md);"></textarea>
-      <button class="btn btn-primary" onclick="askQuestion()" style="margin-top: var(--space-md);">질문하기</button>
+      <button class="btn btn-primary" disabled style="margin-top: var(--space-md);">질문하기</button>
       <div id="response" style="margin-top: var(--space-lg);"></div>
     </div>
   </div>
-
-  <!-- <script src="../js/ui.js"></script> -->
-  <!-- <script src="../js/api-client.js"></script> -->
-  <script>
-    async function askQuestion() {
-      const question = document.getElementById('question-input').value;
-      if (!question.trim()) return;
-
-      const responseDiv = document.getElementById('response');
-      responseDiv.innerHTML = '<p>응답 대기 중...</p>';
-
-      try {
-        const result = await api.chat(question);
-        responseDiv.innerHTML = `
-          <h3>AI 응답</h3>
-          <p>${result.answer}</p>
-          <p style="color: var(--text-secondary);">유형: ${result.intent}</p>
-        `;
-      } catch (error) {
-        responseDiv.innerHTML = `<p style="color: var(--danger);">오류: ${error.message}</p>`;
-      }
-    }
-  </script>
-  <!-- <script src="../js/party-theme.js"></script> -->
 </body>
 </html>

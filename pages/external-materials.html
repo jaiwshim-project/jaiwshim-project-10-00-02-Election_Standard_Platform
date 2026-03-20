@@ -3,14 +3,300 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>외부자료 — 선거 워룸</title>
+  <title>외부자료 업로드 — 선거 워룸</title>
+  <link rel="stylesheet" href="../css/theme.css">
+  <link rel="stylesheet" href="../css/responsive.css">
   <style>
-    body { margin: 0; padding: 20px; background: white; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    body { margin: 0; background-color: var(--bg-primary); display: flex; }
+
+    .sidebar { position: fixed; left: 0; top: 0; width: 240px; height: 100vh; background-color: var(--primary-color); z-index: 100; overflow-y: auto; padding: 0; margin: 0; box-shadow: 2px 0 4px rgba(0,0,0,0.1); }
+    .sidebar-header { padding: var(--space-lg); color: white; font-size: var(--font-size-lg); font-weight: 600; border-bottom: 1px solid rgba(255,255,255,0.2); margin: 0; }
+    .sidebar-nav ul { list-style: none; margin: 0; padding: 0; }
+    .sidebar-nav a { display: block; padding: var(--space-md) var(--space-lg); color: white; text-decoration: none; transition: background-color var(--transition-base); font-size: var(--font-size-sm); border-left: 4px solid transparent; }
+    .sidebar-nav a:hover { background-color: rgba(255,255,255,0.2); }
+    .sidebar-nav a.active { background-color: rgba(255,255,255,0.3); font-weight: 600; border-left-color: white; padding-left: calc(var(--space-lg) - 4px); }
+
+    main { flex: 1; margin-left: 240px; }
+    .container { max-width: 1000px; margin: 0 auto; padding: var(--space-lg); }
+
+    @media (max-width: 768px) {
+      .sidebar { width: 200px; }
+      main { margin-left: 200px; }
+    }
+
+    .upload-section { margin-bottom: var(--space-xl); padding: var(--space-lg); background-color: var(--bg-secondary); border-radius: var(--radius-md); border-left: 4px solid var(--primary-color); }
+    .upload-section.type-7 { border-left-color: #06b6d4; }
+    .upload-section.type-8 { border-left-color: #8b5cf6; }
+
+    .upload-title { font-size: var(--font-size-lg); font-weight: 700; color: var(--primary-color); margin-top: 0; margin-bottom: var(--space-lg); }
+    .upload-section.type-7 .upload-title { color: #06b6d4; }
+    .upload-section.type-8 .upload-title { color: #8b5cf6; }
+
+    .upload-area { border: 2px dashed var(--primary-color); border-radius: var(--radius-md); padding: var(--space-xl); text-align: center; cursor: pointer; transition: all var(--transition-base); background-color: var(--bg-primary); }
+    .upload-area.type-7 { border-color: #06b6d4; }
+    .upload-area.type-8 { border-color: #8b5cf6; }
+    .upload-area:hover { background-color: var(--bg-secondary); }
+    .upload-area.dragover { background-color: var(--primary-light); opacity: 0.1; }
+    .upload-area.type-7.dragover { background-color: #06b6d4; }
+    .upload-area.type-8.dragover { background-color: #8b5cf6; }
+
+    .upload-icon { font-size: 48px; margin-bottom: var(--space-md); }
+    .upload-text { font-size: var(--font-size-base); font-weight: 600; color: var(--text-primary); margin-bottom: var(--space-sm); }
+    .upload-hint { font-size: var(--font-size-sm); color: var(--text-secondary); }
+
+    input[type="file"] { display: none; }
+
+    .materials-section { margin-top: var(--space-xl); }
+    .materials-section.type-8 { margin-top: var(--space-xl); }
+
+    .material-item { padding: var(--space-lg); background-color: var(--bg-primary); border-radius: var(--radius-md); border-left: 4px solid var(--primary-color); margin-bottom: var(--space-md); display: flex; justify-content: space-between; align-items: flex-start; gap: var(--space-lg); }
+    .material-item.type-7 { border-left-color: #06b6d4; }
+    .material-item.type-8 { border-left-color: #8b5cf6; }
+
+    .material-info { flex: 1; }
+    .material-name { font-weight: 700; color: var(--primary-color); margin: 0 0 var(--space-sm) 0; }
+    .material-item.type-7 .material-name { color: #06b6d4; }
+    .material-item.type-8 .material-name { color: #8b5cf6; }
+    .material-meta { font-size: var(--font-size-sm); color: var(--text-secondary); margin: 0; }
+
+    .material-actions { display: flex; gap: var(--space-sm); }
+    .btn { padding: var(--space-sm) var(--space-lg); border: none; border-radius: var(--radius-sm); cursor: pointer; font-weight: 600; font-size: var(--font-size-sm); transition: all var(--transition-base); }
+    .btn-primary { background-color: var(--primary-color); color: white; }
+    .btn-primary:hover { opacity: 0.9; }
+    .btn-secondary { background-color: var(--bg-secondary); color: var(--text-primary); border: 1px solid var(--text-secondary); }
+    .btn-secondary:hover { background-color: var(--primary-light); color: white; }
   </style>
 </head>
 <body>
-  <h1>📄 외부자료 업로드</h1>
-  <p>메뉴 10번 페이지입니다</p>
-  <p><a href="index.html">← 메뉴로 돌아가기</a></p>
+  <aside class="sidebar">
+    <a href="../index.html" style="text-decoration: none;">
+      <div class="sidebar-header" id="sidebarTitle">🚨 선거 워룸</div>
+    </a>
+    <nav class="sidebar-nav">
+      <ul>
+        <li><a href="index.html">대시보드</a></li>
+        <li><a href="integrated-analysis.html">1.통합분석</a></li>
+        <li><a href="intelligence.html">2.판세정보 분석&비교</a></li>
+        <li><a href="strategy.html">3.전략 비교&추천</a></li>
+        <li><a href="pledges.html">4.공약 비교&추천</a></li>
+        <li><a href="vehicle-strategy.html">5.차량 전략</a></li>
+        <li><a href="online-sentiment-analysis.html">6.온라인 여론분석 비교&추천</a></li>
+        <li><a href="ai-chat.html">7.AI톡과 질문과 대화</a></li>
+        <li><a href="dashboard.html">8.대시보드</a></li>
+        <li><a href="blog.html">9.블로그-기사</a></li>
+        <li><a href="external-materials.html" class="active">10.외부자료 업로드</a></li>
+        <li><a href="warroom.html">11.워룸-위기대응센터</a></li>
+        <li><a href="reports.html">12.분석리포트 관리</a></li>
+        <li><a href="organization-chart.html">13.조직도</a></li>
+        <li><a href="ai-premium.html">14.AI 프리미엄 도구들</a></li>
+        <li><a href="settings.html">15.설정</a></li>
+      </ul>
+    </nav>
+  </aside>
+
+  <main>
+    <div class="container">
+      <h1>📤 외부자료 업로드</h1>
+      <p style="color: var(--text-secondary);">온라인 여론분석 자료를 업로드하고 비교 분석합니다</p>
+
+      <!-- 우리 후보 온라인 여론분석 (type-7) -->
+      <div class="upload-section type-7">
+        <h2 class="upload-title">👤 6-1. 우리 후보 온라인 여론분석</h2>
+        <div class="upload-area type-7" id="upload-area-type-7" ondragover="handleDragOver(event, 'type-7')" ondragleave="handleDragLeave(event, 'type-7')" ondrop="handleDrop(event, 'type-7')">
+          <div class="upload-icon">📄</div>
+          <div class="upload-text">파일을 드래그&드롭 또는 클릭해서 업로드</div>
+          <div class="upload-hint">PDF, 이미지, 문서 파일 지원 (최대 50MB)</div>
+          <input type="file" id="file-input-type-7" onchange="handleFileSelect(event, 'type-7')" accept=".pdf,.jpg,.jpeg,.png,.docx,.xlsx">
+        </div>
+        <div class="materials-section type-7" id="materials-type-7"></div>
+      </div>
+
+      <!-- 경쟁 후보 온라인 여론분석 (type-8) -->
+      <div class="upload-section type-8">
+        <h2 class="upload-title">⚔️ 6-2. 경쟁 후보 온라인 여론분석</h2>
+        <div class="upload-area type-8" id="upload-area-type-8" ondragover="handleDragOver(event, 'type-8')" ondragleave="handleDragLeave(event, 'type-8')" ondrop="handleDrop(event, 'type-8')">
+          <div class="upload-icon">📄</div>
+          <div class="upload-text">파일을 드래그&드롭 또는 클릭해서 업로드</div>
+          <div class="upload-hint">PDF, 이미지, 문서 파일 지원 (최대 50MB)</div>
+          <input type="file" id="file-input-type-8" onchange="handleFileSelect(event, 'type-8')" accept=".pdf,.jpg,.jpeg,.png,.docx,.xlsx">
+        </div>
+        <div class="materials-section type-8" id="materials-type-8"></div>
+      </div>
+    </div>
+  </main>
+
+  <script src="../js/file-store.js" defer></script>
+  <script defer>
+    const UPLOAD_SECTIONS = {
+      'type-7': { name: '우리 후보 온라인 여론분석', icon: '💬' },
+      'type-8': { name: '경쟁 후보 온라인 여론분석', icon: '⚔️' }
+    };
+
+    async function initMaterialsList() {
+      await FileStore.init();
+      updateMaterialsList();
+    }
+
+    async function updateMaterialsList() {
+      for (const type of ['type-7', 'type-8']) {
+        try {
+          const files = await FileStore.getFilesByType(type);
+          const container = document.getElementById(`materials-${type}`);
+          if (!container) continue;
+
+          if (files.length === 0) {
+            container.innerHTML = '<p style="color: var(--text-secondary); font-size: var(--font-size-sm);">업로드된 자료가 없습니다.</p>';
+            continue;
+          }
+
+          const materialsHtml = files.map(file => `
+            <div class="material-item ${type}">
+              <div class="material-info">
+                <h4 class="material-name">📄 ${file.name}</h4>
+                <p class="material-meta">업로드: ${file.uploadDate} • 크기: ${(file.size / 1024 / 1024).toFixed(2)}MB</p>
+              </div>
+              <div class="material-actions">
+                <button class="btn btn-primary" onclick="viewFile(${file.id})">보기</button>
+                <button class="btn btn-secondary" onclick="downloadFile(${file.id}, '${file.name}')">다운로드</button>
+                <button class="btn btn-secondary" onclick="deleteFile(${file.id})">삭제</button>
+              </div>
+            </div>
+          `).join('');
+
+          container.innerHTML = materialsHtml;
+        } catch (error) {
+          console.error(`자료 목록 로드 실패 (${type}):`, error);
+        }
+      }
+    }
+
+    function handleDragOver(event, type) {
+      event.preventDefault();
+      const area = document.getElementById(`upload-area-${type}`);
+      if (area) area.classList.add('dragover');
+    }
+
+    function handleDragLeave(event, type) {
+      event.preventDefault();
+      const area = document.getElementById(`upload-area-${type}`);
+      if (area) area.classList.remove('dragover');
+    }
+
+    async function handleDrop(event, type) {
+      event.preventDefault();
+      const area = document.getElementById(`upload-area-${type}`);
+      if (area) area.classList.remove('dragover');
+
+      const files = event.dataTransfer.files;
+      if (files.length > 0) {
+        await uploadFiles(files, type);
+      }
+    }
+
+    function handleFileSelect(event, type) {
+      const files = event.target.files;
+      if (files.length > 0) {
+        uploadFiles(files, type);
+      }
+    }
+
+    async function uploadFiles(files, type) {
+      for (const file of files) {
+        try {
+          if (file.size > 50 * 1024 * 1024) {
+            alert(`파일이 너무 큽니다: ${file.name} (최대 50MB)`);
+            continue;
+          }
+
+          await FileStore.saveFile(type, file);
+        } catch (error) {
+          console.error('파일 업로드 실패:', error);
+          alert(`파일 업로드 실패: ${file.name}`);
+        }
+      }
+
+      updateMaterialsList();
+    }
+
+    async function viewFile(id) {
+      try {
+        const blob = await FileStore.getFileBlob(id);
+        const url = URL.createObjectURL(blob);
+        window.open(url, '_blank');
+      } catch (error) {
+        console.error('파일 보기 실패:', error);
+        alert('파일을 열 수 없습니다.');
+      }
+    }
+
+    async function downloadFile(id, fileName) {
+      try {
+        const blob = await FileStore.getFileBlob(id);
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = fileName;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+      } catch (error) {
+        console.error('다운로드 실패:', error);
+        alert('다운로드에 실패했습니다.');
+      }
+    }
+
+    async function deleteFile(id) {
+      if (confirm('파일을 삭제하시겠습니까?')) {
+        try {
+          await FileStore.deleteFile(id);
+          updateMaterialsList();
+        } catch (error) {
+          console.error('삭제 실패:', error);
+          alert('삭제에 실패했습니다.');
+        }
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      initMaterialsList();
+      updateSidebarTitle();
+    });
+
+    function updateSidebarTitle() {
+      const candidateName = localStorage.getItem('candidateName') || '후보자';
+      const sidebarTitle = document.getElementById('sidebarTitle');
+      if (sidebarTitle) {
+        sidebarTitle.textContent = `🚨 ${candidateName} 선거 워룸`;
+      }
+    }
+  </script>
+  <script src="../js/party-theme.js"></script>
+  <script>
+    if (typeof window.PartyTheme === 'undefined') {
+      function applyThemeFromStorage() {
+        const partyColors = {
+          dem: { bgPrimary: '#F0F4F9', bgSecondary: '#e0ecff', bgTertiary: '#dce6f8', primary: '#3b82f6', light: '#42a5f5', dark: '#1565c0', textPrimary: '#1e3a8a' },
+          ppp: { bgPrimary: '#FFF5F6', bgSecondary: '#ffe0e0', bgTertiary: '#ffd6d6', primary: '#ef4444', light: '#f87171', dark: '#dc2626', textPrimary: '#7f1d1d' },
+          reform: { bgPrimary: '#f0fdf4', bgSecondary: '#dbeafe', bgTertiary: '#d1f2eb', primary: '#10b981', light: '#34d399', dark: '#059669', textPrimary: '#065f46' },
+          liberty: { bgPrimary: '#fff5f7', bgSecondary: '#ffe0e6', bgTertiary: '#ffc0d0', primary: '#c41e3a', light: '#e24d5e', dark: '#a01630', textPrimary: '#7f0a1a' },
+          renewal: { bgPrimary: '#fefce8', bgSecondary: '#fef08a', bgTertiary: '#fde047', primary: '#f59e0b', light: '#fbbf24', dark: '#d97706', textPrimary: '#713f12' },
+          independent: { bgPrimary: '#f9fafb', bgSecondary: '#f3f4f6', bgTertiary: '#e5e7eb', primary: '#9ca3af', light: '#d1d5db', dark: '#4b5563', textPrimary: '#374151' }
+        };
+        const party = localStorage.getItem('selectedParty') || 'dem';
+        const colors = partyColors[party];
+        const root = document.documentElement;
+        root.style.setProperty('--primary-color', colors.primary);
+        root.style.setProperty('--primary-light', colors.light);
+        root.style.setProperty('--primary-dark', colors.dark);
+        root.style.setProperty('--bg-primary', colors.bgPrimary);
+        root.style.setProperty('--bg-secondary', colors.bgSecondary);
+        root.style.setProperty('--bg-tertiary', colors.bgTertiary);
+        root.style.setProperty('--text-primary', colors.textPrimary);
+        root.setAttribute('data-party', party);
+      }
+      document.readyState === 'loading' ? document.addEventListener('DOMContentLoaded', applyThemeFromStorage) : applyThemeFromStorage();
+    }
+  </script>
 </body>
 </html>

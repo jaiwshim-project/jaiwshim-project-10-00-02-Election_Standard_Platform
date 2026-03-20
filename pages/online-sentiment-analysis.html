@@ -271,9 +271,9 @@
     </div>
   </div>
 
-  <script src="../js/ui.js"></script>
-  <script src="../js/api-client.js"></script>
-  <script src="../js/file-store.js"></script>
+  <!-- <script src="../js/ui.js"></script> -->
+  <!-- <script src="../js/api-client.js"></script> -->
+  <script src="../js/file-store.js" defer></script>
   <script>
     const OURS_TYPE = 'type-7';
     const COMPETITOR_TYPE = 'type-8';
@@ -369,7 +369,7 @@
         try {
           await FileStore.deleteFile(id);
           alert('파일이 삭제되었습니다.');
-          location.reload();
+          initFileDisplay();
         } catch (error) {
           console.error('삭제 실패:', error);
           alert('삭제에 실패했습니다.');
@@ -593,8 +593,7 @@
 
     document.addEventListener('DOMContentLoaded', initFileDisplay);
   </script>
-  <script src="../js/party-theme.js"></script>
-$scripts
+  <script src="../js/party-theme.js" defer></script>
 </body>
 
   <script>
