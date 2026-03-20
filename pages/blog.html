@@ -388,8 +388,8 @@ AI 선거 워룸 플랫폼과 함께 데이터 기반의 지능형 선거 캠프
       document.getElementById('articleDate').value = '';
       document.getElementById('articleSource').value = '';
 
-      // 페이지 새로고침 (동적 추가 대신)
-      location.reload();
+      // 동적으로 페이지 업데이트
+      displayBlogArticles();
       alert('✅ 기사가 추가되었습니다!');
     }
 
@@ -407,7 +407,7 @@ AI 선거 워룸 플랫폼과 함께 데이터 기반의 지능형 선거 캠프
       article.excerpt = newExcerpt.trim();
 
       localStorage.setItem('warRoomBlogArticles', JSON.stringify(blogArticles));
-      location.reload();
+      displayBlogArticles();
       alert('✅ 기사가 수정되었습니다!');
     }
 
@@ -416,7 +416,7 @@ AI 선거 워룸 플랫폼과 함께 데이터 기반의 지능형 선거 캠프
 
       blogArticles = blogArticles.filter(a => a.id !== articleId);
       localStorage.setItem('warRoomBlogArticles', JSON.stringify(blogArticles));
-      location.reload();
+      displayBlogArticles();
       alert('✅ 기사가 삭제되었습니다!');
     }
 
