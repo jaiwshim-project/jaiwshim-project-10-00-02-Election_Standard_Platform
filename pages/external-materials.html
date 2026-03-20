@@ -258,10 +258,15 @@
       }
     }
 
-    document.addEventListener('DOMContentLoaded', () => {
+    function init() {
       initMaterialsList();
       updateSidebarTitle();
-    });
+    }
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', init);
+    } else {
+      init();
+    }
 
     function updateSidebarTitle() {
       const candidateName = localStorage.getItem('candidateName') || '후보자';
@@ -271,10 +276,8 @@
       }
     }
   </script>
-  <script src="../js/party-theme.js"></script>
   <script>
-    if (typeof window.PartyTheme === 'undefined') {
-      function applyThemeFromStorage() {
+    function applyThemeFromStorage() {
         const partyColors = {
           dem: { bgPrimary: '#F0F4F9', bgSecondary: '#e0ecff', bgTertiary: '#dce6f8', primary: '#3b82f6', light: '#42a5f5', dark: '#1565c0', textPrimary: '#1e3a8a' },
           ppp: { bgPrimary: '#FFF5F6', bgSecondary: '#ffe0e0', bgTertiary: '#ffd6d6', primary: '#ef4444', light: '#f87171', dark: '#dc2626', textPrimary: '#7f1d1d' },
