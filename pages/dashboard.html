@@ -285,30 +285,10 @@
     </div>
   </div>
 
-  <script defer src="../js/ui.js"></script>
-  <script defer src="../js/api-client.js"></script>
+  <!-- <script defer src="../js/ui.js"></script> -->
+  <!-- <script defer src="../js/api-client.js"></script> -->
 
-  <script>
-    // 사이드바 제목 동적 업데이트
-    function updateSidebarTitle() {
-      const candidateName = localStorage.getItem('candidateName') || '후보자';
-      const sidebarTitle = document.getElementById('sidebarTitle');
-      if (sidebarTitle) {
-        sidebarTitle.textContent = `🚨 ${candidateName} 선거 워룸`;
-      }
-    }
-
-    // 페이지 로드 시 실행
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', updateSidebarTitle);
-    } else {
-      updateSidebarTitle();
-    }
-
-    // localStorage 변경 감지 (다른 탭에서 변경 시)
-    window.addEventListener('storage', updateSidebarTitle);
-  </script>
-  <script defer src="../js/party-theme.js"></script>
+  <!-- <script defer src="../js/party-theme.js"></script> -->
 
   <script>
     // 로컬 파일 프로토콜용 테마 초기화
