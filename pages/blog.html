@@ -532,52 +532,6 @@ AI 선거 워룸 플랫폼과 함께 데이터 기반의 지능형 선거 캠프
 
     // localStorage 변경 감지 (다른 탭에서 변경 시)
     window.addEventListener('storage', updateSidebarTitle);
-
-    // Supabase 블로그 글 로드
-    async function loadArticlesFromSupabase() {
-      if (typeof SupabaseDB === 'undefined') return;
-
-      const articles = await SupabaseDB.getBlogArticles();
-      const container = document.getElementById('articlesContainer') || document.querySelector('.blog-grid');
-
-      if (container && articles && articles.length > 0) {
-        // localStorage의 warRoomBlogArticles를 Supabase 데이터로 업데이트
-        localStorage.setItem('warRoomBlogArticles', JSON.stringify(articles));
-      }
-    }
-
-    // Supabase에 블로그 글 저장 (기존 함수 확장)
-    async function saveArticleToSupabase(article) {
-      if (typeof SupabaseDB === 'undefined') {
-        console.warn('Supabase 미연결');
-        return false;
-      }
-
-      const result = await SupabaseDB.upsertBlogArticle({
-        title: article.title || '',
-        content: article.content || '',
-        category: article.category || '',
-        tags: article.tags || [],
-        author: article.author || ''
-      }, article.id);
-
-      return !!result;
-    }
-
-    // Supabase에서 블로그 글 삭제
-    async function deleteArticleFromSupabase(articleId) {
-      if (typeof SupabaseDB === 'undefined') {
-        console.warn('Supabase 미연결');
-        return false;
-      }
-
-      return await SupabaseDB.deleteBlogArticle(articleId);
-    }
-
-    // 페이지 로드 시 Supabase에서 블로그 글 로드
-    window.addEventListener('DOMContentLoaded', () => {
-      loadArticlesFromSupabase();
-    });
   </script>
   <script src="../js/party-theme.js"></script>
 

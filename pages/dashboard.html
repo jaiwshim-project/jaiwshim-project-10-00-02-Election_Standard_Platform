@@ -337,30 +337,6 @@
       document.readyState === 'loading' ? document.addEventListener('DOMContentLoaded', applyThemeFromStorage) : applyThemeFromStorage();
     }
 
-    // Supabase에서 후보자 정보 로드
-    async function loadCandidateFromSupabase() {
-      if (typeof SupabaseDB === 'undefined') return;
-
-      const candidate = await SupabaseDB.getCandidate();
-      if (candidate) {
-        // Supabase에서 로드한 데이터로 localStorage 업데이트
-        localStorage.setItem('candidateName', candidate.name || '');
-        localStorage.setItem('selectedParty', candidate.party || 'dem');
-        localStorage.setItem('electionRegion', candidate.region || '');
-        localStorage.setItem('electionType', candidate.district || '');
-
-        // 사이드바 제목 업데이트
-        const sidebarTitle = document.getElementById('sidebarTitle');
-        if (sidebarTitle) {
-          sidebarTitle.textContent = `🚨 ${candidate.name || '후보자'} 선거 워룸`;
-        }
-      }
-    }
-
-    // 페이지 로드 시 Supabase 데이터 동기화
-    window.addEventListener('DOMContentLoaded', () => {
-      loadCandidateFromSupabase();
-    });
   </script>
 
   <!-- 캠프 컨텍스트 (camp_code URL 파라미터 관리) -->
