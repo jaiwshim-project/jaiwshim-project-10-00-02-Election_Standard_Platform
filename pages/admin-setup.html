@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>시스템 관리자 설정 — 선거 워룸</title>
+  <link rel="stylesheet" href="/css/theme.css">
+  <link rel="stylesheet" href="/css/responsive.css">
+  <style>
+    body { margin: 0; background: var(--bg-primary); }
+    .admin-setup-container {
+      max-width: 600px;
+      margin: 40px auto;
+      padding: 20px;
+    }
+    .setup-card {
+      background: linear-gradient(145deg, var(--bg-primary), var(--bg-secondary));
+      border: 2px solid var(--primary-color);
+      border-radius: 12px;
+      padding: 30px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+    }
+    .setup-title {
+      text-align: center;
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--primary-color);
+      margin-bottom: 30px;
+    }
+    .form-group {
+      margin-bottom: 20px;
+    }
+    .form-label {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: var(--text-primary);
+    }
+    .form-input {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      font-size: 14px;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      box-sizing: border-box;
+    }
+    .form-input:focus {
+      outline: none;
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 2px rgba(25, 83, 124, 0.1);
+    }
+    .btn-setup {
+      width: 100%;
+      padding: 14px;
+      background: var(--primary-color);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-setup:hover {
+      background: var(--primary-dark);
+      transform: translateY(-2px);
+    }
+    .btn-setup:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+    .message {
+      margin-top: 20px;
+      padding: 12px;
+      border-radius: 8px;
+      text-align: center;
+      font-weight: 600;
+    }
+    .message.success {
+      background: rgba(76, 175, 80, 0.1);
+      color: #4caf50;
+      border: 1px solid #4caf50;
+    }
+    .message.error {
+      background: rgba(244, 67, 54, 0.1);
+      color: #f44336;
+      border: 1px solid #f44336;
+    }
+    .admin-list {
+      margin-top: 40px;
+      border-top: 2px solid var(--border-color);
+      padding-top: 20px;
+    }
+    .admin-item {
+      padding: 12px;
+      background: var(--bg-secondary);
+      border-radius: 8px;
+      margin-bottom: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="admin-setup-container">
+    <div class="setup-card">
+      <div class="setup-title">👨‍💼 시스템 관리자 설정</div>
+
+      <!-- 관리자 등록 폼 -->
+      <form id="adminRegisterForm">
+        <div class="form-group">
+          <label class="form-label">📧 이메일</label>
+          <input type="email" class="form-input" id="adminEmail" placeholder="admin@example.com" required>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">👤 사용자명</label>
+          <input type="text" class="form-input" id="adminUsername" placeholder="admin_user" required>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">🔐 비밀번호</label>
+          <input type="password" class="form-input" id="adminPassword" placeholder="최소 8자 이상" required>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">🔐 비밀번호 확인</label>
+          <input type="password" class="form-input" id="adminPasswordConfirm" placeholder="비밀번호를 다시 입력하세요" required>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">🎖️ 역할</label>
+          <select class="form-input" id="adminRole">
+            <option value="super_admin">🔴 Super Admin (전체 권한)</option>
+            <option value="admin">🟠 Admin (캠프 관리)</option>
+            <option value="viewer">🟡 Viewer (조회만)</option>
+          </select>
+        </div>
+
+        <button type="submit" class="btn-setup">✅ 관리자 등록</button>
+      </form>
+
+      <div id="message"></div>
+
+      <!-- 관리자 목록 -->
+      <div class="admin-list">
+        <div style="font-weight: 700; margin-bottom: 15px;">👥 등록된 관리자</div>
+        <div id="adminListContainer"></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/js/supabase-client.js"></script>
+  <script>
+    const AdminSetup = {
+      async init() {
+        await SupabaseDB.init();
+        document.getElementById('adminRegisterForm').addEventListener('submit', (e) => this.handleRegister(e));
+        this.loadAdminList();
+      },
+
+      async handleRegister(e) {
+        e.preventDefault();
+
+        const email = document.getElementById('adminEmail').value;
+        const username = document.getElementById('adminUsername').value;
+        const password = document.getElementById('adminPassword').value;
+        const passwordConfirm = document.getElementById('adminPasswordConfirm').value;
+        const role = document.getElementById('adminRole').value;
+        const messageEl = document.getElementById('message');
+
+        if (password !== passwordConfirm) {
+          messageEl.className = 'message error';
+          messageEl.textContent = '❌ 비밀번호가 일치하지 않습니다.';
+          return;
+        }
+
+        if (password.length < 8) {
+          messageEl.className = 'message error';
+          messageEl.textContent = '❌ 비밀번호는 최소 8자 이상이어야 합니다.';
+          return;
+        }
+
+        try {
+          // SHA-256 해싱
+          const passwordHash = await this.hashPassword(password);
+
+          // Supabase에 등록
+          const { data, error } = await SupabaseDB.client
+            .from('admins')
+            .insert([{
+              email,
+              username,
+              password_hash: passwordHash,
+              role,
+              is_active: true
+            }])
+            .select();
+
+          if (error) {
+            messageEl.className = 'message error';
+            messageEl.textContent = `❌ 오류: ${error.message}`;
+            return;
+          }
+
+          messageEl.className = 'message success';
+          messageEl.textContent = '✅ 관리자가 등록되었습니다!';
+          document.getElementById('adminRegisterForm').reset();
+          this.loadAdminList();
+        } catch (err) {
+          messageEl.className = 'message error';
+          messageEl.textContent = `❌ ${err.message}`;
+        }
+      },
+
+      async loadAdminList() {
+        try {
+          const { data, error } = await SupabaseDB.client
+            .from('admins')
+            .select('*')
+            .order('created_at', { ascending: false });
+
+          if (error) throw error;
+
+          const container = document.getElementById('adminListContainer');
+          if (!data || data.length === 0) {
+            container.innerHTML = '<p style="color: var(--text-secondary);">등록된 관리자가 없습니다.</p>';
+            return;
+          }
+
+          container.innerHTML = data.map(admin => `
+            <div class="admin-item">
+              <div>
+                <div style="font-weight: 600;">${admin.username}</div>
+                <div style="font-size: 12px; color: var(--text-secondary);">${admin.email}</div>
+                <div style="font-size: 12px; color: var(--primary-color);">${admin.role}</div>
+              </div>
+              <div style="text-align: right;">
+                <div style="font-size: 12px;">접속: ${admin.last_login_at ? new Date(admin.last_login_at).toLocaleDateString('ko-KR') : '미접속'}</div>
+              </div>
+            </div>
+          `).join('');
+        } catch (err) {
+          console.error('관리자 목록 로드 실패:', err);
+        }
+      },
+
+      async hashPassword(password) {
+        const encoder = new TextEncoder();
+        const data = encoder.encode(password);
+        const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+        const hashArray = Array.from(new Uint8Array(hashBuffer));
+        return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+      }
+    };
+
+    AdminSetup.init();
+  </script>
+</body>
+</html>
