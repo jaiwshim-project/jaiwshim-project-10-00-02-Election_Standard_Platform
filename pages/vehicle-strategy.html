@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>선거차량 동선 & 후보자 연설 최적화 — 선거 워룸</title>
+  <link rel="stylesheet" href="../css/theme.css">
+  <link rel="stylesheet" href="../css/responsive.css">
+  <style>
+    body { margin: 0; background-color: var(--bg-primary); display: flex; }
+
+    .sidebar { position: fixed; left: 0; top: 0; width: 240px; height: 100vh; background-color: var(--primary-color); z-index: 100; overflow-y: auto; padding: 0; margin: 0; box-shadow: 2px 0 4px rgba(0,0,0,0.1); }
+    .sidebar-header { padding: var(--space-lg); color: white; font-size: var(--font-size-lg); font-weight: 600; border-bottom: 1px solid rgba(255,255,255,0.2); margin: 0; }
+    .sidebar-nav ul { list-style: none; margin: 0; padding: 0; }
+    .sidebar-nav a { display: block; padding: var(--space-md) var(--space-lg); color: white; text-decoration: none; transition: background-color var(--transition-base); font-size: var(--font-size-sm); border-left: 4px solid transparent; }
+    .sidebar-nav a:hover { background-color: rgba(255,255,255,0.2); }
+    .sidebar-nav a.active { background-color: rgba(255,255,255,0.3); font-weight: 600; border-left-color: white; padding-left: calc(var(--space-lg) - 4px); }
+
+    main { flex: 1; margin-left: 240px; }
+    .container { max-width: 1200px; margin: 0 auto; padding: var(--space-lg); }
+
+    @media (max-width: 768px) {
+      .sidebar { width: 200px; }
+      main { margin-left: 200px; }
+      .sidebar-nav a { padding: var(--space-sm) var(--space-md); font-size: var(--font-size-xs); }
+    }
+
+    @media (max-width: 480px) {
+      .sidebar { width: 160px; }
+      main { margin-left: 160px; }
+      .sidebar-header { padding: var(--space-md); font-size: var(--font-size-base); }
+      .sidebar-nav a { padding: var(--space-xs) var(--space-sm); font-size: var(--font-size-xs); }
+    }
+
+    .header { background: linear-gradient(135deg, var(--primary-color), var(--primary-light)); color: white; padding: var(--space-lg); margin: -var(--space-lg) -var(--space-lg) var(--space-lg) -var(--space-lg); border-radius: 0; }
+    .header h1 { margin: 0; }
+
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: var(--space-lg); margin-top: var(--space-lg); }
+    .stat-card { padding: var(--space-lg); background-color: var(--bg-secondary); border-radius: var(--radius-md); border-left: 4px solid var(--primary-color); }
+    .stat-card h3 { margin-top: 0; color: var(--primary-color); }
+    .stat-number { font-size: 32px; font-weight: 700; color: var(--primary-color); }
+    .stat-label { font-size: var(--font-size-sm); color: var(--text-secondary); margin-top: var(--space-sm); }
+
+    .route-section { margin-top: var(--space-xl); padding: var(--space-lg); background-color: var(--bg-secondary); border-radius: var(--radius-md); }
+    .route-item { padding: var(--space-lg); background-color: var(--bg-primary); border-radius: var(--radius-md); margin-bottom: var(--space-md); border-left: 4px solid var(--primary-color); }
+    .route-time { font-weight: 600; color: var(--primary-color); }
+    .route-location { font-size: var(--font-size-lg); font-weight: 600; margin: var(--space-sm) 0; }
+    .route-details { font-size: var(--font-size-sm); color: var(--text-secondary); }
+
+    .schedule-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: var(--space-lg); margin-top: var(--space-lg); }
+    .schedule-card { padding: var(--space-lg); background-color: var(--bg-primary); border-radius: var(--radius-md); border: 1px solid var(--bg-secondary); }
+    .schedule-card h4 { margin-top: 0; color: var(--primary-color); }
+    .schedule-time { font-size: var(--font-size-sm); color: var(--text-secondary); margin-bottom: var(--space-sm); }
+    .schedule-status { display: inline-block; padding: 4px 8px; border-radius: 4px; font-size: var(--font-size-xs); font-weight: 600; }
+    .status-scheduled { background-color: #d1fae5; color: #065f46; }
+    .status-completed { background-color: #dbeafe; color: #0c4a6e; }
+
+    .map-placeholder { padding: var(--space-xl); background-color: var(--bg-secondary); border-radius: var(--radius-md); text-align: center; color: var(--text-secondary); }
+
+    @media (max-width: 768px) {
+      .navbar a { font-size: var(--font-size-xs); padding: var(--space-xs) var(--space-sm); }
+    }
+  </style>
+</head>
+<body>
+  <aside class="sidebar">
+    <a href="../index.html" style="text-decoration: none;">
+      <div class="sidebar-header" id="sidebarTitle">🚨 선거 워룸</div>
+    </a>
+    <nav class="sidebar-nav">
+      <ul>
+        <li><a href="index.html">대시보드</a></li>
+        <li><a href="integrated-analysis.html">1.통합분석</a></li>
+        <li><a href="intelligence.html">2.판세정보 분석&비교</a></li>
+        <li><a href="strategy.html">3.전략 비교&추천</a></li>
+        <li><a href="pledges.html">4.공약 비교&추천</a></li>
+        <li><a href="vehicle-strategy.html" class="active">5.차량 전략</a></li>
+        <li><a href="online-sentiment-analysis.html">6.온라인 여론분석 비교&추천</a></li>
+        <li><a href="ai-chat.html">7.AI톡과 질문과 대화</a></li>
+        <li><a href="dashboard.html">8.대시보드</a></li>
+        <li><a href="blog.html">9.블로그-기사</a></li>
+        <li><a href="external-materials.html">10.외부자료 업로드</a></li>
+        <li><a href="warroom.html">11.워룸-위기대응센터</a></li>
+        <li><a href="reports.html">12.분석리포트 관리</a></li>
+        <li><a href="organization-chart.html">13.조직도</a></li>
+        <li><a href="ai-premium.html">14.AI 프리미엄 도구들</a></li>
+        <li><a href="settings.html">14.설정</a></li>
+      </ul>
+    </nav>
+  </aside>
+
+  <main>
+    <div class="container">
+    <div class="header">
+      <h1>🚗 선거차량 동선 & 후보자 연설 최적화</h1>
+      <p>선거 차량의 효율적 이동 경로와 후보자 연설 일정을 관리합니다</p>
+    </div>
+
+    <!-- 파일 없을 때 안내 -->
+    <div id="emptyStateContainer" style="display: none; text-align: center; padding: 60px 20px; background-color: var(--bg-secondary); border-radius: var(--radius-md); margin: var(--space-lg) 0;">
+      <div style="font-size: 64px; margin-bottom: var(--space-lg); opacity: 0.5;">📁</div>
+      <h3 style="color: var(--text-secondary); margin-bottom: var(--space-sm);">업로드된 동선 자료가 없습니다</h3>
+      <p style="color: var(--text-secondary); margin-bottom: var(--space-lg); font-size: var(--font-size-sm);">외부자료 페이지에서 차량 동선 최적화 자료를 업로드하면 여기에 표시됩니다.</p>
+      <div style="display: flex; gap: var(--space-md); justify-content: center; flex-wrap: wrap;">
+        <button class="btn btn-primary" onclick="location.href='external-materials.html'" style="cursor: pointer;">📤 외부자료 업로드</button>
+        <button class="btn btn-secondary" onclick="alert('리포트 구매 문의: jaiwshim@gmail.com | 010-2397-5734')" style="cursor: pointer;">🛒 리포트 구매하기</button>
+      </div>
+    </div>
+
+    <!-- 파일 있을 때 콘텐츠 -->
+    <div id="contentContainer">
+
+    <!-- 주요 통계 -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <h3>📍 예정된 지역</h3>
+        <div class="stat-number">23</div>
+        <div class="stat-label">주요 투표소 방문</div>
+      </div>
+      <div class="stat-card">
+        <h3>⏱️ 총 이동 시간</h3>
+        <div class="stat-number">42시간</div>
+        <div class="stat-label">주 기간 예상 소요</div>
+      </div>
+      <div class="stat-card">
+        <h3>🎤 연설 예정</h3>
+        <div class="stat-number">18</div>
+        <div class="stat-label">거리 유세 및 집회</div>
+      </div>
+      <div class="stat-card">
+        <h3>👥 예상 도달</h3>
+        <div class="stat-number">120K</div>
+        <div class="stat-label">유권자 수</div>
+      </div>
+    </div>
+
+    <!-- 최적화된 동선 -->
+    <div class="route-section">
+      <h2>📍 최적화된 차량 동선</h2>
+      <p style="color: var(--text-secondary);">AI 분석을 통해 계산된 최효율 경로</p>
+
+      <div class="route-item">
+        <div class="route-time">⏰ 08:00 - 09:30</div>
+        <div class="route-location">강남역 광장</div>
+        <div class="route-details">🎤 조찬 유세 | 예상 도달: 3,500명 | 주차: 광장 지하</div>
+      </div>
+
+      <div class="route-item">
+        <div class="route-time">⏰ 10:00 - 11:00</div>
+        <div class="route-location">서초동 재래시장</div>
+        <div class="route-details">🛍️ 상인 간담회 | 예상 도달: 1,200명 | 주차: 시장 북쪽 로터리</div>
+      </div>
+
+      <div class="route-item">
+        <div class="route-time">⏰ 12:00 - 13:00</div>
+        <div class="route-location">한강공원 여의도</div>
+        <div class="route-details">🌳 야외 집회 | 예상 도달: 8,000명 | 주차: 5개 구간 분산 배치</div>
+      </div>
+
+      <div class="route-item">
+        <div class="route-time">⏰ 14:30 - 15:30</div>
+        <div class="route-location">동대문디자인플라자</div>
+        <div class="route-details">🎨 청년층 토론회 | 예상 도달: 2,500명 | 주차: DDP 주차장</div>
+      </div>
+
+      <div class="route-item">
+        <div class="route-time">⏰ 16:30 - 17:30</div>
+        <div class="route-location">명동 거리</div>
+        <div class="route-details">🚶 거리 유세 | 예상 도달: 5,000명 | 주차: 지하철역 인근</div>
+      </div>
+    </div>
+
+    <!-- 주간 일정 -->
+    <div class="route-section">
+      <h2>📅 주간 연설 일정</h2>
+      <div class="schedule-grid">
+        <div class="schedule-card">
+          <h4>월요일 (03/17)</h4>
+          <div class="schedule-time">08:00-17:00</div>
+          <div style="margin-bottom: var(--space-md);">
+            <p style="margin: var(--space-sm) 0;">강남 권역</p>
+            <p style="margin: var(--space-sm) 0; font-size: var(--font-size-sm); color: var(--text-secondary);">강남역 → 서초 → 한강공원</p>
+          </div>
+          <span class="schedule-status status-scheduled">예정됨</span>
+        </div>
+
+        <div class="schedule-card">
+          <h4>화요일 (03/18)</h4>
+          <div class="schedule-time">08:00-17:00</div>
+          <div style="margin-bottom: var(--space-md);">
+            <p style="margin: var(--space-sm) 0;">동대문/중구 권역</p>
+            <p style="margin: var(--space-sm) 0; font-size: var(--font-size-sm); color: var(--text-secondary);">DDP → 명동 → 을지로</p>
+          </div>
+          <span class="schedule-status status-scheduled">예정됨</span>
+        </div>
+
+        <div class="schedule-card">
+          <h4>수요일 (03/19)</h4>
+          <div class="schedule-time">08:00-17:00</div>
+          <div style="margin-bottom: var(--space-md);">
+            <p style="margin: var(--space-sm) 0;">송파/강동 권역</p>
+            <p style="margin: var(--space-sm) 0; font-size: var(--font-size-sm); color: var(--text-secondary);">롯데월드 → 석촌호수 → 강동구청</p>
+          </div>
+          <span class="schedule-status status-scheduled">예정됨</span>
+        </div>
+
+        <div class="schedule-card">
+          <h4>목요일 (03/20)</h4>
+          <div class="schedule-time">08:00-17:00</div>
+          <div style="margin-bottom: var(--space-md);">
+            <p style="margin: var(--space-sm) 0;">강북 권역</p>
+            <p style="margin: var(--space-sm) 0; font-size: var(--font-size-sm); color: var(--text-secondary);">종로 → 종묘 → 삼청동</p>
+          </div>
+          <span class="schedule-status status-completed">완료</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 경로 최적화 정보 -->
+    <div class="route-section">
+      <h2>🔄 경로 최적화 정보</h2>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: var(--space-lg); margin-top: var(--space-lg);">
+        <div style="padding: var(--space-lg); background-color: var(--bg-primary); border-radius: var(--radius-md);">
+          <h4 style="margin-top: 0; color: var(--primary-color);">⚡ 효율성</h4>
+          <p style="font-size: var(--font-size-sm); color: var(--text-secondary); margin-bottom: var(--space-sm);">총 이동 거리 감소</p>
+          <p style="font-size: 24px; font-weight: 700; color: var(--primary-color); margin: 0;">32%</p>
+        </div>
+
+        <div style="padding: var(--space-lg); background-color: var(--bg-primary); border-radius: var(--radius-md);">
+          <h4 style="margin-top: 0; color: var(--primary-color);">⏱️ 시간 절감</h4>
+          <p style="font-size: var(--font-size-sm); color: var(--text-secondary); margin-bottom: var(--space-sm);">주당 절감 시간</p>
+          <p style="font-size: 24px; font-weight: 700; color: var(--primary-color); margin: 0;">12시간</p>
+        </div>
+
+        <div style="padding: var(--space-lg); background-color: var(--bg-primary); border-radius: var(--radius-md);">
+          <h4 style="margin-top: 0; color: var(--primary-color);">💰 비용 절감</h4>
+          <p style="font-size: var(--font-size-sm); color: var(--text-secondary); margin-bottom: var(--space-sm);">연료비 절감</p>
+          <p style="font-size: 24px; font-weight: 700; color: var(--primary-color); margin: 0;">420만원</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 실시간 동선 맵 -->
+    <div class="route-section">
+      <h2>🗺️ 실시간 동선 맵</h2>
+      <div class="map-placeholder">
+        <p>🗺️ 실시간 차량 위치 추적 및 경로 시각화</p>
+        <p style="font-size: var(--font-size-sm); color: var(--text-secondary);">지도 API 통합 예정</p>
+      </div>
+    </div>
+
+    <!-- 액션 버튼 -->
+    <div style="margin-top: var(--space-xl); display: flex; gap: var(--space-md); flex-wrap: wrap;">
+      <button class="btn btn-primary" onclick="exportRoute()">📥 동선 내보내기</button>
+      <button class="btn btn-secondary" onclick="shareSchedule()">🔗 일정 공유</button>
+      <button class="btn btn-secondary" onclick="optimizeRoute()">⚡ 경로 재최적화</button>
+      <button class="btn btn-secondary" onclick="viewRealtime()">📍 실시간 추적</button>
+    </div>
+  </div>
+  </div>
+
+  <script src="../js/ui.js"></script>
+  <script src="../js/api-client.js"></script>
+  <script src="../js/file-store.js"></script>
+  <script>
+    const CURRENT_TYPE = 'type-6'; // 선거차량 동선최적화
+
+    async function initFileDisplay() {
+      try {
+        await FileStore.init();
+        const files = await FileStore.getFilesByType(CURRENT_TYPE);
+
+        const emptyState = document.getElementById('emptyStateContainer');
+        const content = document.getElementById('contentContainer');
+
+        if (false) { // 기본 콘텐츠 항상 표시
+          emptyState.style.display = "none"; // 파일이 없어도 기본 콘텐츠 표시
+          content.style.display = 'none';
+        } else {
+          emptyState.style.display = 'none';
+          content.style.display = 'block';
+          // 파일 목록 표시
+          displayFileList(files);
+        }
+      } catch (error) {
+        console.error('파일 로드 실패:', error);
+      }
+    }
+
+    function displayFileList(files) {
+      const container = document.getElementById('contentContainer');
+      const fileListHtml = `
+        <h2 style="margin-top: var(--space-xl);">📂 업로드된 자료</h2>
+        <div style="display: grid; gap: var(--space-lg); margin-top: var(--space-lg);">
+          ${files.map(file => `
+            <div style="padding: var(--space-lg); background-color: var(--bg-secondary); border-radius: var(--radius-md); border-left: 4px solid var(--primary-color);">
+              <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: var(--space-lg);">
+                <div style="flex: 1;">
+                  <h4 style="margin: 0 0 var(--space-sm) 0; color: var(--primary-color);">📄 ${file.name}</h4>
+                  <p style="margin: 0; font-size: var(--font-size-sm); color: var(--text-secondary);">업로드: ${file.uploadDate} • 크기: ${(file.size / 1024 / 1024).toFixed(2)}MB</p>
+                </div>
+                <div style="display: flex; gap: var(--space-sm);">
+                  <button class="btn btn-primary" onclick="viewFile(${file.id}, '${CURRENT_TYPE}')">보기</button>
+                  <button class="btn btn-secondary" onclick="downloadFile(${file.id}, '${CURRENT_TYPE}')">다운로드</button>
+                  <button class="btn btn-secondary" onclick="deleteFile(${file.id}, '${CURRENT_TYPE}')">삭제</button>
+                </div>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      `;
+
+      const fileSection = document.createElement('div');
+      fileSection.innerHTML = fileListHtml;
+
+      // 기존 콘텐츠 맨 앞에 파일 리스트 추가
+      container.insertBefore(fileSection, container.firstChild);
+    }
+
+    async function viewFile(id, type) {
+      try {
+        const blob = await FileStore.getFileBlob(id);
+        const url = URL.createObjectURL(blob);
+        window.open(url, '_blank');
+      } catch (error) {
+        console.error('파일 보기 실패:', error);
+        alert('파일을 열 수 없습니다.');
+      }
+    }
+
+    async function downloadFile(id, type) {
+      try {
+        const files = await FileStore.getFilesByType(type);
+        const file = files.find(f => f.id === id);
+        if (file) {
+          const blob = await FileStore.getFileBlob(id);
+          const url = URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.href = url;
+          link.download = file.name;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          URL.revokeObjectURL(url);
+        }
+      } catch (error) {
+        console.error('다운로드 실패:', error);
+        alert('다운로드에 실패했습니다.');
+      }
+    }
+
+    async function deleteFile(id, type) {
+      if (confirm('파일을 삭제하시겠습니까?')) {
+        try {
+          await FileStore.deleteFile(id);
+          alert('파일이 삭제되었습니다.');
+          location.reload();
+        } catch (error) {
+          console.error('삭제 실패:', error);
+          alert('삭제에 실패했습니다.');
+        }
+      }
+    }
+
+    // 페이지 로드 시 실행
+    document.addEventListener('DOMContentLoaded', initFileDisplay);
+
+    function exportRoute() {
+      alert('차량 동선을 PDF로 내보내고 있습니다...');
+    }
+
+    function shareSchedule() {
+      alert('연설 일정 링크가 생성되었습니다.');
+    }
+
+    function optimizeRoute() {
+      alert('최신 교통 정보를 반영하여 경로를 재최적화하고 있습니다...');
+    }
+
+    function viewRealtime() {
+      alert('실시간 차량 추적 시스템을 오픈합니다...');
+    }
+  </script>
+  <script src="../js/party-theme.js"></script>
+$scripts
+</body>
+
+  <script>
+    // 로컬 파일 프로토콜용 테마 초기화
+    if (typeof window.PartyTheme === 'undefined') {
+      function applyThemeFromStorage() {
+        const partyColors = {
+          dem: { bgPrimary: '#F0F4F9', bgSecondary: '#e0ecff', bgTertiary: '#dce6f8', primary: '#3b82f6', light: '#42a5f5', dark: '#1565c0', textPrimary: '#1e3a8a' },
+          ppp: { bgPrimary: '#FFF5F6', bgSecondary: '#ffe0e0', bgTertiary: '#ffd6d6', primary: '#ef4444', light: '#f87171', dark: '#dc2626', textPrimary: '#7f1d1d' },
+          reform: { bgPrimary: '#f0fdf4', bgSecondary: '#dbeafe', bgTertiary: '#d1f2eb', primary: '#10b981', light: '#34d399', dark: '#059669', textPrimary: '#065f46' },
+          liberty: { bgPrimary: '#fff5f7', bgSecondary: '#ffe0e6', bgTertiary: '#ffc0d0', primary: '#c41e3a', light: '#e24d5e', dark: '#a01630', textPrimary: '#7f0a1a' },
+          renewal: { bgPrimary: '#fefce8', bgSecondary: '#fef08a', bgTertiary: '#fde047', primary: '#f59e0b', light: '#fbbf24', dark: '#d97706', textPrimary: '#713f12' },
+          independent: { bgPrimary: '#f9fafb', bgSecondary: '#f3f4f6', bgTertiary: '#e5e7eb', primary: '#9ca3af', light: '#d1d5db', dark: '#4b5563', textPrimary: '#374151' }
+        };
+        const party = localStorage.getItem('selectedParty') || 'dem';
+        const colors = partyColors[party];
+        const root = document.documentElement;
+        root.style.setProperty('--primary-color', colors.primary);
+        root.style.setProperty('--primary-light', colors.light);
+        root.style.setProperty('--primary-dark', colors.dark);
+        root.style.setProperty('--bg-primary', colors.bgPrimary);
+        root.style.setProperty('--bg-secondary', colors.bgSecondary);
+        root.style.setProperty('--bg-tertiary', colors.bgTertiary);
+        root.style.setProperty('--text-primary', colors.textPrimary);
+        root.setAttribute('data-party', party);
+      }
+      document.readyState === 'loading' ? document.addEventListener('DOMContentLoaded', applyThemeFromStorage) : applyThemeFromStorage();
+    }
+  </script>
+
+  <script>
+    // 사이드바 제목 동적 업데이트
+    function updateSidebarTitle() {
+      const candidateName = localStorage.getItem('candidateName') || '후보자';
+      const sidebarTitle = document.getElementById('sidebarTitle');
+      if (sidebarTitle) {
+        sidebarTitle.textContent = `🚨 ${candidateName} 선거 워룸`;
+      }
+    }
+
+    // 페이지 로드 시 실행
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', updateSidebarTitle);
+    } else {
+      updateSidebarTitle();
+    }
+
+    // localStorage 변경 감지 (다른 탭에서 변경 시)
+    window.addEventListener('storage', updateSidebarTitle);
+  </script>
+</html>

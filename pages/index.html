@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="AI 기반 정치 워룸 플랫폼 - 선거 워룸">
+  <title>선거 워룸 — AI 정치 전략 플랫폼</title>
+
+  <link rel="stylesheet" href="../css/theme.css">
+  <link rel="stylesheet" href="../css/responsive.css">
+  <style>
+    body { background-color: var(--bg-primary); margin: 0; }
+    .container { max-width: 1200px; margin: 0 auto; padding: var(--space-lg); }
+    .navbar { background-color: var(--primary-color); padding: var(--space-md) 0; box-shadow: 0 2px 4px rgba(0,0,0,0.1); position: sticky; top: 0; z-index: 100; }
+    .navbar .container { display: flex; justify-content: space-between; align-items: center; padding: var(--space-md) var(--space-lg); }
+    .navbar h2 { margin: 0; color: white; font-size: var(--font-size-xl); }
+    .navbar ul { list-style: none; display: flex; gap: var(--space-lg); margin: 0; padding: 0; }
+    .navbar a { color: white; text-decoration: none; font-weight: 500; padding: var(--space-sm) var(--space-md); border-radius: var(--radius-sm); transition: background-color var(--transition-base); }
+    .navbar a:hover { background-color: rgba(255,255,255,0.2); }
+    .navbar a.active { background-color: rgba(255,255,255,0.3); font-weight: 600; }
+    .header { padding: var(--space-lg); background: linear-gradient(135deg, var(--primary-color), var(--primary-light)); color: white; }
+    .header h1 { margin: 0; }
+    .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: var(--space-lg); margin-top: var(--space-lg); }
+    @media (max-width: 768px) {
+      .navbar ul { flex-wrap: wrap; gap: var(--space-sm); }
+      .navbar a { font-size: var(--font-size-sm); padding: var(--space-xs) var(--space-sm); }
+    }
+  </style>
+</head>
+<body>
+  <nav class="navbar">
+    <div class="container">
+      <h2>🚨 선거 워룸</h2>
+      <ul>
+        <li><a href="index.html" class="active">대시보드</a></li>
+        <li><a href="integrated-analysis.html">1.통합분석</a></li>
+        <li><a href="intelligence.html">2.판세정보 분석&비교</a></li>
+        <li><a href="strategy.html">3.전략 비교&추천</a></li>
+        <li><a href="pledges.html">4.공약 비교&추천</a></li>
+        <li><a href="reports.html">5.분석리포트 관리</a></li>
+        <li><a href="ai-chat.html">6.AI톡과 질문과 대화</a></li>
+        <li><a href="competitors.html">7.경쟁분석</a></li>
+        <li><a href="external-materials.html">8.외부자료 업로드</a></li>
+        <li><a href="warroom.html">9.워룸-위기대응센터</a></li>
+        <li><a href="dashboard.html">10. 대시보드-통합제어센터</a></li>
+        <li><a href="organization-chart.html">11.조직도</a></li>
+        <li><a href="strategy-comparison.html">12.수행계획 수립</a></li>
+        <li><a href="ai-premium.html">13.AI 프리미엄 도구들</a></li>
+        <li><a href="settings.html">14.설정</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <div class="header">
+    <div class="container">
+      <h1>📊 대시보드</h1>
+      <p>주요 지표 및 실시간 분석</p>
+    </div>
+  </div>
+
+  <div class="container">
+    <h2>대시보드</h2>
+    <div class="dashboard-grid">
+      <div class="card">
+        <h3>📈 지지율</h3>
+        <p>현재 지지율: <strong>45.2%</strong></p>
+        <p style="color: var(--text-secondary);">전일 대비 +2.1%</p>
+      </div>
+
+      <div class="card">
+        <h3>⚡ 핵심 이슈</h3>
+        <p><strong>경제 정책</strong></p>
+        <p style="color: var(--text-secondary);">관심도: 높음</p>
+      </div>
+
+      <div class="card">
+        <h3>👥 유권자 분석</h3>
+        <p><strong>20-30대 여성</strong></p>
+        <p style="color: var(--text-secondary);">지지율: 52%</p>
+      </div>
+    </div>
+
+    <h2 style="margin-top: var(--space-xl);">AI 질문</h2>
+    <div class="card">
+      <textarea id="question-input" placeholder="질문을 입력하세요..." style="width: 100%; height: 80px; padding: var(--space-md); border: 1px solid var(--text-secondary); border-radius: var(--radius-md);"></textarea>
+      <button class="btn btn-primary" onclick="askQuestion()" style="margin-top: var(--space-md);">질문하기</button>
+      <div id="response" style="margin-top: var(--space-lg);"></div>
+    </div>
+  </div>
+
+  <script src="../js/ui.js"></script>
+  <script src="../js/api-client.js"></script>
+  <script>
+    async function askQuestion() {
+      const question = document.getElementById('question-input').value;
+      if (!question.trim()) return;
+
+      const responseDiv = document.getElementById('response');
+      responseDiv.innerHTML = '<p>응답 대기 중...</p>';
+
+      try {
+        const result = await api.chat(question);
+        responseDiv.innerHTML = `
+          <h3>AI 응답</h3>
+          <p>${result.answer}</p>
+          <p style="color: var(--text-secondary);">유형: ${result.intent}</p>
+        `;
+      } catch (error) {
+        responseDiv.innerHTML = `<p style="color: var(--danger);">오류: ${error.message}</p>`;
+      }
+    }
+  </script>
+  <script src="../js/party-theme.js"></script>
+</body>
+</html>

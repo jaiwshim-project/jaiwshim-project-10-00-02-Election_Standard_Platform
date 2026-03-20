@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI 프리미엄 — 선거 전략 도구</title>
+  <link rel="stylesheet" href="../css/theme.css">
+  <link rel="stylesheet" href="../css/responsive.css">
+  <style>
+    body { margin: 0; background-color: var(--bg-primary); display: flex; }
+
+    .sidebar { position: fixed; left: 0 !important; top: 0; width: 240px !important; height: 100vh; background-color: var(--primary-color); z-index: 100; overflow-y: auto; padding: 0; margin: 0; box-shadow: 2px 0 4px rgba(0,0,0,0.1); }
+    .sidebar-header { padding: var(--space-lg) !important; color: white; font-size: var(--font-size-lg) !important; font-weight: 600; border-bottom: 1px solid rgba(255,255,255,0.2); margin: 0; }
+    .sidebar-nav ul { list-style: none; margin: 0; padding: 0; }
+    .sidebar-nav a { display: block; padding: var(--space-md) var(--space-lg) !important; color: white; text-decoration: none; transition: background-color var(--transition-base); font-size: var(--font-size-sm) !important; border-left: 4px solid transparent; }
+    .sidebar-nav a:hover { background-color: rgba(255,255,255,0.2); }
+    .sidebar-nav a.active { background-color: rgba(255,255,255,0.3); font-weight: 600; border-left-color: white; padding-left: calc(var(--space-lg) - 4px); }
+
+    main { flex: 1; margin-left: 240px !important; }
+    .container { max-width: 1400px; margin: 0 auto; padding: var(--space-lg); }
+
+    .premium-header { background: linear-gradient(135deg, var(--primary-color), var(--primary-dark)); color: white; padding: var(--space-lg); margin: -var(--space-lg) -var(--space-lg) var(--space-lg) -var(--space-lg); border-radius: 0; }
+    .premium-header h1 { margin: 0; font-size: 28px; }
+    .premium-header p { margin: 8px 0 0 0; opacity: 0.95; }
+
+    /* 탭 네비게이션 */
+    .tab-nav { display: flex; gap: 10px; margin-bottom: var(--space-lg); overflow-x: auto; padding: 10px 0; background-color: var(--bg-secondary); border-radius: var(--radius-md); padding: 8px; border: 2px solid rgba(0,0,0,0.08); }
+    .tab-nav button { background: white; border: 2px solid rgba(0,0,0,0.12); padding: 12px 18px; font-size: var(--font-size-base); font-weight: 600; color: var(--text-secondary); cursor: pointer; transition: all var(--transition-base); border-radius: var(--radius-md); white-space: nowrap; box-shadow: 0 2px 4px rgba(0,0,0,0.06); }
+    .tab-nav button:hover { color: var(--primary-color); background-color: var(--bg-primary); border-color: var(--primary-color); transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+    .tab-nav button.active { color: white; background: linear-gradient(135deg, var(--primary-color), var(--primary-light)); border-color: var(--primary-color); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+
+    /* 탭 콘텐츠 */
+    .tab-content { display: none; }
+    .tab-content.active { display: block; animation: fadeIn 0.3s ease-in; }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+    /* 입력 섹션 */
+    .input-card { background: linear-gradient(145deg, var(--bg-primary) 0%, var(--bg-secondary) 100%); border: 1.5px solid rgba(0,0,0,0.08); border-radius: var(--radius-lg); padding: var(--space-lg); margin-bottom: var(--space-lg); }
+    .input-card h3 { margin-top: 0; color: var(--text-primary); }
+
+    .form-group { margin-bottom: var(--space-lg); }
+    .form-group label { display: block; font-weight: 500; margin-bottom: var(--space-sm); color: var(--text-primary); }
+    .form-group textarea, .form-group select { width: 100%; padding: var(--space-md); border: 1.5px solid rgba(0,0,0,0.1); border-radius: var(--radius-md); font-family: var(--font-family-base); font-size: var(--font-size-base); line-height: var(--line-height-base); }
+    .form-group textarea:focus, .form-group select:focus { border-color: var(--primary-color); outline: none; box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.1); }
+
+    .checkbox-group { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: var(--space-md); }
+    .checkbox-group label { display: flex; align-items: center; margin: 0; font-weight: 400; cursor: pointer; }
+    .checkbox-group input[type="checkbox"] { margin-right: var(--space-sm); cursor: pointer; }
+
+    .button-group { display: flex; gap: var(--space-md); margin-top: var(--space-lg); }
+    .btn-analyze { flex: 1; min-height: 44px; background: linear-gradient(135deg, var(--primary-color), var(--primary-dark)); border: 1.5px solid var(--primary-dark); color: white; font-weight: 600; border-radius: var(--radius-md); cursor: pointer; transition: all var(--transition-base); }
+    .btn-analyze:hover:not(:disabled) { box-shadow: 0 4px 16px rgba(0,0,0,0.2); transform: translateY(-1px); }
+    .btn-analyze:disabled { opacity: 0.6; cursor: not-allowed; }
+
+    /* 결과 섹션 */
+    .result-section { display: none; margin-top: var(--space-xl); }
+    .result-section.show { display: block; animation: fadeIn 0.3s ease-in; }
+
+    .result-card { background: linear-gradient(145deg, var(--bg-primary) 0%, var(--bg-secondary) 100%); border: 1.5px solid var(--primary-color); border-radius: var(--radius-lg); padding: var(--space-lg); margin-bottom: var(--space-lg); }
+    .result-card h4 { color: var(--primary-color); margin-top: 0; }
+    .result-card p { margin: var(--space-sm) 0; line-height: var(--line-height-base); color: var(--text-primary); white-space: pre-wrap; }
+
+    /* 로딩 스피너 */
+    .loading { text-align: center; padding: var(--space-xl); }
+    .spinner { border: 4px solid var(--bg-secondary); border-top: 4px solid var(--primary-color); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 0 auto var(--space-md); }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+    /* 복사 버튼 */
+    .copy-btn { background: var(--bg-secondary); border: 1px solid rgba(0,0,0,0.1); padding: 6px 12px; border-radius: var(--radius-sm); cursor: pointer; font-size: 12px; transition: all var(--transition-fast); }
+    .copy-btn:hover { background: var(--primary-color); color: white; }
+
+    /* 리셋 버튼 */
+    .btn-reset { background: #9ca3af; color: white; border: none; }
+    .btn-reset:hover { background: #6b7280; }
+
+    @media (max-width: 768px) {
+      .sidebar { width: 200px !important; }
+      main { margin-left: 200px !important; }
+      .sidebar-nav a { padding: var(--space-md) var(--space-lg) !important; font-size: var(--font-size-sm) !important; }
+      .tab-nav { gap: 4px; }
+      .tab-nav button { padding: var(--space-sm) var(--space-md); font-size: var(--font-size-sm); }
+      .input-card { padding: var(--space-md); }
+      .button-group { flex-direction: column; }
+    }
+
+    @media (max-width: 480px) {
+      .sidebar { width: 160px !important; }
+      main { margin-left: 160px !important; }
+      .sidebar-header { padding: var(--space-lg) !important; font-size: var(--font-size-lg) !important; }
+      .sidebar-nav a { padding: var(--space-md) var(--space-lg) !important; font-size: var(--font-size-sm) !important; }
+      .premium-header h1 { font-size: 22px; }
+      .checkbox-group { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <aside class="sidebar">
+    <a href="../index.html" style="text-decoration: none;">
+      <div class="sidebar-header" id="sidebarTitle">🚨 선거 워룸</div>
+    </a>
+    <nav class="sidebar-nav">
+      <ul>
+        <li><a href="index.html">대시보드</a></li>
+        <li><a href="integrated-analysis.html">1.통합분석</a></li>
+        <li><a href="intelligence.html">2.판세정보 분석&비교</a></li>
+        <li><a href="strategy.html">3.전략 비교&추천</a></li>
+        <li><a href="pledges.html">4.공약 비교&추천</a></li>
+        <li><a href="vehicle-strategy.html">5.차량 전략</a></li>
+        <li><a href="online-sentiment-analysis.html">6.온라인 여론분석 비교&추천</a></li>
+        <li><a href="ai-chat.html">7.AI톡과 질문과 대화</a></li>
+        <li><a href="dashboard.html">8.대시보드</a></li>
+        <li><a href="blog.html">9.블로그-기사</a></li>
+        <li><a href="external-materials.html">10.외부자료 업로드</a></li>
+        <li><a href="warroom.html">11.워룸-위기대응센터</a></li>
+        <li><a href="reports.html">12.분석리포트 관리</a></li>
+        <li><a href="organization-chart.html">13.조직도</a></li>
+        <li><a href="ai-premium.html" class="active">14.AI 프리미엄 도구들</a></li>
+        <li><a href="settings.html">15.설정</a></li>
+      </ul>
+    </nav>
+  </aside>
+
+  <main>
+    <div class="container">
+      <div class="premium-header">
+        <h1>🤖 AI 프리미엄 도구들</h1>
+        <p>최고 수준의 AI 기반 선거 전략 도구<br>시나리오 분석 • 설득 메시지 • 광고 카피 • 영상 스크립트 자동 생성</p>
+      </div>
+
+      <!-- 탭 네비게이션 -->
+      <div class="tab-nav">
+        <button class="tab-btn active" onclick="switchTab('scenario')">🔮 시나리오 분석</button>
+        <button class="tab-btn" onclick="switchTab('message')">💬 설득 메시지</button>
+        <button class="tab-btn" onclick="switchTab('ad')">📢 광고 카피 최적화</button>
+        <button class="tab-btn" onclick="switchTab('video')">🎬 영상 스크립트</button>
+      </div>
+
+      <!-- 탭 1: 시나리오 분석 & 예측 -->
+      <div id="scenario" class="tab-content active">
+        <div class="input-card">
+          <h3>🔮 AI 시나리오 분석 & 예측</h3>
+          <p>정책을 실행했을 때의 지지도 변화와 위험 요소를 미리 분석합니다.</p>
+
+          <div class="form-group">
+            <label>정책/공약 내용</label>
+            <textarea id="scenario-policy" placeholder="예: 청년 학자금 대출 이자율 0% 지원..." rows="4"></textarea>
+          </div>
+
+          <div class="form-group">
+            <label>선거구 규모</label>
+            <select id="scenario-district">
+              <option>광역단체장(도지사/시장)</option>
+              <option>기초단체장(군수/구청장)</option>
+              <option>국회의원</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>주요 관심 유권자층 (중복 선택)</label>
+            <div class="checkbox-group">
+              <label><input type="checkbox" name="target" value="20대"> 20대</label>
+              <label><input type="checkbox" name="target" value="30대"> 30대</label>
+              <label><input type="checkbox" name="target" value="40대"> 40대</label>
+              <label><input type="checkbox" name="target" value="50대"> 50대+</label>
+              <label><input type="checkbox" name="target" value="자영업자"> 자영업자</label>
+              <label><input type="checkbox" name="target" value="직장인"> 직장인</label>
+              <label><input type="checkbox" name="target" value="농어촌"> 농어촌</label>
+              <label><input type="checkbox" name="target" value="도시"> 도시</label>
+            </div>
+          </div>
+
+          <div class="button-group">
+            <button class="btn-analyze" onclick="analyzeScenario()">분석 시작</button>
+            <button class="btn-reset btn-analyze" onclick="resetScenario()">초기화</button>
+          </div>
+        </div>
+
+        <div id="scenario-result" class="result-section">
+          <div class="result-card">
+            <h4>📊 예상 지지도 영향</h4>
+            <div id="scenario-support" style="font-size: 14px;"></div>
+          </div>
+          <div class="result-card">
+            <h4>👥 계층별 반응 예측</h4>
+            <div id="scenario-response" style="font-size: 14px;"></div>
+          </div>
+          <div class="result-card">
+            <h4>⚠️ 리스크 요소</h4>
+            <div id="scenario-risk" style="font-size: 14px;"></div>
+          </div>
+          <div class="result-card">
+            <h4>🎯 최적 전략 제안</h4>
+            <div id="scenario-strategy" style="font-size: 14px;"></div>
+            <button class="copy-btn" onclick="copyToClipboard('scenario-strategy')">📋 복사</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 탭 2: 설득 메시지 생성 -->
+      <div id="message" class="tab-content">
+        <div class="input-card">
+          <h3>💬 AI 설득 메시지 생성</h3>
+          <p>타겟층과 채널에 최적화된 맞춤 메시지를 자동으로 생성합니다.</p>
+
+          <div class="form-group">
+            <label>핵심 정책/이슈</label>
+            <textarea id="message-policy" placeholder="예: 대중교통 요금 인상 억제..." rows="3"></textarea>
+          </div>
+
+          <div class="form-group">
+            <label>타겟 그룹</label>
+            <select id="message-target">
+              <option>20대</option>
+              <option>30대</option>
+              <option>40대</option>
+              <option>50대 이상</option>
+              <option>여성</option>
+              <option>남성</option>
+              <option>자영업자</option>
+              <option>직장인</option>
+              <option>주부</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>채널</label>
+            <select id="message-channel">
+              <option>SNS (페이스북, 트위터, 인스타그램)</option>
+              <option>연설/유세</option>
+              <option>문자메시지/카톡</option>
+              <option>전단지</option>
+              <option>이메일</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>톤 앤 매너</label>
+            <select id="message-tone">
+              <option>공식적</option>
+              <option>친근한</option>
+              <option>열정적</option>
+              <option>신뢰감</option>
+              <option>긴급한</option>
+            </select>
+          </div>
+
+          <div class="button-group">
+            <button class="btn-analyze" onclick="generateMessage()">메시지 생성</button>
+            <button class="btn-reset btn-analyze" onclick="resetMessage()">초기화</button>
+          </div>
+        </div>
+
+        <div id="message-result" class="result-section">
+          <div class="result-card">
+            <h4>📝 핵심 메시지 (3개)</h4>
+            <div id="message-main" style="font-size: 14px;"></div>
+          </div>
+          <div class="result-card">
+            <h4>📄 상세 설명</h4>
+            <div id="message-detail" style="font-size: 14px;"></div>
+            <button class="copy-btn" onclick="copyToClipboard('message-detail')">📋 복사</button>
+          </div>
+          <div class="result-card">
+            <h4>💝 감성 어필 포인트</h4>
+            <div id="message-emotion" style="font-size: 14px;"></div>
+          </div>
+          <div class="result-card">
+            <h4>⛔ 주의사항</h4>
+            <div id="message-warning" style="font-size: 14px;"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 탭 3: 광고 카피 최적화 -->
+      <div id="ad" class="tab-content">
+        <div class="input-card">
+          <h3>📢 AI 광고 카피 최적화</h3>
+          <p>원본 광고 카피를 분석하고 목표별로 3가지 버전을 최적화합니다.</p>
+
+          <div class="form-group">
+            <label>원본 광고 카피</label>
+            <textarea id="ad-copy" placeholder="기존 광고 텍스트를 입력하세요..." rows="4"></textarea>
+          </div>
+
+          <div class="form-group">
+            <label>광고 목표</label>
+            <select id="ad-goal">
+              <option>인지도 향상</option>
+              <option>지지율 증가</option>
+              <option>투표 참여 독려</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>광고 채널</label>
+            <select id="ad-channel">
+              <option>유튜브</option>
+              <option>인스타그램</option>
+              <option>네이버/구글</option>
+              <option>TV/라디오</option>
+              <option>옥외광고</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>타겟 연령대</label>
+            <select id="ad-age">
+              <option>전체</option>
+              <option>20-30대</option>
+              <option>40-50대</option>
+              <option>60대 이상</option>
+            </select>
+          </div>
+
+          <div class="button-group">
+            <button class="btn-analyze" onclick="optimizeAdCopy()">최적화 시작</button>
+            <button class="btn-reset btn-analyze" onclick="resetAd()">초기화</button>
+          </div>
+        </div>
+
+        <div id="ad-result" class="result-section">
+          <div class="result-card">
+            <h4>✨ Version A: 감성 어필</h4>
+            <div id="ad-version-a" style="font-size: 14px;"></div>
+            <button class="copy-btn" onclick="copyToClipboard('ad-version-a')">📋 복사</button>
+          </div>
+          <div class="result-card">
+            <h4>🎯 Version B: 논리/팩트</h4>
+            <div id="ad-version-b" style="font-size: 14px;"></div>
+            <button class="copy-btn" onclick="copyToClipboard('ad-version-b')">📋 복사</button>
+          </div>
+          <div class="result-card">
+            <h4>⚡ Version C: 긴급성/행동 유도</h4>
+            <div id="ad-version-c" style="font-size: 14px;"></div>
+            <button class="copy-btn" onclick="copyToClipboard('ad-version-c')">📋 복사</button>
+          </div>
+          <div class="result-card">
+            <h4>💡 채널별 최적 버전 추천</h4>
+            <div id="ad-recommendation" style="font-size: 14px;"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 탭 4: 영상 스크립트 생성 -->
+      <div id="video" class="tab-content">
+        <div class="input-card">
+          <h3>🎬 AI 영상 스크립트 생성</h3>
+          <p>유튜브, 틱톡, 릴스에 최적화된 영상 스크립트와 제작 가이드를 생성합니다.</p>
+
+          <div class="form-group">
+            <label>영상 주제/정책</label>
+            <textarea id="video-topic" placeholder="예: 청년 정책: 무주택 청년을 위한 전세금 지원..." rows="3"></textarea>
+          </div>
+
+          <div class="form-group">
+            <label>영상 유형</label>
+            <select id="video-type">
+              <option>유세영상 (후보자 출연)</option>
+              <option>정책홍보 (애니메이션/자막)</option>
+              <option>인터뷰 (전문가/시민)</option>
+              <option>일상브이로그</option>
+              <option>감성호소</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>플랫폼</label>
+            <select id="video-platform">
+              <option>유튜브</option>
+              <option>틱톡</option>
+              <option>인스타그램 릴스</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>영상 길이</label>
+            <select id="video-length">
+              <option>30초</option>
+              <option>60초</option>
+              <option>3분</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>후보자 특성 (선택)</label>
+            <textarea id="video-candidate" placeholder="예: 40대 여성, 교사 출신, 서울 강남..." rows="2"></textarea>
+          </div>
+
+          <div class="button-group">
+            <button class="btn-analyze" onclick="generateVideoScript()">스크립트 생성</button>
+            <button class="btn-reset btn-analyze" onclick="resetVideo()">초기화</button>
+          </div>
+        </div>
+
+        <div id="video-result" class="result-section">
+          <div class="result-card">
+            <h4>📝 전체 스크립트</h4>
+            <div id="video-script" style="font-size: 14px;"></div>
+            <button class="copy-btn" onclick="copyToClipboard('video-script')">📋 복사</button>
+          </div>
+          <div class="result-card">
+            <h4>🎥 촬영 가이드</h4>
+            <div id="video-guide" style="font-size: 14px;"></div>
+          </div>
+          <div class="result-card">
+            <h4>📝 자막 텍스트</h4>
+            <div id="video-subtitle" style="font-size: 14px;"></div>
+            <button class="copy-btn" onclick="copyToClipboard('video-subtitle')">📋 복사</button>
+          </div>
+          <div class="result-card">
+            <h4>🎵 음악/배경 추천</h4>
+            <div id="video-music" style="font-size: 14px;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script src="../js/ui.js"></script>
+  <script>
+    // 로컬 파일 프로토콜용 테마 초기화
+    if (typeof window.PartyTheme === 'undefined') {
+      function applyThemeFromStorage() {
+        const partyColors = {
+          dem: { bgPrimary: '#F0F4F9', bgSecondary: '#e0ecff', bgTertiary: '#dce6f8', primary: '#3b82f6', light: '#42a5f5', dark: '#1565c0', textPrimary: '#1e3a8a' },
+          ppp: { bgPrimary: '#FFF5F6', bgSecondary: '#ffe0e0', bgTertiary: '#ffd6d6', primary: '#ef4444', light: '#f87171', dark: '#dc2626', textPrimary: '#7f1d1d' },
+          reform: { bgPrimary: '#f0fdf4', bgSecondary: '#dbeafe', bgTertiary: '#d1f2eb', primary: '#10b981', light: '#34d399', dark: '#059669', textPrimary: '#065f46' },
+          liberty: { bgPrimary: '#fff5f7', bgSecondary: '#ffe0e6', bgTertiary: '#ffc0d0', primary: '#c41e3a', light: '#e24d5e', dark: '#a01630', textPrimary: '#7f0a1a' },
+          renewal: { bgPrimary: '#fefce8', bgSecondary: '#fef08a', bgTertiary: '#fde047', primary: '#f59e0b', light: '#fbbf24', dark: '#d97706', textPrimary: '#713f12' },
+          independent: { bgPrimary: '#f9fafb', bgSecondary: '#f3f4f6', bgTertiary: '#e5e7eb', primary: '#9ca3af', light: '#d1d5db', dark: '#4b5563', textPrimary: '#374151' }
+        };
+        const party = localStorage.getItem('selectedParty') || 'dem';
+        const colors = partyColors[party];
+        const root = document.documentElement;
+        root.style.setProperty('--primary-color', colors.primary);
+        root.style.setProperty('--primary-light', colors.light);
+        root.style.setProperty('--primary-dark', colors.dark);
+        root.style.setProperty('--bg-primary', colors.bgPrimary);
+        root.style.setProperty('--bg-secondary', colors.bgSecondary);
+        root.style.setProperty('--bg-tertiary', colors.bgTertiary);
+        root.style.setProperty('--text-primary', colors.textPrimary);
+        root.setAttribute('data-party', party);
+      }
+      document.readyState === 'loading' ? document.addEventListener('DOMContentLoaded', applyThemeFromStorage) : applyThemeFromStorage();
+    }
+
+    // 탭 전환
+    function switchTab(tabName) {
+      // 모든 탭 숨기기
+      document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+
+      // 선택된 탭 표시
+      document.getElementById(tabName).classList.add('active');
+      event.target.classList.add('active');
+    }
+
+    // Gemini API 호출
+    async function callGemini(prompt) {
+      const apiKey = localStorage.getItem('geminiApiKey');
+      if (!apiKey) {
+        const confirmed = confirm('Gemini API 키가 설정되지 않았습니다.\n설정 페이지로 이동하시겠습니까?');
+        if (confirmed) {
+          location.href = 'settings.html';
+        }
+        return null;
+      }
+
+      const model = localStorage.getItem('geminiModel') || 'gemini-2.0-flash';
+
+      try {
+        const response = await fetch(
+          `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              contents: [{ role: 'user', parts: [{ text: prompt }] }],
+              generationConfig: { temperature: 0.9, maxOutputTokens: 2048 }
+            })
+          }
+        );
+
+        const data = await response.json();
+        if (data.error) {
+          alert('API 오류: ' + data.error.message);
+          return null;
+        }
+        return data.candidates?.[0]?.content?.parts?.[0]?.text || '응답을 받을 수 없습니다.';
+      } catch (error) {
+        alert('오류 발생: ' + error.message);
+        return null;
+      }
+    }
+
+    // 로딩 표시
+    function showLoading(resultElement) {
+      resultElement.innerHTML = '<div class="loading"><div class="spinner"></div><p>AI가 분석 중입니다...</p></div>';
+    }
+
+    // 탭 1: 시나리오 분석
+    async function analyzeScenario() {
+      const policy = document.getElementById('scenario-policy').value;
+      const district = document.getElementById('scenario-district').value;
+      const targets = Array.from(document.querySelectorAll('input[name="target"]:checked')).map(c => c.value).join(', ');
+
+      if (!policy || !targets) {
+        alert('정책 내용과 관심층을 선택해주세요.');
+        return;
+      }
+
+      document.getElementById('scenario-result').classList.add('show');
+      showLoading(document.getElementById('scenario-support'));
+
+      const prompt = `선거 전략 분석가로서 다음을 분석해주세요:
+
+정책: ${policy}
+선거구: ${district}
+관심층: ${targets}
+
+다음 형식으로 한국어로 상세 분석을 제공하세요:
+
+1. 예상 지지도 영향:
+   - 긍정적 영향 (%)
+   - 부정적 영향 (%)
+   - 중립 반응 (%)
+
+2. 계층별 반응:
+[각 관심층별로]
+
+3. 주의할 리스크:
+
+4. 강화 전략 3가지:`;
+
+      const response = await callGemini(prompt);
+      if (!response) return;
+
+      const lines = response.split('\n\n');
+      document.getElementById('scenario-support').textContent = lines[0] || '';
+      document.getElementById('scenario-response').textContent = lines[1] || '';
+      document.getElementById('scenario-risk').textContent = lines[2] || '';
+      document.getElementById('scenario-strategy').textContent = lines[3] || '';
+    }
+
+    function resetScenario() {
+      document.getElementById('scenario-policy').value = '';
+      document.querySelectorAll('input[name="target"]').forEach(c => c.checked = false);
+      document.getElementById('scenario-result').classList.remove('show');
+    }
+
+    // 탭 2: 설득 메시지 생성
+    async function generateMessage() {
+      const policy = document.getElementById('message-policy').value;
+      const target = document.getElementById('message-target').value;
+      const channel = document.getElementById('message-channel').value;
+      const tone = document.getElementById('message-tone').value;
+
+      if (!policy || !target || !channel || !tone) {
+        alert('모든 항목을 입력해주세요.');
+        return;
+      }
+
+      document.getElementById('message-result').classList.add('show');
+      showLoading(document.getElementById('message-main'));
+
+      const prompt = `광고 전문가로서 다음 기준에 맞는 설득 메시지를 작성해주세요:
+
+정책: ${policy}
+타겟: ${target}
+채널: ${channel}
+톤앤매너: ${tone}
+
+다음 형식으로 한국어로 제공하세요:
+
+[핵심 메시지 3개 - 각각 한 문장]
+1.
+2.
+3.
+
+[상세 설명 - 100단어]
+
+[감성 어필 포인트 3가지]
+
+[주의사항 - 피해야 할 표현 3가지]`;
+
+      const response = await callGemini(prompt);
+      if (!response) return;
+
+      const sections = response.split(/\[([^\]]+)\]/);
+      document.getElementById('message-main').textContent = sections[1] || '';
+      document.getElementById('message-detail').textContent = sections[3] || '';
+      document.getElementById('message-emotion').textContent = sections[5] || '';
+      document.getElementById('message-warning').textContent = sections[7] || '';
+    }
+
+    function resetMessage() {
+      document.getElementById('message-policy').value = '';
+      document.getElementById('message-result').classList.remove('show');
+    }
+
+    // 탭 3: 광고 카피 최적화
+    async function optimizeAdCopy() {
+      const copy = document.getElementById('ad-copy').value;
+      const goal = document.getElementById('ad-goal').value;
+      const channel = document.getElementById('ad-channel').value;
+      const age = document.getElementById('ad-age').value;
+
+      if (!copy) {
+        alert('원본 광고 카피를 입력해주세요.');
+        return;
+      }
+
+      document.getElementById('ad-result').classList.add('show');
+      showLoading(document.getElementById('ad-version-a'));
+
+      const prompt = `광고 카피라이터로서 다음 광고를 목표에 맞게 최적화해주세요:
+
+원본: ${copy}
+목표: ${goal}
+채널: ${channel}
+타겟 연령: ${age}
+
+다음 3가지 버전을 제공하세요:
+
+[Version A: 감성 어필]
+(감정과 공감에 호소하는 버전)
+
+[Version B: 논리/팩트]
+(데이터와 근거 기반 버전)
+
+[Version C: 긴급성/행동 유도]
+(지금 바로 행동하도록 유도하는 버전)
+
+[채널별 최적 버전 추천]
+(각 채널에 어떤 버전이 가장 효과적인지)`;
+
+      const response = await callGemini(prompt);
+      if (!response) return;
+
+      const sections = response.split(/\[([^\]]+)\]/);
+      document.getElementById('ad-version-a').textContent = sections[1] || '';
+      document.getElementById('ad-version-b').textContent = sections[3] || '';
+      document.getElementById('ad-version-c').textContent = sections[5] || '';
+      document.getElementById('ad-recommendation').textContent = sections[7] || '';
+    }
+
+    function resetAd() {
+      document.getElementById('ad-copy').value = '';
+      document.getElementById('ad-result').classList.remove('show');
+    }
+
+    // 탭 4: 영상 스크립트 생성
+    async function generateVideoScript() {
+      const topic = document.getElementById('video-topic').value;
+      const type = document.getElementById('video-type').value;
+      const platform = document.getElementById('video-platform').value;
+      const length = document.getElementById('video-length').value;
+      const candidate = document.getElementById('video-candidate').value;
+
+      if (!topic || !type || !platform || !length) {
+        alert('필수 항목을 입력해주세요.');
+        return;
+      }
+
+      document.getElementById('video-result').classList.add('show');
+      showLoading(document.getElementById('video-script'));
+
+      const prompt = `영상 제작 감독으로서 다음 스펙의 영상 스크립트를 작성해주세요:
+
+주제: ${topic}
+유형: ${type}
+플랫폼: ${platform}
+길이: ${length}
+후보자: ${candidate || '일반'}
+
+다음 형식으로 한국어로 제공하세요:
+
+[전체 스크립트]
+(씬 번호별로 시간 표기하며 대사 포함)
+
+[촬영 가이드]
+(각 씬별 촬영 장소, 앵글, 소품, 조명)
+
+[자막 텍스트]
+(영상 완성 후 자막으로 사용할 수 있는 핵심 텍스트)
+
+[음악/배경 추천]
+(분위기와 길이에 맞는 음악 스타일 및 배경음 추천)
+
+[완료율 팁]
+(시청자가 끝까지 보도록 하는 팁 3가지)`;
+
+      const response = await callGemini(prompt);
+      if (!response) return;
+
+      const sections = response.split(/\[([^\]]+)\]/);
+      document.getElementById('video-script').textContent = sections[1] || '';
+      document.getElementById('video-guide').textContent = sections[3] || '';
+      document.getElementById('video-subtitle').textContent = sections[5] || '';
+      document.getElementById('video-music').textContent = sections[7] || '';
+    }
+
+    function resetVideo() {
+      document.getElementById('video-topic').value = '';
+      document.getElementById('video-candidate').value = '';
+      document.getElementById('video-result').classList.remove('show');
+    }
+
+    // 복사 기능
+    function copyToClipboard(elementId) {
+      const element = document.getElementById(elementId);
+      const text = element.textContent;
+      navigator.clipboard.writeText(text).then(() => {
+        alert('복사되었습니다!');
+      }).catch(err => {
+        alert('복사 실패: ' + err);
+      });
+    }
+  </script>
+
+  <script>
+    // 사이드바 제목 동적 업데이트
+    function updateSidebarTitle() {
+      const candidateName = localStorage.getItem('candidateName') || '후보자';
+      const sidebarTitle = document.getElementById('sidebarTitle');
+      if (sidebarTitle) {
+        sidebarTitle.textContent = `🚨 ${candidateName} 선거 워룸`;
+      }
+    }
+
+    // 페이지 로드 시 실행
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', updateSidebarTitle);
+    } else {
+      updateSidebarTitle();
+    }
+
+    // localStorage 변경 감지 (다른 탭에서 변경 시)
+    window.addEventListener('storage', updateSidebarTitle);
+  </script>
+  <script src="../js/party-theme.js"></script>
+$scripts
+$scripts
+</body>
+</html>

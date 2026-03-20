@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI톡과 질문과 대화 — 선거 워룸</title>
+  <link rel="stylesheet" href="../css/theme.css">
+  <link rel="stylesheet" href="../css/responsive.css">
+  <style>
+    body { margin: 0; background-color: var(--bg-primary); display: flex; }
+
+    .sidebar { position: fixed; left: 0; top: 0; width: 240px; height: 100vh; background-color: var(--primary-color); z-index: 100; overflow-y: auto; padding: 0; margin: 0; box-shadow: 2px 0 4px rgba(0,0,0,0.1); }
+    .sidebar-header { padding: var(--space-lg); color: white; font-size: var(--font-size-lg); font-weight: 600; border-bottom: 1px solid rgba(255,255,255,0.2); margin: 0; }
+    .sidebar-nav ul { list-style: none; margin: 0; padding: 0; }
+    .sidebar-nav a { display: block; padding: var(--space-md) var(--space-lg); color: white; text-decoration: none; transition: background-color var(--transition-base); font-size: var(--font-size-sm); border-left: 4px solid transparent; }
+    .sidebar-nav a:hover { background-color: rgba(255,255,255,0.2); }
+    .sidebar-nav a.active { background-color: rgba(255,255,255,0.3); font-weight: 600; border-left-color: white; padding-left: calc(var(--space-lg) - 4px); }
+
+    main { flex: 1; margin-left: 240px; }
+    .container { max-width: 900px; margin: 0 auto; padding: var(--space-lg); }
+    .chat-container { max-width: 800px; margin: 0 auto; height: 600px; display: flex; flex-direction: column; }
+    .chat-messages { flex: 1; overflow-y: auto; border: 1px solid var(--text-secondary); border-radius: var(--radius-md); padding: var(--space-md); margin-bottom: var(--space-md); }
+    .message { margin-bottom: var(--space-md); padding: var(--space-md); border-radius: var(--radius-md); }
+    .message.user { background-color: var(--primary-light); color: white; text-align: right; }
+    .message.assistant { background-color: var(--bg-secondary); }
+    .input-area { display: flex; gap: var(--space-sm); }
+    .input-area input { flex: 1; padding: var(--space-md); border: 1px solid var(--text-secondary); border-radius: var(--radius-md); }
+
+    @media (max-width: 768px) {
+      .sidebar { width: 200px; }
+      main { margin-left: 200px; }
+      .sidebar-nav a { padding: var(--space-sm) var(--space-md); font-size: var(--font-size-xs); }
+    }
+
+    @media (max-width: 480px) {
+      .sidebar { width: 160px; }
+      main { margin-left: 160px; }
+      .sidebar-header { padding: var(--space-md); font-size: var(--font-size-base); }
+      .sidebar-nav a { padding: var(--space-xs) var(--space-sm); font-size: var(--font-size-xs); }
+    }
+  </style>
+</head>
+<body>
+  <aside class="sidebar">
+    <a href="../index.html" style="text-decoration: none;">
+      <div class="sidebar-header" id="sidebarTitle">🚨 선거 워룸</div>
+    </a>
+    <nav class="sidebar-nav">
+      <ul>
+        <li><a href="index.html">대시보드</a></li>
+        <li><a href="integrated-analysis.html">1.통합분석</a></li>
+        <li><a href="intelligence.html">2.판세정보 분석&비교</a></li>
+        <li><a href="strategy.html">3.전략 비교&추천</a></li>
+        <li><a href="pledges.html">4.공약 비교&추천</a></li>
+        <li><a href="vehicle-strategy.html">5.차량 전략</a></li>
+        <li><a href="online-sentiment-analysis.html">6.온라인 여론분석 비교&추천</a></li>
+        <li><a href="ai-chat.html" class="active">7.AI톡과 질문과 대화</a></li>
+        <li><a href="dashboard.html">8.대시보드</a></li>
+        <li><a href="blog.html">9.블로그-기사</a></li>
+        <li><a href="external-materials.html">10.외부자료 업로드</a></li>
+        <li><a href="warroom.html">11.워룸-위기대응센터</a></li>
+        <li><a href="reports.html">12.분석리포트 관리</a></li>
+        <li><a href="organization-chart.html">13.조직도</a></li>
+        <li><a href="ai-premium.html">14.AI 프리미엄 도구들</a></li>
+        <li><a href="settings.html">15.설정</a></li>
+      </ul>
+    </nav>
+  </aside>
+
+  <main>
+    <div class="container">
+    <h1>💬 AI톡과 질문과 대화</h1>
+
+    <div class="chat-container">
+      <div class="chat-messages" id="chat-messages">
+        <div class="message assistant">
+          <strong id="ai-welcome-title">🤖 AI 도우미</strong>
+          <p id="ai-welcome-message">안녕하세요! 정치 분석에 대해 궁금한 점을 물어보세요.</p>
+          <p id="ai-welcome-context" style="font-size: 0.9em; color: #888; margin-top: 8px; padding: 8px; background-color: rgba(255,255,255,0.05); border-left: 3px solid var(--primary-color);">
+            💡 모든 분석은 후보자님의 관점에서 경쟁자, 유권자, 지역구를 중심으로 진행됩니다.
+          </p>
+          <p style="font-size: 0.85em; color: #888; margin-top: 8px;">
+            📚 <strong>RAG 기능:</strong> <a href="../pages/external-materials.html" style="color: var(--primary-color); text-decoration: underline;">📂 외부자료</a>에 업로드한 파일들을 자동으로 분석하여 더 정확한 답변을 제공합니다.
+          </p>
+        </div>
+      </div>
+
+      <div class="input-area">
+        <input type="text" id="message-input" placeholder="질문을 입력하세요..." onkeypress="if(event.key==='Enter') sendMessage()">
+        <button class="btn btn-primary" onclick="sendMessage()">전송</button>
+      </div>
+    </div>
+
+    <h3 style="margin-top: var(--space-lg);">💡 추천 질문 (클릭하세요)</h3>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: var(--space-md);">
+      <button class="btn btn-secondary" onclick="askQuestion('현재 우리의 지지층 구성은 어떻게 되며, 어느 연령대에서 가장 강세를 보이고 있는가?')" style="cursor: pointer; text-align: left; white-space: normal; padding: var(--space-md);">📊 지지층 분석</button>
+      <button class="btn btn-secondary" onclick="askQuestion('주요 경쟁자는 누구이며, 경쟁자의 강점과 약점은 무엇인가?')" style="cursor: pointer; text-align: left; white-space: normal; padding: var(--space-md);">⚔️ 경쟁자 전략</button>
+      <button class="btn btn-secondary" onclick="askQuestion('우리 지역구의 주요 이슈는 무엇이고, 유권자들이 가장 관심 있는 정책은 무엇인가?')" style="cursor: pointer; text-align: left; white-space: normal; padding: var(--space-md);">📍 지역 이슈 분석</button>
+      <button class="btn btn-secondary" onclick="askQuestion('현재 지지율 추세는 어떻게 되고 있으며, 다음 달까지 어느 정도 상승시킬 수 있을까?')" style="cursor: pointer; text-align: left; white-space: normal; padding: var(--space-md);">📈 지지율 전망</button>
+      <button class="btn btn-secondary" onclick="askQuestion('우리의 핵심 공약과 경쟁자의 공약을 비교했을 때 차이점은 무엇인가?')" style="cursor: pointer; text-align: left; white-space: normal; padding: var(--space-md);">📋 공약 비교</button>
+      <button class="btn btn-secondary" onclick="askQuestion('이번 주 선거 운동의 우선순위는 무엇이고, 어느 지역에 집중해야 하는가?')" style="cursor: pointer; text-align: left; white-space: normal; padding: var(--space-md);">🎯 주간 운동 전략</button>
+      <button class="btn btn-secondary" onclick="askQuestion('중장년층과 청년층 각각을 대상으로 한 맞춤형 메시지 전략을 제안해 주십시오.')" style="cursor: pointer; text-align: left; white-space: normal; padding: var(--space-md);">💬 세대별 메시징</button>
+      <button class="btn btn-secondary" onclick="askQuestion('SNS와 전통 미디어를 활용한 최적의 홍보 전략은 무엇인가?')" style="cursor: pointer; text-align: left; white-space: normal; padding: var(--space-md);">📱 미디어 전략</button>
+      <button class="btn btn-secondary" onclick="askQuestion('현재 우리의 강점을 극대화하고 약점을 보완하기 위한 종합 전략을 수립해 주십시오.')" style="cursor: pointer; text-align: left; white-space: normal; padding: var(--space-md);">💪 SWOT 기반 전략</button>
+      <button class="btn btn-secondary" onclick="askQuestion('선거까지 남은 기간 동안 실행해야 할 단계별 액션 플랜을 제시해 주십시오.')" style="cursor: pointer; text-align: left; white-space: normal; padding: var(--space-md);">📅 선거 준비 로드맵</button>
+    </div>
+  </div>
+
+    </div>
+  </main>
+
+  <script src="../js/file-store.js"></script>
+  <script src="../js/ui.js"></script>
+  <script src="../js/api-client.js"></script>
+  <script>
+    // RAG를 위한 파일 내용 추출
+    async function extractTextFromFiles() {
+      try {
+        // RAG 전용 파일만 추출 (rag-only 타입)
+        const ragFiles = await FileStore.getFilesByType('rag-only');
+        const textContent = {};
+
+        for (const file of ragFiles) {
+          if (!file.fileData) continue;
+
+          try {
+            // PDF 파일 처리
+            if (file.mimeType === 'application/pdf' || file.name.endsWith('.pdf')) {
+              // PDF에서 텍스트 추출 (간단한 방식)
+              const blob = new Blob([file.fileData], { type: 'application/pdf' });
+              const text = await extractTextFromPDF(blob);
+              textContent[file.name] = text.substring(0, 2000); // 처음 2000자만 사용
+            }
+            // 텍스트 파일 처리 (TXT, JSON, CSV, MD 등)
+            else if (file.mimeType.includes('text') ||
+                file.name.endsWith('.txt') ||
+                file.name.endsWith('.json') ||
+                file.name.endsWith('.csv') ||
+                file.name.endsWith('.md')) {
+              const blob = new Blob([file.fileData], { type: file.mimeType });
+              const text = await blob.text();
+              textContent[file.name] = text.substring(0, 2000);
+            }
+          } catch (e) {
+            console.log('파일 추출 실패:', file.name, e);
+          }
+        }
+
+        return textContent;
+      } catch (error) {
+        console.error('RAG 파일 추출 오류:', error);
+        return {};
+      }
+    }
+
+    // PDF에서 간단하게 텍스트 추출 (PDF.js 없이)
+    async function extractTextFromPDF(blob) {
+      try {
+        const arrayBuffer = await blob.arrayBuffer();
+        const bytes = new Uint8Array(arrayBuffer);
+        let text = '';
+
+        // PDF 파일에서 ASCII 텍스트만 추출 (간단한 방식)
+        for (let i = 0; i < bytes.length; i++) {
+          const byte = bytes[i];
+          if (byte >= 32 && byte <= 126) {
+            text += String.fromCharCode(byte);
+          } else if (byte === 10 || byte === 13) {
+            text += ' ';
+          }
+        }
+
+        return text.replace(/\s+/g, ' '); // 다중 공백 제거
+      } catch (error) {
+        console.error('PDF 추출 실패:', error);
+        return '';
+      }
+    }
+
+    async function sendMessage() {
+      const input = document.getElementById('message-input');
+      const message = input.value.trim();
+      if (!message) return;
+
+      askQuestion(message);
+      input.value = '';
+    }
+
+    async function askQuestion(question) {
+      const messagesDiv = document.getElementById('chat-messages');
+
+      // 사용자 메시지 표시
+      const userMsg = document.createElement('div');
+      userMsg.className = 'message user';
+      userMsg.innerHTML = `<p>${question}</p>`;
+      messagesDiv.appendChild(userMsg);
+      messagesDiv.scrollTop = messagesDiv.scrollHeight;
+
+      try {
+        // 저장된 Gemini API 키 확인
+        const apiKey = localStorage.getItem('geminiApiKey');
+        const model = localStorage.getItem('geminiModel') || 'gemini-2.0-flash';
+
+        if (!apiKey) {
+          throw new Error('Gemini API 키가 설정되지 않았습니다. 설정 페이지에서 API 키를 입력하세요.');
+        }
+
+        // 후보자 정보 로드
+        const candidateName = localStorage.getItem('candidateName') || '후보자';
+        const electionRegion = localStorage.getItem('electionRegion') || '지역';
+        const electionType = localStorage.getItem('electionType') || '선거';
+
+        // 로딩 메시지 표시
+        const loadingMsg = document.createElement('div');
+        loadingMsg.className = 'message assistant';
+        loadingMsg.innerHTML = `<strong>AI</strong><p>💭 분석 중... (${candidateName}님의 관점에서 분석 중)</p>`;
+        loadingMsg.id = 'loading-msg';
+        messagesDiv.appendChild(loadingMsg);
+        messagesDiv.scrollTop = messagesDiv.scrollHeight;
+
+        // RAG: 외부자료에서 관련 파일 추출
+        const fileContents = await extractTextFromFiles();
+        let ragContext = '';
+        let usedFiles = [];
+
+        if (Object.keys(fileContents).length > 0) {
+          // 질문과 관련된 파일 내용을 프롬프트에 포함
+          ragContext = '다음은 참고할 수 있는 업로드된 자료입니다:\n\n';
+          let fileCount = 0;
+          for (const [fileName, content] of Object.entries(fileContents)) {
+            if (fileCount < 3) { // 최대 3개 파일만 사용
+              ragContext += `[${fileName}]\n${content}\n\n`;
+              usedFiles.push(fileName);
+              fileCount++;
+            }
+          }
+        }
+
+        // 시스템 프롬프트: 후보자 기준 분석 명시
+        const systemPrompt = `당신은 "${candidateName}" 후보자의 정치 전략 자문역입니다.
+
+【 당신의 역할 】
+- 후보자: ${candidateName}
+- 선거 지역: ${electionRegion}
+- 선거 유형: ${electionType}
+
+【 핵심 지침 】
+1. 항상 ${candidateName} 후보자의 관점에서 분석합니다
+2. 경쟁자의 강점/약점을 파악하고 대응 전략을 제시합니다
+3. ${electionRegion} 지역의 유권자 특성을 고려합니다
+4. 정책, 지지층, 여론, 전략 등을 ${candidateName}의 이익 관점에서 분석합니다
+
+【 답변 방식 】
+- "우리 후보자(${candidateName})의 입장에서..." 로 시작
+- 경쟁자와의 비교 분석
+- ${electionRegion} 지역의 유권자 특성 반영
+- 구체적인 전략 제안
+- 절대 중립적이거나 일반적인 답변은 하지 않기
+
+모든 답변은 "${candidateName}" 후보자의 선거 승리를 목표로 합니다.`;
+
+        // Gemini API 호출 (RAG + 시스템 프롬프트 포함)
+        const requestBody = {
+          systemInstruction: {
+            parts: [{
+              text: systemPrompt
+            }]
+          },
+          contents: [{
+            parts: [{
+              text: ragContext ? `다음 자료를 참고하여 답변해주세요:\n\n${ragContext}\n질문: ${question}` : question
+            }]
+          }],
+          generationConfig: {
+            temperature: 0.7,
+            topK: 40,
+            topP: 0.95,
+            maxOutputTokens: 2048
+          }
+        };
+
+        const response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/' + model + ':generateContent?key=' + apiKey, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(requestBody)
+        });
+
+        // 로딩 메시지 제거
+        const loadingElement = document.getElementById('loading-msg');
+        if (loadingElement) {
+          loadingElement.remove();
+        }
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error?.message || 'API 호출 실패');
+        }
+
+        const data = await response.json();
+        const answer = data.candidates[0]?.content?.parts[0]?.text || '응답을 받지 못했습니다.';
+
+        // AI 응답 표시
+        let htmlContent = `<strong>🤖 ${candidateName}님 전용 AI 분석</strong>`;
+        htmlContent += `<div style="font-size: 0.9em; color: #888; margin-bottom: 10px; padding: 8px; background-color: rgba(255,255,255,0.05); border-left: 3px solid var(--primary-color);">
+          👤 분석관점: ${candidateName} 후보자 | 📍 지역: ${electionRegion} | 🗳️ ${electionType}
+        </div>`;
+        htmlContent += `<p>${answer.replace(/\n/g, '<br>')}</p>`;
+
+        // 사용된 자료 표시
+        if (usedFiles.length > 0) {
+          htmlContent += `<div style="margin-top: 12px; padding: 10px; background-color: rgba(255,255,255,0.1); border-radius: 4px; font-size: 0.85em; color: #888;">
+            📚 참고 자료: ${usedFiles.join(', ')}
+          </div>`;
+        } else {
+          htmlContent += `<div style="margin-top: 12px; padding: 10px; background-color: rgba(255,255,255,0.1); border-radius: 4px; font-size: 0.85em; color: #888;">
+            💡 Tip: <a href="../pages/external-materials.html" style="color: var(--primary-color); text-decoration: underline;">📂 외부자료</a>에 파일을 업로드하면 더 정확한 답변을 받을 수 있습니다.
+          </div>`;
+        }
+
+        const assistantMsg = document.createElement('div');
+        assistantMsg.className = 'message assistant';
+        assistantMsg.innerHTML = htmlContent;
+        messagesDiv.appendChild(assistantMsg);
+        messagesDiv.scrollTop = messagesDiv.scrollHeight;
+      } catch (error) {
+        const errorMsg = document.createElement('div');
+        errorMsg.className = 'message assistant';
+        errorMsg.innerHTML = `<strong>⚠️ 오류</strong><p>${error.message}</p><p style="font-size: 0.9em; color: #666; margin-top: 8px;">💡 <strong>해결 방법:</strong><br><a href="../pages/settings.html" style="color: var(--primary-color); text-decoration: none;">⚙️ 설정 페이지</a>에서 Gemini API 키를 입력하세요.</p>`;
+        messagesDiv.appendChild(errorMsg);
+        messagesDiv.scrollTop = messagesDiv.scrollHeight;
+      }
+    }
+
+    // 페이지 로드 시 후보자 정보로 웰컴 메시지 업데이트
+    function updateWelcomeMessage() {
+      const candidateName = localStorage.getItem('candidateName') || '후보자';
+      const electionRegion = localStorage.getItem('electionRegion') || '지역';
+      const electionType = localStorage.getItem('electionType') || '선거';
+
+      const welcomeTitle = document.getElementById('ai-welcome-title');
+      const welcomeMessage = document.getElementById('ai-welcome-message');
+      const welcomeContext = document.getElementById('ai-welcome-context');
+
+      if (welcomeTitle) {
+        welcomeTitle.textContent = `🤖 ${candidateName}님의 AI 정책 자문역`;
+      }
+      if (welcomeMessage) {
+        welcomeMessage.textContent = `안녕하세요! ${candidateName} 후보자님의 선거 승리를 위한 AI 전략 분석입니다.`;
+      }
+      if (welcomeContext) {
+        welcomeContext.innerHTML = `👤 분석대상: ${candidateName} 후보자 | 📍 선거지역: ${electionRegion} | 🗳️ ${electionType}<br>💡 모든 분석은 ${candidateName}님 관점에서 경쟁자, 유권자, 지역구를 중심으로 진행됩니다.`;
+      }
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', updateWelcomeMessage);
+    } else {
+      updateWelcomeMessage();
+    }
+  </script>
+  <script src="../js/party-theme.js"></script>
+$scripts
+</body>
+
+  <script>
+    // 로컬 파일 프로토콜용 테마 초기화
+    if (typeof window.PartyTheme === 'undefined') {
+      function applyThemeFromStorage() {
+        const partyColors = {
+          dem: { bgPrimary: '#F0F4F9', bgSecondary: '#DFE8F5', bgTertiary: '#CEDCE8', primary: '#003D82', light: '#1A5BA8', dark: '#00265B', textPrimary: '#001F3F' },
+          ppp: { bgPrimary: '#FFF5F6', bgSecondary: '#FFE0E5', bgTertiary: '#FFD0D8', primary: '#E61E28', light: '#FF3D47', dark: '#B71620', textPrimary: '#8B0D15' },
+          reform: { bgPrimary: '#f0fdf4', bgSecondary: '#dbeafe', bgTertiary: '#d1f2eb', primary: '#10b981', light: '#34d399', dark: '#059669', textPrimary: '#065f46' },
+          liberty: { bgPrimary: '#fff5f7', bgSecondary: '#ffe0e6', bgTertiary: '#ffc0d0', primary: '#c41e3a', light: '#e24d5e', dark: '#a01630', textPrimary: '#7f0a1a' },
+          renewal: { bgPrimary: '#fefce8', bgSecondary: '#fef08a', bgTertiary: '#fde047', primary: '#f59e0b', light: '#fbbf24', dark: '#d97706', textPrimary: '#713f12' },
+          independent: { bgPrimary: '#f9fafb', bgSecondary: '#f3f4f6', bgTertiary: '#e5e7eb', primary: '#9ca3af', light: '#d1d5db', dark: '#4b5563', textPrimary: '#374151' }
+        };
+        const party = localStorage.getItem('selectedParty') || 'dem';
+        const colors = partyColors[party];
+        const root = document.documentElement;
+        root.style.setProperty('--primary-color', colors.primary);
+        root.style.setProperty('--primary-light', colors.light);
+        root.style.setProperty('--primary-dark', colors.dark);
+        root.style.setProperty('--bg-primary', colors.bgPrimary);
+        root.style.setProperty('--bg-secondary', colors.bgSecondary);
+        root.style.setProperty('--bg-tertiary', colors.bgTertiary);
+        root.style.setProperty('--text-primary', colors.textPrimary);
+        root.setAttribute('data-party', party);
+      }
+      document.readyState === 'loading' ? document.addEventListener('DOMContentLoaded', applyThemeFromStorage) : applyThemeFromStorage();
+    }
+  </script>
+
+  <script>
+    // 사이드바 제목 동적 업데이트
+    function updateSidebarTitle() {
+      const candidateName = localStorage.getItem('candidateName') || '후보자';
+      const sidebarTitle = document.getElementById('sidebarTitle');
+      if (sidebarTitle) {
+        sidebarTitle.textContent = `🚨 ${candidateName} 선거 워룸`;
+      }
+    }
+
+    // 페이지 로드 시 실행
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', updateSidebarTitle);
+    } else {
+      updateSidebarTitle();
+    }
+
+    // localStorage 변경 감지 (다른 탭에서 변경 시)
+    window.addEventListener('storage', updateSidebarTitle);
+  </script>
+</html>

@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>설정 테스트</title>
+  <style>
+    :root {
+      --primary-color: #003D82;
+      --primary-light: #1A5BA8;
+      --primary-dark: #00265B;
+      --bg-primary: #F0F4F9;
+      --bg-secondary: #DFE8F5;
+      --text-primary: #001F3F;
+      --text-secondary: #666;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background-color: var(--bg-primary);
+      transition: background-color 0.3s ease;
+    }
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      background: white;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    h1 {
+      color: var(--primary-color);
+      margin-top: 0;
+      transition: color 0.3s ease;
+    }
+    label {
+      display: block;
+      margin: 15px 0 5px 0;
+      font-weight: bold;
+      color: var(--text-primary);
+      transition: color 0.3s ease;
+    }
+    input, select {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 15px;
+      border: 2px solid var(--bg-secondary);
+      border-radius: 4px;
+      font-size: 14px;
+      box-sizing: border-box;
+      transition: all 0.3s ease;
+    }
+    input:focus, select:focus {
+      outline: none;
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.1);
+    }
+    button {
+      background: linear-gradient(135deg, var(--primary-color), var(--primary-light));
+      color: white;
+      padding: 12px 24px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      width: 100%;
+    }
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    }
+    button:active {
+      transform: translateY(0);
+    }
+    .theme-indicator {
+      padding: 15px;
+      background: linear-gradient(135deg, var(--primary-color), var(--primary-light));
+      color: white;
+      border-radius: 4px;
+      margin-top: 20px;
+      text-align: center;
+      font-weight: 600;
+      transition: all 0.3s ease;
+    }
+    .info-box {
+      margin-top: 30px;
+      padding: 15px;
+      background: var(--bg-primary);
+      border-left: 4px solid var(--primary-color);
+      border-radius: 4px;
+      transition: all 0.3s ease;
+    }
+    .info-box h3 {
+      margin-top: 0;
+      color: var(--primary-color);
+      transition: color 0.3s ease;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>⚙️ 설정 - 테스트</h1>
+
+    <label for="candidateName">👤 후보자명</label>
+    <input type="text" id="candidateName" placeholder="예: 김철수" />
+
+    <label for="electionRegion">📍 선거지역</label>
+    <input type="text" id="electionRegion" placeholder="예: 서울시 동작구" />
+
+    <label for="electionType">🗳️ 선거유형</label>
+    <select id="electionType">
+      <option value="">선택해주세요</option>
+      <option value="presidential">대통령 선거</option>
+      <option value="parliamentary">국회의원 선거</option>
+      <option value="local-governor">지방자치단체장 선거</option>
+      <option value="local-council">지방의회의원 선거</option>
+      <option value="by-election">재선거/보궐선거</option>
+    </select>
+
+    <label for="party">📍 소속정당</label>
+    <select id="party" onchange="onPartyChange()">
+      <option value="dem">더불어민주당</option>
+      <option value="ppp">국민의힘</option>
+      <option value="reform">조국혁신당</option>
+      <option value="liberty">자유와혁신</option>
+      <option value="renewal">개혁신당</option>
+      <option value="independent">무소속</option>
+    </select>
+
+    <div class="theme-indicator" id="themeIndicator">
+      현재 테마: 더불어민주당 🔷
+    </div>
+
+    <button onclick="saveSettings()">💾 설정 저장</button>
+
+    <div class="info-box">
+      <h3>✅ 저장된 정보</h3>
+      <p><strong>후보자명:</strong> <span id="displayCandidate">미설정</span></p>
+      <p><strong>선거지역:</strong> <span id="displayRegion">미설정</span></p>
+      <p><strong>선거유형:</strong> <span id="displayType">미설정</span></p>
+      <p><strong>정당:</strong> <span id="displayParty">미설정</span></p>
+    </div>
+
+    <p style="text-align: center; color: var(--text-secondary); font-size: 12px; margin-top: 20px;">
+      <a href="../index.html" style="color: var(--primary-color); text-decoration: none;">← 홈으로</a>
+    </p>
+  </div>
+
+  <script>
+    // 정당별 색상 (party-theme.js와 동일)
+    const partyColors = {
+      dem: {
+        name: '더불어민주당',
+        primary: '#003D82',
+        light: '#1A5BA8',
+        dark: '#00265B',
+        emoji: '🔷'
+      },
+      ppp: {
+        name: '국민의힘',
+        primary: '#E61E28',
+        light: '#FF3D47',
+        dark: '#B71620',
+        emoji: '🔴'
+      },
+      reform: {
+        name: '조국혁신당',
+        primary: '#10b981',
+        light: '#34d399',
+        dark: '#059669',
+        emoji: '💚'
+      },
+      liberty: {
+        name: '자유와혁신',
+        primary: '#c41e3a',
+        light: '#e24d5e',
+        dark: '#a01630',
+        emoji: '❤️'
+      },
+      renewal: {
+        name: '개혁신당',
+        primary: '#f59e0b',
+        light: '#fbbf24',
+        dark: '#d97706',
+        emoji: '🟧'
+      },
+      independent: {
+        name: '무소속',
+        primary: '#9ca3af',
+        light: '#d1d5db',
+        dark: '#4b5563',
+        emoji: '⚪'
+      }
+    };
+
+    const electionTypeLabels = {
+      '': '미설정',
+      'presidential': '대통령 선거',
+      'parliamentary': '국회의원 선거',
+      'local-governor': '지방자치단체장 선거',
+      'local-council': '지방의회의원 선거',
+      'by-election': '재선거/보궐선거'
+    };
+
+    // 현재 파티 색상 적용
+    function applyPartyTheme(party) {
+      const colors = partyColors[party] || partyColors.dem;
+      const root = document.documentElement;
+
+      root.style.setProperty('--primary-color', colors.primary);
+      root.style.setProperty('--primary-light', colors.light);
+      root.style.setProperty('--primary-dark', colors.dark);
+
+      // 테마 표시 업데이트
+      const indicator = document.getElementById('themeIndicator');
+      if (indicator) {
+        indicator.textContent = `현재 테마: ${colors.name} ${colors.emoji}`;
+      }
+
+      console.log(`[SettingsTest] Theme applied: ${colors.name}`);
+    }
+
+    // 정당 선택 변경 시 실시간 테마 적용
+    function onPartyChange() {
+      const party = document.getElementById('party').value || 'dem';
+      applyPartyTheme(party);
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      // 저장된 데이터 불러오기
+      document.getElementById('candidateName').value = localStorage.getItem('candidateName') || '';
+      document.getElementById('electionRegion').value = localStorage.getItem('electionRegion') || '';
+      document.getElementById('electionType').value = localStorage.getItem('electionType') || '';
+      const savedParty = localStorage.getItem('selectedParty') || 'dem';
+      document.getElementById('party').value = savedParty;
+
+      // 저장된 정당의 테마 적용
+      applyPartyTheme(savedParty);
+
+      // 표시값 업데이트
+      updateDisplay();
+    });
+
+    function saveSettings() {
+      const candidate = document.getElementById('candidateName').value;
+      const region = document.getElementById('electionRegion').value;
+      const type = document.getElementById('electionType').value;
+      const party = document.getElementById('party').value;
+
+      localStorage.setItem('candidateName', candidate);
+      localStorage.setItem('electionRegion', region);
+      localStorage.setItem('electionType', type);
+      localStorage.setItem('selectedParty', party);
+
+      // party-theme.js와 동기화
+      if (typeof window.PartyTheme !== 'undefined') {
+        window.PartyTheme.setParty(party);
+      }
+
+      updateDisplay();
+      alert('✅ 설정이 저장되었습니다! 모든 페이지에 테마가 적용됩니다.');
+    }
+
+    function updateDisplay() {
+      const candidate = localStorage.getItem('candidateName') || '미설정';
+      const region = localStorage.getItem('electionRegion') || '미설정';
+      const type = localStorage.getItem('electionType') || '';
+      const party = partyColors[localStorage.getItem('selectedParty') || 'dem'].name;
+
+      document.getElementById('displayCandidate').textContent = candidate;
+      document.getElementById('displayRegion').textContent = region;
+      document.getElementById('displayType').textContent = electionTypeLabels[type] || '미설정';
+      document.getElementById('displayParty').textContent = party;
+    }
+  </script>
+  <script src="../js/party-theme.js"></script>
+</body>
+</html>

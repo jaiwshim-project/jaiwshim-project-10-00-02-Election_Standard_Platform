@@ -1,0 +1,27 @@
+{
+  "name": "election-war-room",
+  "version": "1.0.0",
+  "description": "AI-powered Election War Room Platform - Real-time Crisis Response & Strategy",
+  "main": "server/api/main.py",
+  "scripts": {
+    "start": "python -m uvicorn server.api.main:app --host 0.0.0.0 --port 8000",
+    "dev": "python -m uvicorn server.api.main:app --reload",
+    "test": "pytest tests/ -v",
+    "lint": "flake8 server/",
+    "format": "black server/"
+  },
+  "dependencies": {
+    "python": "^3.10"
+  },
+  "devDependencies": {
+    "pytest": "^7.0",
+    "black": "^23.0",
+    "flake8": "^6.0"
+  },
+  "engines": {
+    "node": ">=16.0.0",
+    "python": ">=3.10"
+  },
+  "author": "Election War Room Team",
+  "license": "MIT"
+}

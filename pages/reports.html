@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>리포트 관리 — 선거 워룸</title>
+  <link rel="stylesheet" href="../css/theme.css">
+  <link rel="stylesheet" href="../css/responsive.css">
+  <style>
+    body { margin: 0; background-color: var(--bg-primary); display: flex; }
+
+    .sidebar { position: fixed; left: 0; top: 0; width: 240px; height: 100vh; background-color: var(--primary-color); z-index: 100; overflow-y: auto; padding: 0; margin: 0; box-shadow: 2px 0 4px rgba(0,0,0,0.1); }
+    .sidebar-header { padding: var(--space-lg); color: white; font-size: var(--font-size-lg); font-weight: 600; border-bottom: 1px solid rgba(255,255,255,0.2); margin: 0; }
+    .sidebar-nav ul { list-style: none; margin: 0; padding: 0; }
+    .sidebar-nav a { display: block; padding: var(--space-md) var(--space-lg); color: white; text-decoration: none; transition: background-color var(--transition-base); font-size: var(--font-size-sm); border-left: 4px solid transparent; }
+    .sidebar-nav a:hover { background-color: rgba(255,255,255,0.2); }
+    .sidebar-nav a.active { background-color: rgba(255,255,255,0.3); font-weight: 600; border-left-color: white; padding-left: calc(var(--space-lg) - 4px); }
+
+    main { flex: 1; margin-left: 240px; }
+    .container { max-width: 1200px; margin: 0 auto; padding: var(--space-lg); }
+
+    @media (max-width: 768px) {
+      .sidebar { width: 200px; }
+      main { margin-left: 200px; }
+      .sidebar-nav a { padding: var(--space-sm) var(--space-md); font-size: var(--font-size-xs); }
+    }
+
+    @media (max-width: 480px) {
+      .sidebar { width: 160px; }
+      main { margin-left: 160px; }
+      .sidebar-header { padding: var(--space-md); font-size: var(--font-size-base); }
+      .sidebar-nav a { padding: var(--space-xs) var(--space-sm); font-size: var(--font-size-xs); }
+    }
+    .report-table { width: 100%; border-collapse: collapse; margin-top: var(--space-lg); }
+    .report-table th { background-color: var(--primary-color); color: white; padding: var(--space-md); text-align: left; border-radius: var(--radius-md) var(--radius-md) 0 0; }
+    .report-table td { padding: var(--space-md); border-bottom: 1px solid var(--bg-secondary); }
+    .report-table tr:hover { background-color: var(--bg-secondary); }
+    .status-badge { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: var(--font-size-sm); font-weight: 600; }
+    .status-ready { background-color: #d4edda; color: #155724; }
+    .status-processing { background-color: #fff3cd; color: #856404; }
+    .status-error { background-color: #f8d7da; color: #721c24; }
+    .upload-area { border: 2px dashed var(--primary-color); border-radius: var(--radius-md); padding: var(--space-lg); text-align: center; background-color: var(--bg-secondary); }
+    .upload-area:hover { background-color: var(--primary-light); opacity: 0.1; }
+    .report-detail { margin-top: var(--space-lg); padding: var(--space-lg); background-color: var(--bg-secondary); border-radius: var(--radius-md); }
+    .file-icon { font-size: 24px; margin-right: var(--space-sm); }
+  </style>
+</head>
+<body>
+  <aside class="sidebar">
+    <a href="../index.html" style="text-decoration: none;">
+      <div class="sidebar-header" id="sidebarTitle">🚨 선거 워룸</div>
+    </a>
+    <nav class="sidebar-nav">
+      <ul>
+        <li><a href="index.html">대시보드</a></li>
+        <li><a href="integrated-analysis.html">1.통합분석</a></li>
+        <li><a href="intelligence.html">2.판세정보 분석&비교</a></li>
+        <li><a href="strategy.html">3.전략 비교&추천</a></li>
+        <li><a href="pledges.html">4.공약 비교&추천</a></li>
+        <li><a href="vehicle-strategy.html">5.차량 전략</a></li>
+        <li><a href="online-sentiment-analysis.html">6.온라인 여론분석 비교&추천</a></li>
+        <li><a href="ai-chat.html">7.AI톡과 질문과 대화</a></li>
+        <li><a href="dashboard.html">8.대시보드</a></li>
+        <li><a href="blog.html">9.블로그-기사</a></li>
+        <li><a href="external-materials.html">10.외부자료 업로드</a></li>
+        <li><a href="warroom.html">11.워룸-위기대응센터</a></li>
+        <li><a href="reports.html" class="active">12.분석리포트 관리</a></li>
+        <li><a href="organization-chart.html">13.조직도</a></li>
+        <li><a href="ai-premium.html">14.AI 프리미엄 도구들</a></li>
+        <li><a href="settings.html">15.설정</a></li>
+      </ul>
+    </nav>
+  </aside>
+
+  <main>
+    <div class="container">
+    <h1>📄 리포트 관리</h1>
+    <p style="color: var(--text-secondary);">분석 리포트 업로드 및 관리. PDF 문서는 자동으로 분석됩니다.</p>
+
+    <!-- 업로드 섹션 -->
+    <div style="margin-top: var(--space-lg);">
+      <h2>📤 새로운 리포트 업로드</h2>
+      <div class="upload-area" id="upload-area">
+        <div style="font-size: 32px; margin-bottom: var(--space-md);">📁</div>
+        <p><strong>PDF 파일을 여기로 드래그하거나</strong></p>
+        <input type="file" id="file-input" accept=".pdf" style="margin-top: var(--space-md);">
+        <p style="font-size: var(--font-size-sm); color: var(--text-secondary);">최대 파일 크기: 10MB</p>
+      </div>
+    </div>
+
+    <!-- 진행률 표시 -->
+    <div id="upload-progress" style="display: none; margin-top: var(--space-lg);">
+      <h3>업로드 진행 중...</h3>
+      <div style="background-color: var(--bg-secondary); border-radius: var(--radius-sm); height: 20px; overflow: hidden;">
+        <div id="progress-bar" style="background-color: var(--primary-color); height: 100%; width: 0%; transition: width var(--transition-base);"></div>
+      </div>
+      <p id="upload-status" style="margin-top: var(--space-sm); font-size: var(--font-size-sm); color: var(--text-secondary);">0%</p>
+    </div>
+
+    <!-- 업로드된 리포트 목록 -->
+    <div style="margin-top: var(--space-xl);">
+      <h2>📚 업로드된 리포트</h2>
+
+      <table class="report-table">
+        <thead>
+          <tr>
+            <th>파일명</th>
+            <th>업로드일</th>
+            <th>크기</th>
+            <th>상태</th>
+            <th>조치</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="file-icon">📄</span>여론조사_결과_2026-03.pdf</td>
+            <td>2026-03-18</td>
+            <td>2.3MB</td>
+            <td><span class="status-badge status-ready">완료</span></td>
+            <td>
+              <button class="btn btn-secondary" onclick="viewReport('report-1')" style="padding: var(--space-sm); font-size: var(--font-size-sm);">보기</button>
+              <button class="btn btn-secondary" onclick="downloadReport('report-1')" style="padding: var(--space-sm); font-size: var(--font-size-sm); margin-left: var(--space-sm);">다운로드</button>
+            </td>
+          </tr>
+          <tr>
+            <td><span class="file-icon">📄</span>경쟁자_분석_리포트.pdf</td>
+            <td>2026-03-16</td>
+            <td>1.8MB</td>
+            <td><span class="status-badge status-ready">완료</span></td>
+            <td>
+              <button class="btn btn-secondary" onclick="viewReport('report-2')" style="padding: var(--space-sm); font-size: var(--font-size-sm);">보기</button>
+              <button class="btn btn-secondary" onclick="downloadReport('report-2')" style="padding: var(--space-sm); font-size: var(--font-size-sm); margin-left: var(--space-sm);">다운로드</button>
+            </td>
+          </tr>
+          <tr>
+            <td><span class="file-icon">📄</span>지역_정서_분석.pdf</td>
+            <td>2026-03-14</td>
+            <td>3.1MB</td>
+            <td><span class="status-badge status-processing">처리 중</span></td>
+            <td>
+              <span style="font-size: var(--font-size-sm); color: var(--text-secondary);">처리 진행 중...</span>
+            </td>
+          </tr>
+          <tr>
+            <td><span class="file-icon">📄</span>정책_공약_분석.pdf</td>
+            <td>2026-03-12</td>
+            <td>2.5MB</td>
+            <td><span class="status-badge status-ready">완료</span></td>
+            <td>
+              <button class="btn btn-secondary" onclick="viewReport('report-3')" style="padding: var(--space-sm); font-size: var(--font-size-sm);">보기</button>
+              <button class="btn btn-secondary" onclick="downloadReport('report-3')" style="padding: var(--space-sm); font-size: var(--font-size-sm); margin-left: var(--space-sm);">다운로드</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- 리포트 상세 조회 -->
+    <div id="report-detail" class="report-detail" style="display: none;">
+      <h2 id="report-title">리포트 제목</h2>
+      <div id="report-content" style="margin-top: var(--space-lg); line-height: 1.8;">
+        <!-- 동적으로 채워짐 -->
+      </div>
+      <button class="btn btn-secondary" onclick="document.getElementById('report-detail').style.display='none'" style="margin-top: var(--space-lg);">닫기</button>
+    </div>
+
+    <!-- 정책별 평가 분석 그래프 -->
+    <div style="margin-top: var(--space-xl);">
+      <h2>📊 정책별 평가 점수 분석</h2>
+      <div style="background-color: var(--bg-secondary); padding: var(--space-lg); border-radius: var(--radius-md); margin-bottom: var(--space-md);">
+        <canvas id="policyEvaluationChart" style="max-height: 350px;"></canvas>
+      </div>
+      <div style="background-color: var(--bg-secondary); padding: var(--space-lg); border-radius: var(--radius-md); line-height: 1.8; color: var(--text-primary);">
+        <p><strong>📋 종합 평가</strong></p>
+        <p>여론조사 데이터에 따르면 경제 정책이 72%의 긍정 평가로 가장 높은 지지도를 기록했습니다. 이는 현재의 경제 관심도가 유권자들 사이에서 가장 중요한 이슈임을 시사합니다. 교육 정책도 68%의 안정적인 지지율을 유지하고 있으며, 복지 정책은 65%로 약간의 개선 여지가 있습니다. 전반적으로 세 정책 분야 모두 긍정적 평가를 받고 있지만, 각 영역의 세부 공약과 실행 계획에 대한 구체적 설명 강화가 필요합니다. 특히 복지 정책의 경우 고령층과 취약계층의 관심이 높으므로 이들 계층의 니즈를 더욱 반영한 정책 개선이 필요합니다.</p>
+      </div>
+    </div>
+
+    <!-- 리포트 상태 분포 -->
+    <div style="margin-top: var(--space-xl);">
+      <h2>📈 리포트 처리 현황</h2>
+      <div style="background-color: var(--bg-secondary); padding: var(--space-lg); border-radius: var(--radius-md); margin-bottom: var(--space-md);">
+        <canvas id="reportStatusChart" style="max-height: 350px;"></canvas>
+      </div>
+      <div style="background-color: var(--bg-secondary); padding: var(--space-lg); border-radius: var(--radius-md); line-height: 1.8; color: var(--text-primary);">
+        <p><strong>📋 종합 평가</strong></p>
+        <p>현재 리포트 관리 시스템에서는 총 4개의 리포트가 등록되었으며, 이 중 3개(75%)가 완료 상태로 안정적인 처리 효율을 보여주고 있습니다. 1개의 리포트는 처리 중 상태로 곧 완료될 예정입니다. 완료된 리포트들은 여론조사, 경쟁자 분석, 정책 공약 평가 등 전략 수립에 필수적인 정보를 담고 있습니다. 향후 보다 신속한 리포트 처리를 위해 자동화 수준을 높이고, AI 요약 기능을 강화하여 의사결정 시간을 단축할 필요가 있습니다. 또한 정기적 리포트 생성과 검토 프로세스를 확립하면 더욱 체계적인 전략 수립이 가능할 것입니다.</p>
+      </div>
+    </div>
+
+    <!-- AI 요약 섹션 -->
+    <div style="margin-top: var(--space-xl); padding: var(--space-lg); background-color: var(--bg-secondary); border-radius: var(--radius-md);">
+      <h2>🤖 AI 자동 요약</h2>
+      <p style="color: var(--text-secondary);">업로드된 리포트는 자동으로 분석되고 주요 내용이 요약됩니다.</p>
+
+      <div style="margin-top: var(--space-md); padding: var(--space-md); background-color: var(--bg-primary); border-radius: var(--radius-sm); border-left: 4px solid var(--primary-color);">
+        <h3 style="margin-top: 0;">여론조사_결과_2026-03.pdf</h3>
+        <p><strong>📊 핵심 수치:</strong></p>
+        <ul style="margin: var(--space-sm) 0;">
+          <li>우리 후보 지지율: 45.2% (전월 대비 +2.1%)</li>
+          <li>주요 경쟁자 지지율: 38% (제1야당)</li>
+          <li>미정 유권자: 12.3%</li>
+        </ul>
+        <p><strong>📈 주요 인사이트:</strong></p>
+        <ul style="margin: var(--space-sm) 0;">
+          <li>청년층(20-30대) 지지도 상승세 (48% → 52%)</li>
+          <li>중장년층(40-50대) 지지도 안정적 (42% 유지)</li>
+          <li>고령층 지지도 감소세 (-3.5%)</li>
+        </ul>
+        <p><strong>💡 권고사항:</strong></p>
+        <ul style="margin: var(--space-sm) 0;">
+          <li>청년층 공략 집중화</li>
+          <li>경제 정책 강화</li>
+          <li>고령층 복지 정책 재강조</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
+  <script src="../js/ui.js"></script>
+  <script src="../js/api-client.js"></script>
+  <script>
+    // 파일 업로드 처리
+    const uploadArea = document.getElementById('upload-area');
+    const fileInput = document.getElementById('file-input');
+    const uploadProgress = document.getElementById('upload-progress');
+    const progressBar = document.getElementById('progress-bar');
+    const uploadStatus = document.getElementById('upload-status');
+
+    uploadArea.addEventListener('click', () => fileInput.click());
+    uploadArea.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      uploadArea.style.opacity = '0.7';
+    });
+    uploadArea.addEventListener('dragleave', () => {
+      uploadArea.style.opacity = '1';
+    });
+    uploadArea.addEventListener('drop', (e) => {
+      e.preventDefault();
+      uploadArea.style.opacity = '1';
+      handleFileUpload(e.dataTransfer.files[0]);
+    });
+    fileInput.addEventListener('change', (e) => {
+      handleFileUpload(e.target.files[0]);
+    });
+
+    function handleFileUpload(file) {
+      if (!file || !file.name.endsWith('.pdf')) {
+        alert('PDF 파일만 업로드 가능합니다.');
+        return;
+      }
+
+      uploadProgress.style.display = 'block';
+      uploadArea.style.display = 'none';
+
+      // 시뮬레이션: 파일 업로드
+      let progress = 0;
+      const interval = setInterval(() => {
+        progress += Math.random() * 30;
+        if (progress >= 100) progress = 100;
+        progressBar.style.width = progress + '%';
+        uploadStatus.textContent = Math.floor(progress) + '%';
+
+        if (progress === 100) {
+          clearInterval(interval);
+          setTimeout(() => {
+            uploadProgress.style.display = 'none';
+            uploadArea.style.display = 'block';
+            fileInput.value = '';
+            uiManager.showNotification(`'${file.name}' 업로드 완료! AI 분석이 진행 중입니다.`, 'info');
+          }, 1000);
+        }
+      }, 300);
+    }
+
+    // 리포트 상세 조회
+    function viewReport(reportId) {
+      const reportContents = {
+        'report-1': {
+          title: '여론조사 결과 (2026년 3월)',
+          content: `
+            <h3>📊 전체 지지율</h3>
+            <ul>
+              <li>오세훈 후보: 45.2% (전월 대비 +2.1%)</li>
+              <li>조은희 후보: 38.0% (전월 대비 -1.2%)</li>
+              <li>기타 후보: 4.5%</li>
+              <li>미정: 12.3%</li>
+            </ul>
+
+            <h3>👥 연령대별 지지율</h3>
+            <ul>
+              <li>20-30대: 52% (상승세)</li>
+              <li>40-50대: 42% (안정)</li>
+              <li>60대 이상: 35% (감소세)</li>
+            </ul>
+
+            <h3>💡 분석</h3>
+            <p>청년층에서의 지지율 상승이 눈에 띄며, 경제 공약에 대한 긍정 평가가 증가한 것으로 보입니다.</p>
+          `
+        },
+        'report-2': {
+          title: '경쟁자 분석 리포트',
+          content: `
+            <h3>🎯 경쟁 상황 분석</h3>
+            <ul>
+              <li>주요 경쟁자(조은희): 38% (민주당 기반층 지지)</li>
+              <li>보조 경쟁자(김영순): 22% (보수 내 분산)</li>
+              <li>기타 후보: 15%</li>
+            </ul>
+
+            <h3>⚔️ 강점 분석</h3>
+            <ul>
+              <li>조은희: 지역 기반, 정책 공약력</li>
+              <li>우리 후보: 청년층 지지, 혁신 이미지</li>
+            </ul>
+          `
+        },
+        'report-3': {
+          title: '정책 공약 분석',
+          content: `
+            <h3>📋 주요 공약 평가</h3>
+            <ul>
+              <li>경제 정책: 긍정 평가 72%</li>
+              <li>교육 정책: 긍정 평가 68%</li>
+              <li>복지 정책: 긍정 평가 65%</li>
+            </ul>
+
+            <h3>💬 여론 반응</h3>
+            <p>전반적으로 긍정적 반응이나, 재정 조달 방안에 대한 의문 존재.</p>
+          `
+        }
+      };
+
+      const detail = reportContents[reportId];
+      if (detail) {
+        document.getElementById('report-title').textContent = detail.title;
+        document.getElementById('report-content').innerHTML = detail.content;
+        document.getElementById('report-detail').style.display = 'block';
+        document.getElementById('report-detail').scrollIntoView({ behavior: 'smooth' });
+      }
+    }
+
+    function downloadReport(reportId) {
+      alert(`리포트 '${reportId}' 다운로드 시작...`);
+    }
+
+    // 차트 초기화 함수
+    function initReportsCharts() {
+      const primaryColor = getComputedStyle(document.documentElement).getPropertyValue('--primary-color').trim();
+      const lightColor = getComputedStyle(document.documentElement).getPropertyValue('--primary-light').trim();
+
+      // 정책별 평가 차트
+      const policyCtx = document.getElementById('policyEvaluationChart');
+      if (policyCtx) {
+        new Chart(policyCtx, {
+          type: 'bar',
+          data: {
+            labels: ['경제 정책', '교육 정책', '복지 정책'],
+            datasets: [{
+              label: '긍정 평가율 (%)',
+              data: [72, 68, 65],
+              backgroundColor: [primaryColor, lightColor, '#42a5f5'],
+              borderRadius: 4,
+              borderColor: primaryColor,
+              borderWidth: 1
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { display: true, position: 'top' },
+              tooltip: { callbacks: { label: (ctx) => ctx.parsed.y + '%' } }
+            },
+            scales: {
+              y: { beginAtZero: true, max: 100, ticks: { callback: (v) => v + '%' } }
+            }
+          }
+        });
+      }
+
+      // 리포트 상태 분포 차트
+      const statusCtx = document.getElementById('reportStatusChart');
+      if (statusCtx) {
+        new Chart(statusCtx, {
+          type: 'doughnut',
+          data: {
+            labels: ['완료', '처리 중'],
+            datasets: [{
+              data: [3, 1],
+              backgroundColor: [primaryColor, lightColor],
+              borderColor: '#ffffff',
+              borderWidth: 2
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { display: true, position: 'bottom' },
+              tooltip: { callbacks: { label: (ctx) => ctx.label + ': ' + ctx.parsed + '개' } }
+            }
+          }
+        });
+      }
+    }
+
+    // 페이지 로드 시 차트 초기화
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initReportsCharts);
+    } else {
+      initReportsCharts();
+    }
+  </script>
+  <script src="../js/party-theme.js"></script>
+$scripts
+</body>
+
+  <script>
+    // 로컬 파일 프로토콜용 테마 초기화
+    if (typeof window.PartyTheme === 'undefined') {
+      function applyThemeFromStorage() {
+        const partyColors = {
+          dem: { bgPrimary: '#F0F4F9', bgSecondary: '#e0ecff', bgTertiary: '#dce6f8', primary: '#3b82f6', light: '#42a5f5', dark: '#1565c0', textPrimary: '#1e3a8a' },
+          ppp: { bgPrimary: '#FFF5F6', bgSecondary: '#ffe0e0', bgTertiary: '#ffd6d6', primary: '#ef4444', light: '#f87171', dark: '#dc2626', textPrimary: '#7f1d1d' },
+          reform: { bgPrimary: '#f0fdf4', bgSecondary: '#dbeafe', bgTertiary: '#d1f2eb', primary: '#10b981', light: '#34d399', dark: '#059669', textPrimary: '#065f46' },
+          liberty: { bgPrimary: '#fff5f7', bgSecondary: '#ffe0e6', bgTertiary: '#ffc0d0', primary: '#c41e3a', light: '#e24d5e', dark: '#a01630', textPrimary: '#7f0a1a' },
+          renewal: { bgPrimary: '#fefce8', bgSecondary: '#fef08a', bgTertiary: '#fde047', primary: '#f59e0b', light: '#fbbf24', dark: '#d97706', textPrimary: '#713f12' },
+          independent: { bgPrimary: '#f9fafb', bgSecondary: '#f3f4f6', bgTertiary: '#e5e7eb', primary: '#9ca3af', light: '#d1d5db', dark: '#4b5563', textPrimary: '#374151' }
+        };
+        const party = localStorage.getItem('selectedParty') || 'dem';
+        const colors = partyColors[party];
+        const root = document.documentElement;
+        root.style.setProperty('--primary-color', colors.primary);
+        root.style.setProperty('--primary-light', colors.light);
+        root.style.setProperty('--primary-dark', colors.dark);
+        root.style.setProperty('--bg-primary', colors.bgPrimary);
+        root.style.setProperty('--bg-secondary', colors.bgSecondary);
+        root.style.setProperty('--bg-tertiary', colors.bgTertiary);
+        root.style.setProperty('--text-primary', colors.textPrimary);
+        root.setAttribute('data-party', party);
+      }
+      document.readyState === 'loading' ? document.addEventListener('DOMContentLoaded', applyThemeFromStorage) : applyThemeFromStorage();
+    }
+  </script>
+
+  <script>
+    // 사이드바 제목 동적 업데이트
+    function updateSidebarTitle() {
+      const candidateName = localStorage.getItem('candidateName') || '후보자';
+      const sidebarTitle = document.getElementById('sidebarTitle');
+      if (sidebarTitle) {
+        sidebarTitle.textContent = `🚨 ${candidateName} 선거 워룸`;
+      }
+    }
+
+    // 페이지 로드 시 실행
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', updateSidebarTitle);
+    } else {
+      updateSidebarTitle();
+    }
+
+    // localStorage 변경 감지 (다른 탭에서 변경 시)
+    window.addEventListener('storage', updateSidebarTitle);
+  </script>
+</html>

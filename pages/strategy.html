@@ -1,0 +1,1325 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>전략 추천 — 선거 워룸</title>
+  <link rel="stylesheet" href="../css/theme.css">
+  <link rel="stylesheet" href="../css/responsive.css">
+  <style>
+    body { margin: 0; background-color: var(--bg-primary); display: flex; }
+
+    .tab-buttons { display: flex; gap: var(--space-md); margin-bottom: var(--space-lg); border-bottom: 2px solid var(--bg-secondary); }
+    .tab-button { padding: var(--space-md) var(--space-lg); background: none; border: none; cursor: pointer; font-size: var(--font-size-base); font-weight: 600; color: var(--text-secondary); border-bottom: 3px solid transparent; transition: all var(--transition-base); }
+    .tab-button.active { color: var(--primary-color); border-bottom-color: var(--primary-color); }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    .sidebar { position: fixed; left: 0; top: 0; width: 240px; height: 100vh; background-color: var(--primary-color); z-index: 100; overflow-y: auto; padding: 0; margin: 0; box-shadow: 2px 0 4px rgba(0,0,0,0.1); }
+    .sidebar-header { padding: var(--space-lg); color: white; font-size: var(--font-size-lg); font-weight: 600; border-bottom: 1px solid rgba(255,255,255,0.2); margin: 0; }
+    .sidebar-nav ul { list-style: none; margin: 0; padding: 0; }
+    .sidebar-nav a { display: block; padding: var(--space-md) var(--space-lg); color: white; text-decoration: none; transition: background-color var(--transition-base); font-size: var(--font-size-sm); border-left: 4px solid transparent; }
+    .sidebar-nav a:hover { background-color: rgba(255,255,255,0.2); }
+    .sidebar-nav a.active { background-color: rgba(255,255,255,0.3); font-weight: 600; border-left-color: white; padding-left: calc(var(--space-lg) - 4px); }
+
+    main { flex: 1; margin-left: 240px; }
+    .container { max-width: 1000px; margin: 0 auto; padding: var(--space-lg); }
+
+    @media (max-width: 768px) {
+      .sidebar { width: 200px; }
+      main { margin-left: 200px; }
+      .sidebar-nav a { padding: var(--space-sm) var(--space-md); font-size: var(--font-size-xs); }
+    }
+
+    @media (max-width: 480px) {
+      .sidebar { width: 160px; }
+      main { margin-left: 160px; }
+      .sidebar-header { padding: var(--space-md); font-size: var(--font-size-base); }
+      .sidebar-nav a { padding: var(--space-xs) var(--space-sm); font-size: var(--font-size-xs); }
+    }
+    .strategy-section { margin-top: var(--space-lg); padding: var(--space-lg); background-color: var(--bg-secondary); border-radius: var(--radius-md); }
+    .strategy-header { display: flex; align-items: center; gap: var(--space-md); }
+    .priority-badge { display: inline-block; padding: var(--space-sm) var(--space-md); border-radius: var(--radius-sm); font-weight: 600; font-size: var(--font-size-sm); }
+    .priority-high { background-color: #ff6b6b; color: white; }
+    .priority-medium { background-color: #ffd93d; color: black; }
+    .priority-low { background-color: #6bcf7f; color: white; }
+    .action-list { margin-top: var(--space-md); }
+    .action-item { display: flex; gap: var(--space-md); margin-bottom: var(--space-md); padding: var(--space-md); background-color: var(--bg-primary); border-radius: var(--radius-sm); border-left: 4px solid var(--primary-color); }
+    .action-number { font-weight: bold; color: var(--primary-color); min-width: 30px; }
+    .timeline-item { display: grid; grid-template-columns: 120px 1fr; gap: var(--space-md); margin-bottom: var(--space-lg); }
+    .timeline-date { font-weight: 600; color: var(--primary-color); }
+    .timeline-content { padding: var(--space-md); background-color: var(--bg-secondary); border-radius: var(--radius-sm); }
+  </style>
+</head>
+<body>
+  <aside class="sidebar">
+    <a href="../index.html" style="text-decoration: none;">
+      <div class="sidebar-header" id="sidebarTitle">🚨 선거 워룸</div>
+    </a>
+    <nav class="sidebar-nav">
+      <ul>
+        <li><a href="index.html">대시보드</a></li>
+        <li><a href="integrated-analysis.html">1.통합분석</a></li>
+        <li><a href="intelligence.html">2.판세정보 분석&비교</a></li>
+        <li><a href="strategy.html" class="active">3.전략 비교&추천</a></li>
+        <li><a href="pledges.html">4.공약 비교&추천</a></li>
+        <li><a href="vehicle-strategy.html">5.차량 전략</a></li>
+        <li><a href="online-sentiment-analysis.html">6.온라인 여론분석 비교&추천</a></li>
+        <li><a href="ai-chat.html">7.AI톡과 질문과 대화</a></li>
+        <li><a href="dashboard.html">8.대시보드</a></li>
+        <li><a href="blog.html">9.블로그-기사</a></li>
+        <li><a href="external-materials.html">10.외부자료 업로드</a></li>
+        <li><a href="warroom.html">11.워룸-위기대응센터</a></li>
+        <li><a href="reports.html">12.분석리포트 관리</a></li>
+        <li><a href="organization-chart.html">13.조직도</a></li>
+        <li><a href="ai-premium.html">14.AI 프리미엄 도구들</a></li>
+        <li><a href="settings.html">15.설정</a></li>
+      </ul>
+    </nav>
+  </aside>
+
+  <main>
+    <div class="container">
+    <h1>💡 AI 전략 추천</h1>
+    <p style="color: var(--text-secondary);">현재 판세 분석 기반 최적화된 캠프 전략입니다.</p>
+
+    <!-- 파일 없을 때 안내 -->
+    <div id="emptyStateContainer" style="display: none; text-align: center; padding: 60px 20px; background-color: var(--bg-secondary); border-radius: var(--radius-md); margin: var(--space-lg) 0;">
+      <div style="font-size: 64px; margin-bottom: var(--space-lg); opacity: 0.5;">📁</div>
+      <h3 style="color: var(--text-secondary); margin-bottom: var(--space-sm);">업로드된 전략 자료가 없습니다</h3>
+      <p style="color: var(--text-secondary); margin-bottom: var(--space-lg); font-size: var(--font-size-sm);">외부자료 페이지에서 전략 비교 자료를 업로드하면 여기에 표시됩니다.</p>
+      <div style="display: flex; gap: var(--space-md); justify-content: center; flex-wrap: wrap;">
+        <button class="btn btn-primary" onclick="location.href='external-materials.html'" style="cursor: pointer;">📤 외부자료 업로드</button>
+        <button class="btn btn-secondary" onclick="alert('리포트 구매 문의: jaiwshim@gmail.com | 010-2397-5734')" style="cursor: pointer;">🛒 리포트 구매하기</button>
+      </div>
+    </div>
+
+    <!-- 파일 있을 때 콘텐츠 -->
+    <div id="contentContainer" style="display: block;">
+
+    <!-- 탭 버튼 -->
+    <div class="tab-buttons">
+      <button class="tab-button active" onclick="switchTab('type3')">📋 우리 전략</button>
+      <button class="tab-button" onclick="switchTab('type4')">⚔️ 경쟁자 전략</button>
+      <button class="tab-button" id="comparisonTabBtn" onclick="switchTab('comparison')">🔄 비교 분석</button>
+    </div>
+
+    <!-- Type-3: 우리 전략 -->
+    <div id="type3-content" class="tab-content active" style="display: block;">
+      <div id="type3Static"></div>
+    </div>
+
+    <!-- Type-4: 경쟁자 전략 -->
+    <div id="type4-content" class="tab-content" style="display: none;">
+      <div id="type4Static"></div>
+    </div>
+
+    <!-- 비교 분석 탭 -->
+    <div id="comparison-content" class="tab-content" style="display: none;">
+      <div id="comparisonContent"></div>
+    </div>
+    </div>
+  </div>
+
+  <script src="../js/ui.js"></script>
+  <script src="../js/api-client.js"></script>
+  <script src="../js/file-store.js"></script>
+  <script>
+    async function initFileDisplay() {
+      try {
+        console.log('📝 initFileDisplay 시작...');
+        await FileStore.init();
+        console.log('✅ FileStore 초기화 완료');
+
+        const files3 = await FileStore.getFilesByType('type-3');
+        const files4 = await FileStore.getFilesByType('type-4');
+
+        console.log('📋 type-3 파일:', files3.length + '개');
+        console.log('📋 type-4 파일:', files4.length + '개');
+
+        const emptyState = document.getElementById('emptyStateContainer');
+        const content = document.getElementById('contentContainer');
+        const comparisonTabBtn = document.getElementById('comparisonTabBtn');
+
+        // 항상 콘텐츠 표시 (기본 전략 콘텐츠는 필수)
+        emptyState.style.display = 'none';
+        content.style.display = 'block';
+
+        // 우리 전략 및 경쟁자 전략 시각화 콘텐츠 생성
+        displayType3Strategy();
+        displayType4Strategy();
+
+        // type-3과 type-4가 모두 있으면 비교 분석 탭 표시
+        if (files3.length > 0 && files4.length > 0) {
+          console.log('🔄 비교 분석 탭 활성화');
+          comparisonTabBtn.style.display = 'inline-block';
+          displayComparisonAnalysis(files3, files4);
+        } else {
+          comparisonTabBtn.style.display = 'none';
+        }
+
+        // 업로드된 파일이 있으면 파일 목록 표시
+        if (files3.length > 0) {
+          console.log('📤 type-3 파일 표시:', files3);
+          displayFileList(files3, 'type-3');
+        }
+        if (files4.length > 0) {
+          console.log('📤 type-4 파일 표시:', files4);
+          displayFileList(files4, 'type-4');
+        }
+
+        // 초기 탭: 우리 전략(type-3) 활성화
+        showTab('type3');
+      } catch (error) {
+        console.error('❌ 파일 로드 실패:', error);
+      }
+    }
+
+    function showTab(tabName) {
+      // 모든 탭 콘텐츠 숨기기
+      document.querySelectorAll('.tab-content').forEach(tab => {
+        tab.classList.remove('active');
+        tab.style.display = 'none';
+      });
+      // 모든 탭 버튼 비활성화
+      document.querySelectorAll('.tab-button').forEach(btn => {
+        btn.classList.remove('active');
+      });
+
+      // 선택한 탭 표시
+      const contentId = tabName === 'comparison' ? 'comparison-content' : tabName + '-content';
+      const tabContent = document.getElementById(contentId);
+      if (tabContent) {
+        tabContent.classList.add('active');
+        tabContent.style.display = 'block';
+      }
+
+      // 해당 탭 버튼 활성화
+      const buttons = document.querySelectorAll('.tab-button');
+      const tabMap = { 'type3': 0, 'type4': 1, 'comparison': 2 };
+      if (tabMap[tabName] !== undefined) {
+        buttons[tabMap[tabName]].classList.add('active');
+      }
+    }
+
+    async function switchTab(tabName) {
+      // 탭 표시
+      showTab(tabName);
+
+      // 탭에 따라 파일 로드
+      if (tabName === 'type3') {
+        const files = await FileStore.getFilesByType('type-3');
+        if (files.length > 0 && !document.querySelector('#fileListSection-type-3')) {
+          displayFileList(files, 'type-3');
+        }
+      } else if (tabName === 'type4') {
+        const files = await FileStore.getFilesByType('type-4');
+        if (files.length > 0 && !document.querySelector('#fileListSection-type-4')) {
+          displayFileList(files, 'type-4');
+        }
+      } else if (tabName === 'comparison') {
+        // 비교 분석 탭: FileStore에서 파일을 다시 로드하여 displayComparisonAnalysis 호출
+        const files3 = await FileStore.getFilesByType('type-3');
+        const files4 = await FileStore.getFilesByType('type-4');
+        if (files3.length > 0 && files4.length > 0) {
+          displayComparisonAnalysis(files3, files4);
+        }
+      }
+    }
+
+    function getScoreComparisonChart() {
+      const items = [
+        { label: '청년층 공략력', ours: 9, competitor: 4 },
+        { label: '중장년층 공략력', ours: 6, competitor: 8 },
+        { label: '디지털 미디어', ours: 8, competitor: 5 },
+        { label: '정책 혁신도', ours: 8, competitor: 5 },
+        { label: '지역 기반력', ours: 6, competitor: 7 },
+        { label: '정책 신뢰도', ours: 7, competitor: 7 }
+      ];
+
+      return `
+        <div style="display: grid; gap: var(--space-lg);">
+          ${items.map(item => `
+            <div style="margin-bottom: var(--space-md);">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-sm);">
+                <div style="font-weight: 600; color: var(--text-secondary); min-width: 120px;">${item.label}</div>
+                <div style="display: flex; gap: var(--space-lg); font-weight: 600;">
+                  <div style="text-align: right; width: 50px;">
+                    <span style="color: var(--primary-color);">${item.ours}</span>
+                    <span style="color: var(--text-secondary); font-size: var(--font-size-sm);">/10</span>
+                  </div>
+                  <div style="text-align: right; width: 50px;">
+                    <span style="color: var(--warning);">${item.competitor}</span>
+                    <span style="color: var(--text-secondary); font-size: var(--font-size-sm);">/10</span>
+                  </div>
+                </div>
+              </div>
+              <div style="display: flex; gap: var(--space-sm); height: 28px; border-radius: var(--radius-sm); overflow: hidden; background-color: var(--bg-primary);">
+                <!-- 우리 점수 -->
+                <div style="flex: 0 0 ${item.ours * 10}%; background: linear-gradient(90deg, var(--primary-color), var(--primary-light)); display: flex; align-items: center; justify-content: flex-end; padding-right: var(--space-xs);">
+                  ${item.ours > 3 ? `<span style="color: white; font-size: var(--font-size-xs); font-weight: 700;">${item.ours}</span>` : ''}
+                </div>
+                <!-- 경쟁자 점수 -->
+                <div style="flex: 0 0 ${item.competitor * 10}%; background: linear-gradient(90deg, var(--warning), #fcd34d); display: flex; align-items: center; justify-content: flex-end; padding-right: var(--space-xs);">
+                  ${item.competitor > 3 ? `<span style="color: #1f2937; font-size: var(--font-size-xs); font-weight: 700;">${item.competitor}</span>` : ''}
+                </div>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      `;
+    }
+
+    function displayComparisonAnalysis(files3, files4) {
+      const comparisonSection = document.getElementById('comparisonContent');
+
+      const analysisHTML = `
+        <!-- 1. 최상단 요약 -->
+        <div style="padding: var(--space-lg); background: linear-gradient(135deg, var(--primary-color), var(--primary-light)); border-radius: var(--radius-md); margin-bottom: var(--space-lg); color: white;">
+          <h3 style="margin-top: 0; margin-bottom: var(--space-sm);">🎯 전략 비교 분석 종합</h3>
+          <p style="margin: 0; font-size: var(--font-size-sm); opacity: 0.95;">
+            우리 전략(${files3.length}개 파일)과 경쟁자 전략(${files4.length}개 파일)을 다층적으로 분석했습니다.
+            우리의 강점을 극대화하고 약점을 보완하기 위한 전술적 조정이 필요합니다.
+          </p>
+        </div>
+
+        <!-- 2. 핵심 인사이트 -->
+        <p style="color: var(--text-secondary); line-height: 1.7; font-size: var(--font-size-sm); margin-bottom: var(--space-lg);">
+          우리와 경쟁자의 전략은 세 가지 근본적으로 다른 축에서 전개됩니다. 첫째, 세대 기반의 양극화—우리는 청년층(52%)에, 경쟁자는 기성세대(60대+ 58%)에 집중하여 중복을 최소화하고 각자의 강점을 극대화합니다. 둘째, 미디어 전략의 근본적 차이—우리는 디지털·SNS 플랫폼을 주력으로 낮은 비용에 높은 도달률을 달성하는 반면, 경쟁자는 TV·라디오 같은 전통 매체에 막대한 투자를 합니다. 셋째, 정책 어젠다의 신선도—우리는 혁신적 정책으로 미디어 호응도를 높이는 반면, 경쟁자는 기존 성과 강조로 진부성 논란을 피하지 못합니다.
+        </p>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: var(--space-lg); margin-bottom: var(--space-lg);">
+          <div style="padding: var(--space-lg); background-color: var(--bg-secondary); border-radius: var(--radius-md); border-top: 4px solid var(--primary-color);">
+            <h4 style="margin-top: 0; color: var(--primary-color);">💡 인사이트 #1</h4>
+            <p style="color: var(--text-secondary); margin: var(--space-md) 0; line-height: 1.6;">
+              <strong>세대 기반 전략의 양극화</strong><br/>
+              우리: 청년층 집중 | 경쟁자: 기성세대 주타<br/>
+              → 중복되지 않는 유권자 확보 가능
+            </p>
+          </div>
+          <div style="padding: var(--space-lg); background-color: var(--bg-secondary); border-radius: var(--radius-md); border-top: 4px solid var(--warning);">
+            <h4 style="margin-top: 0; color: var(--warning);">💡 인사이트 #2</h4>
+            <p style="color: var(--text-secondary); margin: var(--space-md) 0; line-height: 1.6;">
+              <strong>미디어 전략의 근본적 차이</strong><br/>
+              우리: 디지털/SNS | 경쟁자: TV/라디오<br/>
+              → 온라인 영향력 장악 우위
+            </p>
+          </div>
+          <div style="padding: var(--space-lg); background-color: var(--bg-secondary); border-radius: var(--radius-md); border-top: 4px solid #10b981;">
+            <h4 style="margin-top: 0; color: #10b981;">💡 인사이트 #3</h4>
+            <p style="color: var(--text-secondary); margin: var(--space-md) 0; line-height: 1.6;">
+              <strong>정책 어젠다의 신선도 격차</strong><br/>
+              우리: 혁신적 정책 | 경쟁자: 기존 강화<br/>
+              → 미디어 호응도 높음
+            </p>
+          </div>
+        </div>
+
+        <!-- 3. 점수 비교 -->
+        <div style="padding: var(--space-lg); background-color: var(--bg-secondary); border-radius: var(--radius-md); margin-bottom: var(--space-lg);">
+          <h3 style="margin-top: 0; color: var(--primary-color);">📊 항목별 점수 비교</h3>
+          <p style="color: var(--text-secondary); line-height: 1.7; font-size: var(--font-size-sm); margin-bottom: var(--space-lg);">
+            8개 핵심 항목(청년층 지지도, 중장년층 지지도, 고령층 지지도, 온라인 영향력, 미디어 호응도, 정책 혁신도, 지역 기반, 비용 효율성)에서 우리(44점/73%)는 경쟁자(36점/60%)보다 8점 우위를 점하고 있습니다. 특히 청년층 지지도(+27%p), 온라인 영향력(+20%p), 정책 혁신도(+18%p)에서 압도적 우위를 가진 반면, 고령층 지지도(-23%p)와 지역 기반(-15%p)에서 뒤처져 있습니다. 이는 우리의 청년층-온라인 전략이 효과적이지만, 중장년층 이상의 전통적 지역민을 추가 확보해야 함을 의미합니다.
+          </p>
+          ${getScoreComparisonChart()}
+          <div style="margin-top: var(--space-xl); padding: var(--space-lg); background: linear-gradient(90deg, rgba(59,130,246,0.1) 0%, rgba(59,130,246,0.05) 50%, rgba(245,158,11,0.1) 100%); border-radius: var(--radius-md); display: flex; align-items: center; justify-content: space-around; flex-wrap: wrap; gap: var(--space-lg);">
+            <div style="text-align: center;">
+              <div style="font-size: 48px; font-weight: 700; color: var(--primary-color); margin-bottom: var(--space-sm);">44</div>
+              <div style="color: var(--text-secondary); font-size: var(--font-size-sm);">우리 총점</div>
+              <div style="color: var(--primary-color); font-weight: 600; margin-top: var(--space-xs);">73%</div>
+            </div>
+            <div style="width: 2px; height: 80px; background-color: var(--bg-primary); opacity: 0.5;"></div>
+            <div style="text-align: center;">
+              <div style="font-size: 48px; font-weight: 700; color: var(--warning); margin-bottom: var(--space-sm);">36</div>
+              <div style="color: var(--text-secondary); font-size: var(--font-size-sm);">경쟁자 총점</div>
+              <div style="color: var(--warning); font-weight: 600; margin-top: var(--space-xs);">60%</div>
+            </div>
+            <div style="width: 2px; height: 80px; background-color: var(--bg-primary); opacity: 0.5;"></div>
+            <div style="text-align: center;">
+              <div style="font-size: 48px; font-weight: 700; color: #10b981; margin-bottom: var(--space-sm);">+8</div>
+              <div style="color: var(--text-secondary); font-size: var(--font-size-sm);">우리 우위</div>
+              <div style="color: #10b981; font-weight: 600; margin-top: var(--space-xs);">+13%p</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 4. 승률 분석 -->
+        <div style="padding: var(--space-lg); background-color: var(--bg-secondary); border-radius: var(--radius-md); margin-bottom: var(--space-lg);">
+          <h3 style="margin-top: 0; color: var(--primary-color);">📊 승패 확률</h3>
+          <p style="color: var(--text-secondary); line-height: 1.7; font-size: var(--font-size-sm); margin-bottom: var(--space-lg);">
+            현재 전략적 포지셔닝을 바탕으로 한 승률 분석에서 우리의 승리 확률은 62%입니다. 이는 (1) 청년층 세대 우위의 투표율 증가 추세, (2) 온라인 바이럴 마케팅의 확산 가능성, (3) 정책 혁신에 대한 미디어와 시민의 호응도 상승이 반영된 결과입니다. 반면 경쟁자의 38% 승리 확률은 여전히 무시할 수 없는 위협인데, 특히 고령층 투표율이 높고 지역 기반이 견고한 점, TV 광고의 영향력이 잔존하는 점을 고려하면 경쟁자가 고령층 결집에 성공할 경우 그 확률이 높아질 수 있습니다. 따라서 우리는 현재의 62% 우위를 70% 이상으로 확대하되, 고령층 25~30% 추가 확보를 목표로 해야 합니다.
+          </p>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-lg); margin-top: var(--space-lg); align-items: center;">
+            <!-- SVG 원형 차트 -->
+            <div style="display: flex; justify-content: center;">
+              <svg width="200" height="200" viewBox="0 0 200 200" style="max-width: 100%; height: auto;">
+                <circle cx="100" cy="100" r="90" fill="none" stroke="var(--bg-primary)" stroke-width="15"/>
+                <circle cx="100" cy="100" r="90" fill="none" stroke="var(--primary-color)" stroke-width="15"
+                  stroke-dasharray="389.3 628" stroke-linecap="round" transform="rotate(-90 100 100)"/>
+                <circle cx="100" cy="100" r="90" fill="none" stroke="var(--warning)" stroke-width="15"
+                  stroke-dasharray="238.7 628" stroke-linecap="round" transform="rotate(134 100 100)"/>
+                <circle cx="100" cy="100" r="55" fill="var(--bg-secondary)" />
+                <text x="100" y="95" text-anchor="middle" font-size="28" font-weight="700" fill="var(--primary-color)">62%</text>
+                <text x="100" y="115" text-anchor="middle" font-size="12" fill="var(--text-secondary)">우리 우위</text>
+              </svg>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: var(--space-lg);">
+              <div style="padding: var(--space-lg); background: linear-gradient(135deg, var(--primary-color), var(--primary-light)); border-radius: var(--radius-md); color: white;">
+                <div style="font-size: 32px; font-weight: 700; margin-bottom: var(--space-sm);">62%</div>
+                <div style="font-size: var(--font-size-lg); font-weight: 600;">우리 승리 확률</div>
+                <div style="font-size: var(--font-size-sm); margin-top: var(--space-sm); opacity: 0.9;">높은 신뢰도 ✓</div>
+              </div>
+              <div style="padding: var(--space-lg); background: linear-gradient(135deg, var(--warning), #f59e0b); border-radius: var(--radius-md); color: white;">
+                <div style="font-size: 32px; font-weight: 700; margin-bottom: var(--space-sm);">38%</div>
+                <div style="font-size: var(--font-size-lg); font-weight: 600;">경쟁자 승리 확률</div>
+                <div style="font-size: var(--font-size-sm); margin-top: var(--space-sm); opacity: 0.9;">경계 필수 ⚠️</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 5. 강점/약점 분석 -->
+        <div style="padding: var(--space-lg); background-color: var(--bg-secondary); border-radius: var(--radius-md);">
+          <h3 style="margin-top: 0; color: var(--primary-color);">📈 전술적 권고사항</h3>
+          <p style="color: var(--text-secondary); line-height: 1.7; font-size: var(--font-size-sm); margin-bottom: var(--space-lg);">
+            전략 분석 결과, 우리는 세 가지 전술에 집중해야 합니다. 첫째, 우리의 강점 극대화—청년층 지지도 차이(+27%p)를 활용하여 청년층 투표율을 극대화하고, 온라인 영향력을 SNS 바이럴·유튜브·팟캐스트로 확대하며, 정책 신선도를 일관되게 강조합니다. 둘째, 경쟁자의 약점 공략—경쟁자의 청년층 낮은 지지도를 "청년 외면" 프레이밍으로 지적하고, TV 광고 중심의 전통 매체 의존성을 "구시대적" 이미지로 연결하며, 정책 혁신도 부족을 구체적 사례로 공략합니다. 셋째, 중점 전략—중장년층 50% 이상 확보를 위해 경제·일자리·복지 정책을 강화하고, 경제 정책의 신뢰도 상승을 위해 실제 성과 데이터를 공개하며, 지역 기반 강화를 위해 주요 지역 순회와 지역 의원 네트워크를 구축합니다.
+          </p>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: var(--space-lg); margin-top: var(--space-lg);">
+            <div style="padding: var(--space-lg); background-color: var(--bg-primary); border-radius: var(--radius-sm); border-left: 4px solid #10b981;">
+              <h5 style="margin-top: 0; color: #10b981; margin-bottom: var(--space-sm);">💪 우리의 강점 극대화</h5>
+              <ul style="color: var(--text-secondary); font-size: var(--font-size-sm); margin: 0; padding-left: var(--space-lg);">
+                <li>청년층 지지도 차이 (+27%p) 활용</li>
+                <li>온라인 영향력 확대</li>
+                <li>정책 신선도 강조</li>
+              </ul>
+            </div>
+
+            <div style="padding: var(--space-lg); background-color: var(--bg-primary); border-radius: var(--radius-sm); border-left: 4px solid var(--warning);">
+              <h5 style="margin-top: 0; color: var(--warning); margin-bottom: var(--space-sm);">⚠️ 경쟁자 약점 공략</h5>
+              <ul style="color: var(--text-secondary); font-size: var(--font-size-sm); margin: 0; padding-left: var(--space-lg);">
+                <li>청년층 낮은 지지도 지적</li>
+                <li>전통 매체 의존성 강조</li>
+                <li>정책 혁신성 부족 공략</li>
+              </ul>
+            </div>
+
+            <div style="padding: var(--space-lg); background-color: var(--bg-primary); border-radius: var(--radius-sm); border-left: 4px solid var(--primary-color);">
+              <h5 style="margin-top: 0; color: var(--primary-color); margin-bottom: var(--space-sm);">🎯 중점 전략</h5>
+              <ul style="color: var(--text-secondary); font-size: var(--font-size-sm); margin: 0; padding-left: var(--space-lg);">
+                <li>중장년층 50% 이상 확보</li>
+                <li>경제 정책 신뢰도 상승</li>
+                <li>지역 기반 강화</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <!-- 6. SWOT 분석 -->
+        <div style="padding: var(--space-lg); background-color: var(--bg-secondary); border-radius: var(--radius-md); margin-top: var(--space-xl);">
+          <h2 style="margin-top: 0; color: var(--primary-color);">🔍 SWOT 분석</h2>
+          <p style="color: var(--text-secondary); line-height: 1.7; font-size: var(--font-size-sm); margin-bottom: var(--space-lg);">
+            우리 전략의 SWOT 분석은 다음과 같이 통합됩니다. 강점(청년 지지 52%, 디지털 우위, 정책 혁신)을 기회(청년 투표율 증가, 온라인 여론 확산)와 결합하면 청년층 세대 장악이 가능합니다. 약점(고령층 35% 저조, 전통 매체 약함, 지역 기반 약함)은 위협(고령층 투표율 높음, 경쟁자 지역 결집, TV 광고 영향)과 겹치면 선거 결과에 부정적으로 작용할 수 있습니다. 따라서 우리의 전술은 강점-기회 결합으로 청년층 70% 이상 확보와 전체 지지도 55% 달성을 노리되, 동시에 약점 보완(고령층 35%→45%, 지역 기반 확대)으로 위협을 상쇄해야 합니다.
+          </p>
+
+          <!-- SWOT 2x2 매트릭스 -->
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-lg); margin-bottom: var(--space-lg);">
+            <!-- S: 강점 (파란색) -->
+            <div style="padding: var(--space-lg); background: linear-gradient(135deg, rgba(59,130,246,0.1), rgba(59,130,246,0.05)); border-radius: var(--radius-md); border: 2px solid var(--primary-color);">
+              <h3 style="margin-top: 0; color: var(--primary-color);">💪 강점 (Strengths)</h3>
+              <ul style="color: var(--text-secondary); margin: var(--space-md) 0; padding-left: var(--space-lg);">
+                <li style="margin-bottom: var(--space-sm);"><strong>청년층 높은 지지도 (52%)</strong><br/>→ 주요 유권자층 확보</li>
+                <li style="margin-bottom: var(--space-sm);"><strong>디지털/SNS 강점</strong><br/>→ 비용 효율적 캠페인</li>
+                <li style="margin-bottom: var(--space-sm);"><strong>신선한 정책 아젠다</strong><br/>→ 미디어 호응도 높음</li>
+                <li style="margin-bottom: var(--space-sm);"><strong>온라인 활동성 높음</strong><br/>→ 바이럴 마케팅 가능</li>
+              </ul>
+            </div>
+
+            <!-- W: 약점 (주황색) -->
+            <div style="padding: var(--space-lg); background: linear-gradient(135deg, rgba(245,158,11,0.1), rgba(245,158,11,0.05)); border-radius: var(--radius-md); border: 2px solid var(--warning);">
+              <h3 style="margin-top: 0; color: var(--warning);">⚠️ 약점 (Weaknesses)</h3>
+              <ul style="color: var(--text-secondary); margin: var(--space-md) 0; padding-left: var(--space-lg);">
+                <li style="margin-bottom: var(--space-sm);"><strong>중장년층 낮은 지지도 (42%)</strong><br/>→ 전략적 보강 필요</li>
+                <li style="margin-bottom: var(--space-sm);"><strong>전통 매체 영향력 약함</strong><br/>→ TV광고 활용도 낮음</li>
+                <li style="margin-bottom: var(--space-sm);"><strong>지역 기반 약한 편</strong><br/>→ 지역 인맥 부족</li>
+                <li style="margin-bottom: var(--space-sm);"><strong>고령층 지지도 매우 낮음 (35%)</strong><br/>→ 복지정책 강화 필요</li>
+              </ul>
+            </div>
+
+            <!-- O: 기회 (초록색) -->
+            <div style="padding: var(--space-lg); background: linear-gradient(135deg, rgba(16,185,129,0.1), rgba(16,185,129,0.05)); border-radius: var(--radius-md); border: 2px solid #10b981;">
+              <h3 style="margin-top: 0; color: #10b981;">🎯 기회 (Opportunities)</h3>
+              <ul style="color: var(--text-secondary); margin: var(--space-md) 0; padding-left: var(--space-lg);">
+                <li style="margin-bottom: var(--space-sm);"><strong>청년 이슈 활성화</strong><br/>→ 경쟁자 흔들기 가능</li>
+                <li style="margin-bottom: var(--space-sm);"><strong>경제 정책 강화</strong><br/>→ 모든 세대 호응 가능</li>
+                <li style="margin-bottom: var(--space-sm);"><strong>온라인 여론 선점</strong><br/>→ SNS 바이럴 확대</li>
+                <li style="margin-bottom: var(--space-sm);"><strong>지역 민감 이슈 활용</strong><br/>→ 지역민심 이반 유도</li>
+              </ul>
+            </div>
+
+            <!-- T: 위협 (빨간색) -->
+            <div style="padding: var(--space-lg); background: linear-gradient(135deg, rgba(239,68,68,0.1), rgba(239,68,68,0.05)); border-radius: var(--radius-md); border: 2px solid #ef4444;">
+              <h3 style="margin-top: 0; color: #ef4444;">⚡ 위협 (Threats)</h3>
+              <ul style="color: var(--text-secondary); margin: var(--space-md) 0; padding-left: var(--space-lg);">
+                <li style="margin-bottom: var(--space-sm);"><strong>경쟁자의 TV 광고 집중</strong><br/>→ 중장년층 공략 강화</li>
+                <li style="margin-bottom: var(--space-sm);"><strong>중장년층 여론 반전</strong><br/>→ 경쟁자 기반 결집</li>
+                <li style="margin-bottom: var(--space-sm);"><strong>부정적 이슈 발생</strong><br/>→ 청년층 신뢰도 하락</li>
+                <li style="margin-bottom: var(--space-sm);"><strong>경기악화 시 보수투표 증가</strong><br/>→ 경쟁자 유리</li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- SO, ST, WO, WT 전략 -->
+          <div style="padding: var(--space-lg); background-color: var(--bg-primary); border-radius: var(--radius-md); margin-bottom: var(--space-lg);">
+            <h3 style="margin-top: 0; color: var(--primary-color);">🎲 전략 매트릭스 (SO, ST, WO, WT)</h3>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-lg); margin-top: var(--space-lg);">
+              <!-- SO: 강점 + 기회 = 공격 전략 -->
+              <div style="padding: var(--space-lg); background: linear-gradient(135deg, #dbeafe, #f0f9ff); border-radius: var(--radius-md); border-left: 4px solid var(--primary-color);">
+                <h4 style="margin-top: 0; color: var(--primary-color);">🚀 SO 전략 (공격)</h4>
+                <p style="color: var(--text-secondary); font-size: var(--font-size-sm); margin: var(--space-sm) 0;">강점 + 기회를 활용하여 적극 공세</p>
+                <ul style="color: var(--text-secondary); font-size: var(--font-size-sm); margin: var(--space-md) 0; padding-left: var(--space-lg);">
+                  <li>청년층 집중 공략으로 확실한 지지층 확보</li>
+                  <li>온라인 여론 완전 장악 전략</li>
+                  <li>경제 정책 강화로 전세대 확대</li>
+                  <li>SNS 바이럴을 통한 이슈 주도</li>
+                </ul>
+              </div>
+
+              <!-- ST: 강점으로 위협 대응 = 방어 전략 -->
+              <div style="padding: var(--space-lg); background: linear-gradient(135deg, #f3e8ff, #faf5ff); border-radius: var(--radius-md); border-left: 4px solid #8b5cf6;">
+                <h4 style="margin-top: 0; color: #8b5cf6;">🛡️ ST 전략 (방어)</h4>
+                <p style="color: var(--text-secondary); font-size: var(--font-size-sm); margin: var(--space-sm) 0;">강점으로 위협 상황에 대응</p>
+                <ul style="color: var(--text-secondary); font-size: var(--font-size-sm); margin: var(--space-md) 0; padding-left: var(--space-lg);">
+                  <li>청년층 기반 확고히 다지기</li>
+                  <li>온라인 영향력으로 부정적 이슈 차단</li>
+                  <li>신선한 정책으로 경제 이슈 선점</li>
+                  <li>지역 SNS 캠페인으로 경기악화 대응</li>
+                </ul>
+              </div>
+
+              <!-- WO: 약점 보완 + 기회 = 전환 전략 -->
+              <div style="padding: var(--space-lg); background: linear-gradient(135deg, #fef3c7, #fffbeb); border-radius: var(--radius-md); border-left: 4px solid var(--warning);">
+                <h4 style="margin-top: 0; color: var(--warning);">📈 WO 전략 (전환)</h4>
+                <p style="color: var(--text-secondary); font-size: var(--font-size-sm); margin: var(--space-sm) 0;">약점을 보완하면서 기회 활용</p>
+                <ul style="color: var(--text-secondary); font-size: var(--font-size-sm); margin: var(--space-md) 0; padding-left: var(--space-lg);">
+                  <li>경제 정책 강화로 중장년층 확보 (기회)</li>
+                  <li>지역 순회로 지역 기반 보강</li>
+                  <li>정책 설명회로 고령층 설득</li>
+                  <li>경기악화 대응 정책으로 신뢰도 상승</li>
+                </ul>
+              </div>
+
+              <!-- WT: 약점 최소화 + 위협 회피 = 생존 전략 -->
+              <div style="padding: var(--space-lg); background: linear-gradient(135deg, #fee2e2, #fef2f2); border-radius: var(--radius-md); border-left: 4px solid #ef4444;">
+                <h4 style="margin-top: 0; color: #ef4444;">⚠️ WT 전략 (생존)</h4>
+                <p style="color: var(--text-secondary); font-size: var(--font-size-sm); margin: var(--space-sm) 0;">약점 최소화하고 위협 회피</p>
+                <ul style="color: var(--text-secondary); font-size: var(--font-size-sm); margin: var(--space-md) 0; padding-left: var(--space-lg);">
+                  <li>전통 매체 광고 투자로 중장년층 공략</li>
+                  <li>지역 기초단체장 연대로 지역 기반 확대</li>
+                  <li>부정적 이슈 빠른 대응 체계</li>
+                  <li>고령층 복지정책 강화로 지지도 상승</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <!-- 최종 권고사항 -->
+          <div style="padding: var(--space-lg); background: linear-gradient(135deg, rgba(59,130,246,0.15), rgba(59,130,246,0.05)); border-radius: var(--radius-md); border-left: 4px solid var(--primary-color);">
+            <h3 style="margin-top: 0; color: var(--primary-color);">📋 최종 권고사항</h3>
+            <div style="display: grid; gap: var(--space-lg);">
+              <div>
+                <h4 style="margin: 0 0 var(--space-sm) 0; color: var(--primary-color);">즉시 실행 과제 (1-2주)</h4>
+                <ul style="color: var(--text-secondary); font-size: var(--font-size-sm); margin: 0; padding-left: var(--space-lg);">
+                  <li>청년층 SNS 캠페인 고도화</li>
+                  <li>경제 정책 설명회 집중 개최</li>
+                  <li>경쟁자의 TV 광고 대응 체계 구축</li>
+                </ul>
+              </div>
+              <div>
+                <h4 style="margin: 0 0 var(--space-sm) 0; color: var(--warning);">중기 전략 (2-4주)</h4>
+                <ul style="color: var(--text-secondary); font-size: var(--font-size-sm); margin: 0; padding-left: var(--space-lg);">
+                  <li>중장년층 지지도 45% → 50% 상향</li>
+                  <li>지역별 순회 캠페인 확대</li>
+                  <li>정책 신뢰도 여론조사 기반 조정</li>
+                </ul>
+              </div>
+              <div>
+                <h4 style="margin: 0 0 var(--space-sm) 0; color: #10b981;">성공 시나리오</h4>
+                <ul style="color: var(--text-secondary); font-size: var(--font-size-sm); margin: 0; padding-left: var(--space-lg);">
+                  <li>최종 지지율: 45.2% → 54% (8.8%p 상향)</li>
+                  <li>경쟁자 대비 우위 확보: 62% 승리 확률</li>
+                  <li>세대별 균형잡힌 지지층 형성</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+
+      comparisonSection.innerHTML = analysisHTML;
+    }
+
+    function updateComparisonCards() {
+      const ourStrengths = [
+        '🎯 청년층 높은 지지도 (52%) - 주요 유권자층 확보',
+        '📱 디지털·SNS 강점 - 비용 효율적 캠페인',
+        '💡 신선한 정책 아젠다 - 미디어 호응도 높음',
+        '⚡ 온라인 활동성 높음 - 바이럴 마케팅 가능',
+        '🚀 모멘텀 조성 용이 - 신흥 정치 세력의 장점'
+      ];
+
+      const competitorWeaknesses = [
+        '⚠️ 청년층 낮은 지지도 (25%) - 세대 갈등 우려',
+        '📺 전통 매체 편중 - TV광고 비용 증가',
+        '🔄 정책 혁신성 부족 - 차별화 어려움',
+        '⏱️ 디지털 전환 지연 - 온라인 영향력 약함',
+        '🪵 기성체제 이미지 - 변화 거부 인식'
+      ];
+
+      const focusAreas = [
+        '🎯 중장년층(40-50대) 확보 - 지지도 42% → 48% 목표',
+        '💰 경제 정책 구체화 - 신뢰도 상승 필수',
+        '🌍 지역 순회 강화 - 기초 지지 기반 확대',
+        '📊 여론조사 기반 실시간 조정 - 민감도 높은 이슈 대응',
+        '⚖️ 고령층 설득 - 복지/연금 정책 강화',
+        '🤝 지역 기초단체장 연대 - 경쟁자의 약점 공략'
+      ];
+
+      // 우리의 강점 카드 업데이트
+      const cards = document.querySelectorAll('[style*="border-left: 4px solid"]');
+      cards.forEach((card, index) => {
+        const title = card.querySelector('h4');
+        if (title) {
+          if (title.textContent.includes('💪')) {
+            const ul = card.querySelector('ul');
+            if (ul) {
+              ul.innerHTML = ourStrengths.map(item =>
+                `<li style="margin-bottom: var(--space-sm); line-height: 1.5;">${item}</li>`
+              ).join('');
+            }
+          } else if (title.textContent.includes('⚠️')) {
+            const ul = card.querySelector('ul');
+            if (ul) {
+              ul.innerHTML = competitorWeaknesses.map(item =>
+                `<li style="margin-bottom: var(--space-sm); line-height: 1.5;">${item}</li>`
+              ).join('');
+            }
+          } else if (title.textContent.includes('🎯')) {
+            const ul = card.querySelector('ul');
+            if (ul) {
+              ul.innerHTML = focusAreas.map(item =>
+                `<li style="margin-bottom: var(--space-sm); line-height: 1.5;">${item}</li>`
+              ).join('');
+            }
+          }
+        }
+      });
+
+      // 승률 분석 섹션 업데이트
+      const winRateSection = document.getElementById('winRateAnalysis');
+      if (winRateSection) {
+        winRateSection.innerHTML = `
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-lg); margin-bottom: var(--space-lg); align-items: center;">
+            <!-- 좌측: 승률 원형 차트 (SVG) -->
+            <div style="display: flex; justify-content: center;">
+              <svg width="200" height="200" viewBox="0 0 200 200" style="max-width: 100%; height: auto;">
+                <!-- 배경원 -->
+                <circle cx="100" cy="100" r="90" fill="none" stroke="var(--bg-primary)" stroke-width="15"/>
+
+                <!-- 우리 승률 (파란색) - 62% = 223도 -->
+                <circle cx="100" cy="100" r="90" fill="none" stroke="var(--primary-color)" stroke-width="15"
+                  stroke-dasharray="389.3 628" stroke-linecap="round" transform="rotate(-90 100 100)"/>
+
+                <!-- 경쟁자 승률 (주황색) - 38% = 136도 -->
+                <circle cx="100" cy="100" r="90" fill="none" stroke="var(--warning)" stroke-width="15"
+                  stroke-dasharray="238.7 628" stroke-linecap="round" transform="rotate(134 100 100)"/>
+
+                <!-- 중앙 텍스트 -->
+                <circle cx="100" cy="100" r="55" fill="var(--bg-secondary)" />
+                <text x="100" y="95" text-anchor="middle" font-size="28" font-weight="700" fill="var(--primary-color)">62%</text>
+                <text x="100" y="115" text-anchor="middle" font-size="12" fill="var(--text-secondary)">우리 우위</text>
+              </svg>
+            </div>
+
+            <!-- 우측: 승률 설명 -->
+            <div style="display: flex; flex-direction: column; gap: var(--space-lg);">
+              <div style="padding: var(--space-lg); background: linear-gradient(135deg, var(--primary-color), var(--primary-light)); border-radius: var(--radius-md); color: white;">
+                <div style="font-size: 32px; font-weight: 700; margin-bottom: var(--space-sm);">62%</div>
+                <div style="font-size: var(--font-size-lg); font-weight: 600;">우리 승리 확률</div>
+                <div style="font-size: var(--font-size-sm); margin-top: var(--space-sm); opacity: 0.9;">높은 신뢰도 ✓</div>
+              </div>
+
+              <div style="padding: var(--space-lg); background: linear-gradient(135deg, var(--warning), #f59e0b); border-radius: var(--radius-md); color: white;">
+                <div style="font-size: 32px; font-weight: 700; margin-bottom: var(--space-sm);">38%</div>
+                <div style="font-size: var(--font-size-lg); font-weight: 600;">경쟁자 승리 확률</div>
+                <div style="font-size: var(--font-size-sm); margin-top: var(--space-sm); opacity: 0.9;">경계 필수 ⚠️</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 시나리오별 분석 -->
+          <div style="padding: var(--space-lg); background-color: var(--bg-secondary); border-radius: var(--radius-md); margin-bottom: var(--space-lg);">
+            <h4 style="margin-top: 0; color: var(--primary-color);">🎬 시나리오별 승패 분석</h4>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: var(--space-lg); margin-top: var(--space-lg);">
+              <!-- 최선의 시나리오 -->
+              <div style="padding: var(--space-lg); background-color: var(--bg-primary); border-radius: var(--radius-sm); border-top: 4px solid #10b981;">
+                <div style="font-size: 48px; margin-bottom: var(--space-sm);">😊</div>
+                <h5 style="margin: var(--space-sm) 0; color: #10b981;">최선의 경우</h5>
+                <p style="color: var(--text-secondary); font-size: var(--font-size-sm); margin: var(--space-sm) 0;">
+                  청년층 + 온라인 여론 완전 장악<br/>
+                  <strong style="color: #10b981;">우리 승리: 75%</strong>
+                </p>
+              </div>
+
+              <!-- 현재 시나리오 (기본) -->
+              <div style="padding: var(--space-lg); background-color: var(--bg-primary); border-radius: var(--radius-sm); border-top: 4px solid var(--primary-color);">
+                <div style="font-size: 48px; margin-bottom: var(--space-sm);">😐</div>
+                <h5 style="margin: var(--space-sm) 0; color: var(--primary-color);">현재 상황</h5>
+                <p style="color: var(--text-secondary); font-size: var(--font-size-sm); margin: var(--space-sm) 0;">
+                  전략 완벽 실행 + 중장년층 50% 확보<br/>
+                  <strong style="color: var(--primary-color);">우리 승리: 62%</strong>
+                </p>
+              </div>
+
+              <!-- 최악의 시나리오 -->
+              <div style="padding: var(--space-lg); background-color: var(--bg-primary); border-radius: var(--radius-sm); border-top: 4px solid #ef4444;">
+                <div style="font-size: 48px; margin-bottom: var(--space-sm);">😰</div>
+                <h5 style="margin: var(--space-sm) 0; color: #ef4444;">최악의 경우</h5>
+                <p style="color: var(--text-secondary); font-size: var(--font-size-sm); margin: var(--space-sm) 0;">
+                  부정적 이슈 + 경쟁자 TV광고 집중<br/>
+                  <strong style="color: #ef4444;">우리 승리: 48%</strong>
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- 상세 분석 -->
+          <div style="padding: var(--space-lg); background-color: var(--bg-secondary); border-radius: var(--radius-md); margin-bottom: var(--space-lg);">
+            <h4 style="margin-top: 0; color: var(--primary-color);">📋 승패 결정 요소</h4>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: var(--space-lg); margin-top: var(--space-lg);">
+              <div style="padding: var(--space-md); background-color: var(--bg-primary); border-radius: var(--radius-sm); border-left: 4px solid #10b981;">
+                <h5 style="margin-top: 0; color: #10b981; margin-bottom: var(--space-sm);">✅ 우리의 압도적 우위</h5>
+                <ul style="color: var(--text-secondary); font-size: var(--font-size-sm); margin: 0; padding-left: var(--space-lg);">
+                  <li>청년층 지지도 +27%p</li>
+                  <li>온라인 플랫폼 주도권</li>
+                  <li>정책 신선도</li>
+                  <li>미디어 주목도</li>
+                </ul>
+              </div>
+
+              <div style="padding: var(--space-md); background-color: var(--bg-primary); border-radius: var(--radius-sm); border-left: 4px solid var(--warning);">
+                <h5 style="margin-top: 0; color: var(--warning); margin-bottom: var(--space-sm);">⚠️ 경쟁자의 반격 가능성</h5>
+                <ul style="color: var(--text-secondary); font-size: var(--font-size-sm); margin: 0; padding-left: var(--space-lg);">
+                  <li>고령층 기반(58%)</li>
+                  <li>전통 매체 영향력</li>
+                  <li>지역 인맥 네트워크</li>
+                  <li>정책 신뢰도 동등</li>
+                </ul>
+              </div>
+
+              <div style="padding: var(--space-md); background-color: var(--bg-primary); border-radius: var(--radius-sm); border-left: 4px solid var(--primary-color);">
+                <h5 style="margin-top: 0; color: var(--primary-color); margin-bottom: var(--space-sm);">🎯 우리가 집중할 영역</h5>
+                <ul style="color: var(--text-secondary); font-size: var(--font-size-sm); margin: 0; padding-left: var(--space-lg);">
+                  <li>중장년층 설득</li>
+                  <li>경제 정책 강화</li>
+                  <li>지역 기반 확대</li>
+                  <li>우동(우리+동네) 캠페인</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <!-- 리스크 분석 -->
+          <div style="padding: var(--space-lg); background-color: var(--bg-secondary); border-radius: var(--radius-md);">
+            <h4 style="margin-top: 0; color: var(--primary-color);">⚡ 주의할 변수</h4>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: var(--space-lg); margin-top: var(--space-lg);">
+              <div style="padding: var(--space-md); background-color: var(--bg-primary); border-radius: var(--radius-sm); border-top: 3px solid #ef4444;">
+                <h5 style="margin-top: 0; color: #ef4444;">🔴 High Risk</h5>
+                <ul style="color: var(--text-secondary); font-size: var(--font-size-sm); margin: 0; padding-left: var(--space-lg);">
+                  <li>경쟁자의 TV 광고 집중 투자</li>
+                  <li>중장년층 여론 반전</li>
+                  <li>부정적 이슈 발생</li>
+                </ul>
+              </div>
+
+              <div style="padding: var(--space-md); background-color: var(--bg-primary); border-radius: var(--radius-sm); border-top: 3px solid var(--warning);">
+                <h5 style="margin-top: 0; color: var(--warning);">🟡 Medium Risk</h5>
+                <ul style="color: var(--text-secondary); font-size: var(--font-size-sm); margin: 0; padding-left: var(--space-lg);">
+                  <li>경기악화 시 보수 투표 증가</li>
+                  <li>지역 민심 이반</li>
+                  <li>SNS 악성 루머 확산</li>
+                </ul>
+              </div>
+
+              <div style="padding: var(--space-md); background-color: var(--bg-primary); border-radius: var(--radius-sm); border-top: 3px solid #10b981;">
+                <h5 style="margin-top: 0; color: #10b981;">🟢 우리의 기회</h5>
+                <ul style="color: var(--text-secondary); font-size: var(--font-size-sm); margin: 0; padding-left: var(--space-lg);">
+                  <li>청년 이슈로 경쟁자 흔들기</li>
+                  <li>경제 정책 강화 이슈화</li>
+                  <li>온라인 여론 선점</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        `;
+      }
+    }
+
+    function displayType3Strategy() {
+      const type3Container = document.getElementById('type3Static');
+      const strategHTML = `
+        <!-- 1. 헤더 -->
+        <div style="padding: var(--space-lg); background: linear-gradient(135deg, var(--primary-color), var(--primary-light)); border-radius: var(--radius-md); margin-bottom: var(--space-lg); color: white;">
+          <h3 style="margin-top: 0; margin-bottom: var(--space-sm);">🚀 우리 전략 분석</h3>
+          <p style="margin: 0; font-size: var(--font-size-sm); opacity: 0.95;">
+            강점 기반 집중 공략 전략 — 청년층 지지 극대화 × 디지털 우위 활용 × 정책 혁신
+          </p>
+          <p style="margin: var(--space-md) 0 0 0; font-size: var(--font-size-sm); opacity: 0.9; line-height: 1.6;">
+            우리의 핵심 전략은 보유한 강점을 극대화하면서 약점을 보완하는 '공격과 수비의 균형'에 있습니다. 청년층의 높은 지지도(52%)를 기반으로 온라인 채널과 신선한 정책 어젠다를 활용해 이들의 결집력을 극대화하고, 동시에 낮은 고령층 지지도(35%)를 개선하기 위해 기성세대 관심 이슈에 집중합니다. 4주간 단계적 실행을 통해 전체 지지율을 45.2%에서 52-55%로 끌어올리는 것이 목표입니다.
+          </p>
+        </div>
+
+        <!-- 2. 연령대별 지지도 -->
+        <div style="padding: var(--space-lg); background-color: var(--bg-secondary); border-radius: var(--radius-md); margin-bottom: var(--space-lg);">
+          <h3 style="margin-top: 0; color: var(--primary-color);">👥 연령대별 지지도 현황</h3>
+          <p style="margin: 0 0 var(--space-lg) 0; color: var(--text-secondary); font-size: var(--font-size-sm); line-height: 1.6;">
+            지지도 게이지는 세대별 우리의 상대적 강점과 약점을 명확히 보여줍니다. 20-30대 청년층에서 52%의 높은 지지를 확보했으나, 연령이 높아질수록 지지도가 급락하는 패턴을 보입니다. 이는 우리의 디지털·혁신 중심 포지셔닝이 젊은 세대에는 매력적이지만 기성세대에는 '급진적'으로 인식될 가능성을 시사합니다. 따라서 중장년층 설득과 고령층 정책 강화가 전략적 필수 과제입니다.
+          </p>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: var(--space-lg); margin-top: var(--space-lg);">
+            <div>
+              <div style="display: flex; justify-content: space-between; margin-bottom: var(--space-sm);">
+                <span style="font-weight: 600;">20-30대</span>
+                <span style="color: var(--primary-color); font-weight: 700;">52%</span>
+              </div>
+              <div style="height: 24px; background-color: var(--bg-primary); border-radius: var(--radius-sm); overflow: hidden;">
+                <div style="width: 52%; height: 100%; background: linear-gradient(90deg, var(--primary-color), var(--primary-light)); display: flex; align-items: center; justify-content: flex-end; padding-right: var(--space-xs);">
+                  <span style="color: white; font-size: var(--font-size-xs); font-weight: 700;">52%</span>
+                </div>
+              </div>
+              <p style="color: var(--text-secondary); font-size: var(--font-size-sm); margin-top: var(--space-xs);">✅ 강한 지지</p>
+            </div>
+
+            <div>
+              <div style="display: flex; justify-content: space-between; margin-bottom: var(--space-sm);">
+                <span style="font-weight: 600;">40-50대</span>
+                <span style="color: var(--warning); font-weight: 700;">42%</span>
+              </div>
+              <div style="height: 24px; background-color: var(--bg-primary); border-radius: var(--radius-sm); overflow: hidden;">
+                <div style="width: 42%; height: 100%; background: linear-gradient(90deg, var(--warning), #fcd34d); display: flex; align-items: center; justify-content: flex-end; padding-right: var(--space-xs);">
+                  <span style="color: #1f2937; font-size: var(--font-size-xs); font-weight: 700;">42%</span>
+                </div>
+              </div>
+              <p style="color: var(--text-secondary); font-size: var(--font-size-sm); margin-top: var(--space-xs);">🔶 개선 필요</p>
+            </div>
+
+            <div>
+              <div style="display: flex; justify-content: space-between; margin-bottom: var(--space-sm);">
+                <span style="font-weight: 600;">60대+</span>
+                <span style="color: #ef4444; font-weight: 700;">35%</span>
+              </div>
+              <div style="height: 24px; background-color: var(--bg-primary); border-radius: var(--radius-sm); overflow: hidden;">
+                <div style="width: 35%; height: 100%; background: linear-gradient(90deg, #ef4444, #f87171); display: flex; align-items: center; justify-content: flex-end; padding-right: var(--space-xs);">
+                  <span style="color: white; font-size: var(--font-size-xs); font-weight: 700;">35%</span>
+                </div>
+              </div>
+              <p style="color: var(--text-secondary); font-size: var(--font-size-sm); margin-top: var(--space-xs);">❌ 우선 공략</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. 핵심 강점 -->
+        <div style="padding: 0; margin-bottom: var(--space-lg);">
+          <p style="color: var(--text-secondary); font-size: var(--font-size-sm); line-height: 1.6; margin-bottom: var(--space-lg);">
+            우리의 3가지 핵심 강점은 경쟁자와의 명확한 차별화 포인트이며, 이를 극대화하는 것이 승리 전략의 핵심입니다. 첫째, 청년층에서의 압도적 지지율(+27%p)은 투표율 변동에 따른 불확실성을 낮추고 안정적인 기반을 제공합니다. 둘째, 디지털 우위는 낮은 광고 비용으로 광범위한 영향력 확산이 가능함을 의미합니다. 셋째, 정책 혁신도는 미디어의 자발적 호응과 여론 형성에서 유리합니다.
+          </p>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: var(--space-lg);">
+            <div style="padding: var(--space-lg); background-color: var(--bg-secondary); border-radius: var(--radius-md); border-top: 4px solid var(--primary-color);">
+              <h4 style="margin-top: 0; color: var(--primary-color);">💪 강점 #1</h4>
+              <p style="color: var(--text-secondary); margin: var(--space-md) 0; line-height: 1.6;">
+                <strong>청년층 압도적 우위</strong><br/>
+                52% 지지율로 경쟁자 대비 +27%p
+              </p>
+            </div>
+          <div style="padding: var(--space-lg); background-color: var(--bg-secondary); border-radius: var(--radius-md); border-top: 4px solid var(--primary-light);">
+            <h4 style="margin-top: 0; color: var(--primary-light);">💡 강점 #2</h4>
+            <p style="color: var(--text-secondary); margin: var(--space-md) 0; line-height: 1.6;">
+              <strong>디지털/SNS 장악</strong><br/>
+              온라인 채널 영향력 최대화
+            </p>
+          </div>
+          <div style="padding: var(--space-lg); background-color: var(--bg-secondary); border-radius: var(--radius-md); border-top: 4px solid #10b981;">
+            <h4 style="margin-top: 0; color: #10b981;">🎯 강점 #3</h4>
+            <p style="color: var(--text-secondary); margin: var(--space-md) 0; line-height: 1.6;">
+              <strong>정책 혁신도</strong><br/>
+              신선한 아젠다로 미디어 호응 높음
+            </p>
+          </div>
+        </div>
+
+        <!-- 4. 4주 액션 플랜 -->
+        <div style="padding: var(--space-lg); background-color: var(--bg-secondary); border-radius: var(--radius-md); margin-bottom: var(--space-lg);">
+          <h3 style="margin-top: 0; color: var(--primary-color);">📅 4주 집중 액션 플랜</h3>
+          <div style="display: grid; gap: var(--space-lg); margin-top: var(--space-lg);">
+            <div style="padding: var(--space-lg); background-color: var(--bg-primary); border-radius: var(--radius-sm); border-left: 4px solid #3b82f6;">
+              <div style="font-weight: 600; margin-bottom: var(--space-sm);">📍 1주차: 청년 공약 집중 공개</div>
+              <p style="margin: 0; color: var(--text-secondary); font-size: var(--font-size-sm); line-height: 1.6;">
+                청년층이 가장 관심 있는 정책(일자리, 주거, 교육, 금융)을 대담하고 구체적으로 공개하는 주차입니다. 청년 공약 설명회, SNS(유튜브, 인스타그램, 틱톡) 동시 라이브 스트림, 온라인 질의응답 이벤트를 통해 "진정성 있는 청년 대표"라는 포지셔닝을 확립합니다. KPI는 청년층 인지도 50%→70%, SNS 팔로우 100만→300만, 정책 설명회 참석자 3,000명을 목표로 설정합니다. 이 주차가 전체 4주 캠페인의 모멘텀을 결정하는 만큼, 최강의 미디어 역량과 인플루언서 네트워크를 총동원합니다.
+              </p>
+            </div>
+            <div style="padding: var(--space-lg); background-color: var(--bg-primary); border-radius: var(--radius-sm); border-left: 4px solid #06b6d4;">
+              <div style="font-weight: 600; margin-bottom: var(--space-sm);">📍 2주차: 경제 정책 강화</div>
+              <p style="margin: 0; color: var(--text-secondary); font-size: var(--font-size-sm); line-height: 1.6;">
+                중장년층이 실질적으로 관심 있는 경제 정책(중소상인 지원, 소상공인 세제혜택, 연금 개혁, 일자리 창출)을 깊이 있게 설명하는 주차입니다. 경제 정책 설명회 3회(서울·경인·호남 지역별 추진), 경제 전문가 자문단 구성·공개, 중장년층 매체(라디오, 신문, 팟캐스트) 협력 강화를 진행합니다. KPI는 경제 정책 인지도 상승, 중장년층(40-50대) 지지도 42%→55%, 라디오/팟캐스트 청취자 50만명 달성을 목표합니다. 1주차의 청년 집중 공략으로 기성세대가 "우리는 외면당하나?" 느끼지 않도록 적극적인 메시지 전달이 필수입니다.
+              </p>
+            </div>
+            <div style="padding: var(--space-lg); background-color: var(--bg-primary); border-radius: var(--radius-sm); border-left: 4px solid #8b5cf6;">
+              <div style="font-weight: 600; margin-bottom: var(--space-sm);">📍 3주차: 중장년층 전략 강화</div>
+              <p style="margin: 0; color: var(--text-secondary); font-size: var(--font-size-sm); line-height: 1.6;">
+                기성세대 관심 이슈(일자리 안정, 의료·복지, 지역 발전, 교육)를 깊이 있게 발굴하고 지역별 맞춤형 메시지를 전개하는 주차입니다. 지역 순회 집중(동작, 관악, 강남, 송파 등 주요 지역 3-4회), 라디오/신문 광고 시작(저녁 뉴스 시간대 강화), 지역 의원·시민단체와의 간담회 개최를 추진합니다. KPI는 지역별 만족도 조사(80% 이상 긍정평가), 신문 광고 노출 300만명, 지역 순회 참석자 5,000명을 목표로 합니다. 이 주차부터 전통 매체(라디오, 신문) 의존도를 높여 경쟁자의 강점을 중화시킵니다.
+              </p>
+            </div>
+            <div style="padding: var(--space-lg); background-color: var(--bg-primary); border-radius: var(--radius-sm); border-left: 4px solid #ec4899;">
+              <div style="font-weight: 600; margin-bottom: var(--space-sm);">📍 4주차: 모멘텀 강화</div>
+              <p style="margin: 0; color: var(--text-secondary); font-size: var(--font-size-sm); line-height: 1.6;">
+                1-3주차 캠페인으로 형성된 긍정적 여론을 최종 스퍼트로 전환하고, 실시간 여론 동향을 점검하며 선거 직전까지의 전술을 재조정하는 주차입니다. 주요 언론(TV, 신문, 라디오) 기자회견 및 인터뷰 집중, 최후의 지역 순회(수도권 집중), 여론조사(3-4회) 실시로 지지율 추이를 실시간 모니터링합니다. KPI는 전체 지지율 45%→50%+, 청년층 70%+, 중장년층 55%+, 여론조사 신뢰도 95% 이상을 목표로 합니다. 이 주차는 선거 직전 최종 수정 및 보강 시점으로, 전략의 유연한 조정이 매우 중요합니다.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- 5. SWOT 분석 -->
+        <div style="padding: var(--space-lg); background-color: var(--bg-secondary); border-radius: var(--radius-md); margin-bottom: var(--space-lg);">
+          <h3 style="margin-top: 0; color: var(--primary-color);">🔍 우리 SWOT 분석</h3>
+          <p style="color: var(--text-secondary); font-size: var(--font-size-sm); line-height: 1.6; margin-bottom: var(--space-lg);">
+            강점과 약점(내부 역량), 기회와 위협(외부 환경)을 통합 분석하여 전략적 의사결정의 근거를 제공합니다. 우리의 청년층 지지와 디지털 우위(강점)를 극대화하고, 고령층 약점을 개선하는 구체적 액션(약점 보완)을 동시에 추진합니다. 외부 환경에서는 청년 투표율 증가 기회를 잡는 한편, 경쟁자 TV 광고 등의 위협에 선제적으로 대응합니다.
+          </p>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-lg); margin-top: var(--space-lg);">
+            <!-- S -->
+            <div style="padding: var(--space-lg); background: linear-gradient(135deg, rgba(59,130,246,0.1), rgba(59,130,246,0.05)); border-radius: var(--radius-md); border: 2px solid var(--primary-color);">
+              <h4 style="margin-top: 0; color: var(--primary-color);">💪 강점</h4>
+              <ul style="color: var(--text-secondary); margin: 0; padding-left: var(--space-lg);">
+                <li>청년층 52% 지지도</li>
+                <li>디지털 SNS 우위</li>
+                <li>정책 혁신도 높음</li>
+              </ul>
+            </div>
+            <!-- W -->
+            <div style="padding: var(--space-lg); background: linear-gradient(135deg, rgba(245,158,11,0.1), rgba(245,158,11,0.05)); border-radius: var(--radius-md); border: 2px solid var(--warning);">
+              <h4 style="margin-top: 0; color: var(--warning);">⚠️ 약점</h4>
+              <ul style="color: var(--text-secondary); margin: 0; padding-left: var(--space-lg);">
+                <li>고령층 35% 낮음</li>
+                <li>전통 매체 약함</li>
+                <li>지역 기반 약함</li>
+              </ul>
+            </div>
+            <!-- O -->
+            <div style="padding: var(--space-lg); background: linear-gradient(135deg, rgba(16,185,129,0.1), rgba(16,185,129,0.05)); border-radius: var(--radius-md); border: 2px solid #10b981;">
+              <h4 style="margin-top: 0; color: #10b981;">🎯 기회</h4>
+              <ul style="color: var(--text-secondary); margin: 0; padding-left: var(--space-lg);">
+                <li>청년 투표율 증가</li>
+                <li>온라인 영향력 확대</li>
+                <li>신정책 반응도 높음</li>
+              </ul>
+            </div>
+            <!-- T -->
+            <div style="padding: var(--space-lg); background: linear-gradient(135deg, rgba(239,68,68,0.1), rgba(239,68,68,0.05)); border-radius: var(--radius-md); border: 2px solid #ef4444;">
+              <h4 style="margin-top: 0; color: #ef4444;">⚡ 위협</h4>
+              <ul style="color: var(--text-secondary); margin: 0; padding-left: var(--space-lg);">
+                <li>경쟁자 TV 광고</li>
+                <li>고령층 결집</li>
+                <li>부정 이슈 확대</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <!-- 6. KPI 목표 -->
+        <div style="padding: var(--space-lg); background-color: var(--bg-secondary); border-radius: var(--radius-md);">
+          <h3 style="margin-top: 0; color: var(--primary-color);">🎯 4주 후 목표 (KPI)</h3>
+          <p style="color: var(--text-secondary); font-size: var(--font-size-sm); line-height: 1.6; margin-bottom: var(--space-lg);">
+            핵심 성과 지표(KPI)는 전략 실행의 성공 여부를 객관적으로 측정하는 기준입니다. 전체 지지율 +7%p 목표는 현실적이면서도 야심적인 수치로, 이를 달성하려면 각 세대별 목표를 동시에 추진해야 합니다. 청년층은 지속 강화, 중장년층은 개선, 고령층은 기초 확보에 집중합니다. 매주 여론조사와 온라인 반응 모니터링으로 진행상황을 점검하고, 필요시 전술적 조정을 신속히 실행합니다.
+          </p>
+          <div style="display: grid; gap: var(--space-lg); margin-top: var(--space-lg);">
+            <div>
+              <div style="display: flex; justify-content: space-between; margin-bottom: var(--space-sm);">
+                <span style="font-weight: 600;">전체 지지율</span>
+                <span style="color: var(--primary-color); font-weight: 700;">45.2% → 52-55% 목표</span>
+              </div>
+              <div style="height: 32px; background-color: var(--bg-primary); border-radius: var(--radius-sm); overflow: hidden; display: flex;">
+                <div style="width: 45.2%; height: 100%; background: linear-gradient(90deg, #d1d5db, #d1d5db); display: flex; align-items: center; justify-content: flex-end; padding-right: var(--space-xs);">
+                  <span style="color: var(--text-secondary); font-size: var(--font-size-xs); font-weight: 700;">현재</span>
+                </div>
+                <div style="flex: 1; height: 100%; background: linear-gradient(90deg, var(--primary-color), var(--primary-light)); display: flex; align-items: center; justify-content: flex-end; padding-right: var(--space-xs);">
+                  <span style="color: white; font-size: var(--font-size-xs); font-weight: 700;">목표 +10%p</span>
+                </div>
+              </div>
+            </div>
+            <div>
+              <div style="display: flex; justify-content: space-between; margin-bottom: var(--space-sm);">
+                <span style="font-weight: 600;">청년층 지지도</span>
+                <span style="color: var(--primary-light); font-weight: 700;">52% → 58-60%</span>
+              </div>
+              <div style="height: 32px; background-color: var(--bg-primary); border-radius: var(--radius-sm); overflow: hidden; display: flex;">
+                <div style="width: 52%; height: 100%; background: var(--primary-light); display: flex; align-items: center; justify-content: flex-end; padding-right: var(--space-xs);">
+                  <span style="color: white; font-size: var(--font-size-xs); font-weight: 700;">52%</span>
+                </div>
+                <div style="width: 8%; height: 100%; background: var(--primary-color); display: flex; align-items: center; justify-content: center;">
+                  <span style="color: white; font-size: var(--font-size-xs); font-weight: 700;">+6-8%p</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+      type3Container.innerHTML = strategHTML;
+    }
+
+    function displayType4Strategy() {
+      const type4Container = document.getElementById('type4Static');
+      const strategHTML = `
+        <!-- 1. 위협 헤더 -->
+        <div style="padding: var(--space-lg); background: linear-gradient(135deg, var(--warning), #f59e0b); border-radius: var(--radius-md); margin-bottom: var(--space-lg); color: white;">
+          <h3 style="margin-top: 0; margin-bottom: var(--space-sm);">⚔️ 경쟁자 전략 분석</h3>
+          <p style="margin: 0; font-size: var(--font-size-sm); opacity: 0.95;">
+            경쟁자의 강점을 파악하고 취약점을 공략하기 위한 대응 전략
+          </p>
+          <p style="margin: var(--space-md) 0 0 0; font-size: var(--font-size-sm); opacity: 0.9; line-height: 1.6;">
+            경쟁자는 기성세대(특히 고령층)에서 강한 기반을 확보한 전통적 정치 세력입니다. TV·라디오 중심의 전통 매체 활용과 지역 기초 조직의 결집력이 경쟁자의 주요 무기입니다. 그러나 청년층에서의 극도로 낮은 지지도(25%)와 온라인 영향력 부족, 혁신적 정책 부족은 심각한 약점입니다. 경쟁자의 이러한 구조적 취약점을 정확히 파악하고 공략하는 것이 우리의 승리 전략입니다.
+          </p>
+        </div>
+
+        <!-- 2. 경쟁자 연령대별 지지도 -->
+        <div style="padding: var(--space-lg); background-color: var(--bg-secondary); border-radius: var(--radius-md); margin-bottom: var(--space-lg);">
+          <h3 style="margin-top: 0; color: var(--warning);">👥 경쟁자 연령대별 지지도</h3>
+          <p style="margin: 0 0 var(--space-lg) 0; color: var(--text-secondary); font-size: var(--font-size-sm); line-height: 1.6;">
+            경쟁자의 지지도 분포는 극명한 '세대 양극화'를 드러냅니다. 고령층(60대+) 58%, 중장년층(40-50대) 48%의 높은 지지 vs. 청년층(20-30대) 25%의 극도로 낮은 지지. 이는 경쟁자가 이미 기성세대 투표자를 안정적으로 확보했으나, 향후 세대교체에 매우 취약함을 의미합니다. 우리는 이 틈새를 정확히 겨냥해 청년층 결집력 강화와 중장년층 설득 공략을 동시에 진행하면, 경쟁자의 약점을 치명적 타격으로 전환할 수 있습니다.
+          </p>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: var(--space-lg); margin-top: var(--space-lg);">
+            <div>
+              <div style="display: flex; justify-content: space-between; margin-bottom: var(--space-sm);">
+                <span style="font-weight: 600;">20-30대</span>
+                <span style="color: #ef4444; font-weight: 700;">25%</span>
+              </div>
+              <div style="height: 24px; background-color: var(--bg-primary); border-radius: var(--radius-sm); overflow: hidden;">
+                <div style="width: 25%; height: 100%; background: linear-gradient(90deg, #ef4444, #f87171); display: flex; align-items: center; justify-content: flex-end; padding-right: var(--space-xs);">
+                  <span style="color: white; font-size: var(--font-size-xs); font-weight: 700;">25%</span>
+                </div>
+              </div>
+              <p style="color: var(--text-secondary); font-size: var(--font-size-sm); margin-top: var(--space-xs);">❌ 취약점</p>
+            </div>
+
+            <div>
+              <div style="display: flex; justify-content: space-between; margin-bottom: var(--space-sm);">
+                <span style="font-weight: 600;">40-50대</span>
+                <span style="color: var(--primary-color); font-weight: 700;">48%</span>
+              </div>
+              <div style="height: 24px; background-color: var(--bg-primary); border-radius: var(--radius-sm); overflow: hidden;">
+                <div style="width: 48%; height: 100%; background: linear-gradient(90deg, var(--primary-color), var(--primary-light)); display: flex; align-items: center; justify-content: flex-end; padding-right: var(--space-xs);">
+                  <span style="color: white; font-size: var(--font-size-xs); font-weight: 700;">48%</span>
+                </div>
+              </div>
+              <p style="color: var(--text-secondary); font-size: var(--font-size-sm); margin-top: var(--space-xs);">✅ 주력층</p>
+            </div>
+
+            <div>
+              <div style="display: flex; justify-content: space-between; margin-bottom: var(--space-sm);">
+                <span style="font-weight: 600;">60대+</span>
+                <span style="color: #10b981; font-weight: 700;">58%</span>
+              </div>
+              <div style="height: 24px; background-color: var(--bg-primary); border-radius: var(--radius-sm); overflow: hidden;">
+                <div style="width: 58%; height: 100%; background: linear-gradient(90deg, #10b981, #34d399); display: flex; align-items: center; justify-content: flex-end; padding-right: var(--space-xs);">
+                  <span style="color: white; font-size: var(--font-size-xs); font-weight: 700;">58%</span>
+                </div>
+              </div>
+              <p style="color: var(--text-secondary); font-size: var(--font-size-sm); margin-top: var(--space-xs);">✅✅ 강한 기반</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. 경쟁자 3대 전략축 -->
+        <div style="padding: 0; margin-bottom: var(--space-lg);">
+          <p style="color: var(--text-secondary); font-size: var(--font-size-sm); line-height: 1.6; margin-bottom: var(--space-lg);">
+            경쟁자의 3대 전략축은 우리와 명확히 대조되는 차별화 포인트입니다. 첫째, 전통 매체 집중 투자는 고령층 영향력은 크지만 청년층 도달력은 극도로 낮습니다. 둘째, 지역 기반 강화는 이미 확보한 기초 조직을 방어하는 소극적 전략입니다. 셋째, 경험·신뢰 강조는 혁신성 부족과 진부성이라는 인식을 초래합니다. 경쟁자의 이 세 축 모두가 청년층과 온라인 채널에서는 약하다는 점이 우리의 기회입니다.
+          </p>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: var(--space-lg);">
+            <div style="padding: var(--space-lg); background-color: var(--bg-secondary); border-radius: var(--radius-md); border-top: 4px solid var(--warning);">
+              <h4 style="margin-top: 0; color: var(--warning);">📺 전략축 #1</h4>
+            <p style="color: var(--text-secondary); margin: var(--space-md) 0; line-height: 1.6;">
+              <strong>전통 매체 집중 투자</strong><br/>
+              TV·라디오·신문 광고 확대
+            </p>
+          </div>
+          <div style="padding: var(--space-lg); background-color: var(--bg-secondary); border-radius: var(--radius-md); border-top: 4px solid #f59e0b;">
+            <h4 style="margin-top: 0; color: #f59e0b;">🏛️ 전략축 #2</h4>
+            <p style="color: var(--text-secondary); margin: var(--space-md) 0; line-height: 1.6;">
+              <strong>지역 기반 강화</strong><br/>
+              기초단체장 결집 + 지역 순회
+            </p>
+          </div>
+          <div style="padding: var(--space-lg); background-color: var(--bg-secondary); border-radius: var(--radius-md); border-top: 4px solid #10b981;">
+            <h4 style="margin-top: 0; color: #10b981;">✨ 전략축 #3</h4>
+            <p style="color: var(--text-secondary); margin: var(--space-md) 0; line-height: 1.6;">
+              <strong>경험·신뢰 강조</strong><br/>
+              과거 성과 강조 + 안정성 메시징
+            </p>
+          </div>
+        </div>
+
+        <!-- 4. 4주 경쟁자 위협 타임라인 -->
+        <div style="padding: var(--space-lg); background-color: var(--bg-secondary); border-radius: var(--radius-md); margin-bottom: var(--space-lg);">
+          <h3 style="margin-top: 0; color: var(--warning);">📅 경쟁자 4주 위협 타임라인</h3>
+          <div style="display: grid; gap: var(--space-lg); margin-top: var(--space-lg);">
+            <div style="padding: var(--space-lg); background-color: var(--bg-primary); border-radius: var(--radius-sm); border-left: 4px solid #ef4444;">
+              <div style="font-weight: 600; margin-bottom: var(--space-sm);">⚠️ 1주차: 경험 강조 캠페인</div>
+              <p style="margin: 0; color: var(--text-secondary); font-size: var(--font-size-sm); line-height: 1.6;">
+                경쟁자가 지난 정부의 성과와 경험을 집중 홍보하는 주차입니다. 주요 전략: (1) 지난 정부 정책 성과 보도자료·영상 집중 배포, (2) 전국 지역 순회 시작(고령층 밀집 지역 우선), (3) 주류 매체(TV, 라디오, 신문) 인터뷰 강화, (4) "경험·신뢰"를 주제로 한 광고 초안 공개. 목표는 고령층 기반(현재 58%) 확보 유지 및 심화, 전체 지지율 38%→42% 상승입니다. 우리의 대응: 청년 정책 공개로 경쟁자의 "구시대적 메시징"을 상대화하고, "경험이 아닌 변화가 필요하다"는 프레이밍으로 대항합니다.
+              </p>
+            </div>
+            <div style="padding: var(--space-lg); background-color: var(--bg-primary); border-radius: var(--radius-sm); border-left: 4px solid #f59e0b;">
+              <div style="font-weight: 600; margin-bottom: var(--space-sm);">⚠️ 2주차: 지역 기초단체장 연합</div>
+              <p style="margin: 0; color: var(--text-secondary); font-size: var(--font-size-sm); line-height: 1.6;">
+                경쟁자가 전국 기초단체장의 지지를 결집하고 대규모 선언식을 개최하는 주차입니다. 주요 전략: (1) 기초단체장 지지선언 기자회견(전국 동시 진행), (2) 지역 유지 기반 강화를 위한 기초 의원·시장 연금, (3) 지역 언론 활용 강화, (4) "지역 기반 없이는 정치 불가능" 메시징. 목표는 이미 확보한 지역 표(고령층, 전통 지역민) 방어 및 신규 중장년층(40-50대) 지역민 확보 20% 상승입니다. 우리의 대응: 청년 지역 인사와 새로운 풀뿌리 조직으로 경쟁자의 "기성 지역 카르텔"에 대항하고, 경제 정책 설명회를 지역별로 전개하여 중장년층의 신뢰 확보에 집중합니다.
+              </p>
+            </div>
+            <div style="padding: var(--space-lg); background-color: var(--bg-primary); border-radius: var(--radius-sm); border-left: 4px solid #a78bfa;">
+              <div style="font-weight: 600; margin-bottom: var(--space-sm);">⚠️ 3주차: 보수 진영 결집</div>
+              <p style="margin: 0; color: var(--text-secondary); font-size: var(--font-size-sm); line-height: 1.6;">
+                경쟁자가 보수 정치진과 보수 진영 진영을 총결집하는 대규모 집회·행사를 개최하는 주차입니다. 주요 전략: (1) "한마음 집회" 등 대규모 정치 집회 개최, (2) 보수 정당·정치인 지지선언 강화, (3) 보수 단체(시민단체, 종교단체) 연대 강화, (4) 보수 기조 강조 광고(안보, 반공, 전통가치). 목표는 보수 진영 결집으로 기성 지지층 70% 이상 확보, 전체 지지율 42%→45% 상승입니다. 하지만 신규 유권자 확보 능력은 거의 없으며, 청년층에는 오히려 "낡은 정치" 이미지를 강화합니다. 우리의 대응: 경쟁자의 "닫힌 정치" 이미지를 적극 공략하고, 청년층-온라인 캠페인을 더욱 강화하여 "변화의 세력" 포지셔닝을 확립합니다.
+              </p>
+            </div>
+            <div style="padding: var(--space-lg); background-color: var(--bg-primary); border-radius: var(--radius-sm); border-left: 4px solid #06b6d4;">
+              <div style="font-weight: 600; margin-bottom: var(--space-sm);">⚠️ 4주차: TV 광고 강화</div>
+              <p style="margin: 0; color: var(--text-secondary); font-size: var(--font-size-sm); line-height: 1.6;">
+                경쟁자가 TV 광고에 막대한 자금을 투입하는 최종 스퍼트 주차입니다. 주요 전략: (1) 저녁 뉴스 시간대(6-9시) 광고 집중 투자(전국 지상파·종편), (2) 고령층 친화적 광고 메시징(안정성, 경험, 전통가치), (3) 라디오·신문 광고도 동시 강화, (4) 여론조사 기반 광고 메시지 최적화. 목표는 고령층(60대+) 투표율 극대화로 58% 지지도 유지, 전체 지지율 45%→48% 상승입니다. TV 광고의 높은 비용 대비 청년층 도달율은 매우 낮으며, 이 시점에는 경쟁자의 전술적 유연성이 거의 남아있지 않습니다. 우리의 대응: 경쟁자의 "TV 광고에만 의존하는 저가 전략"을 비판하고, 온라인·SNS 바이럴 강화, 최후 정책 비교 광고로 선거 직전까지 청년층-온라인 세력의 지지를 확고히 합니다.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- 5. 경쟁자 SWOT -->
+        <div style="padding: var(--space-lg); background-color: var(--bg-secondary); border-radius: var(--radius-md); margin-bottom: var(--space-lg);">
+          <h3 style="margin-top: 0; color: var(--warning);">🔍 경쟁자 SWOT 분석</h3>
+          <p style="color: var(--text-secondary); line-height: 1.7; font-size: var(--font-size-sm); margin-bottom: var(--space-lg);">
+            경쟁자의 SWOT 분석에서 강점은 고령층 기반(58%)과 전통 매체 영향력이지만, 약점은 극도로 낮은 청년 지지(25%)와 온라인 무능입니다. 기회는 고령층 투표율이 높다는 점이지만, 위협은 청년층 투표 운동과 온라인 여론전입니다. 경쟁자는 강점과 기회에만 의존하려는 경향이 강하고 자신의 약점(청년 소외, 디지털 취약)을 외면합니다. 우리가 경쟁자의 약점을 집중 공략(청년 메시징 강화, 정책 혁신 강조)하면 경쟁자의 기회를 무력화할 수 있습니다.
+          </p>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-lg); margin-top: var(--space-lg);">
+            <!-- S -->
+            <div style="padding: var(--space-lg); background: linear-gradient(135deg, rgba(16,185,129,0.1), rgba(16,185,129,0.05)); border-radius: var(--radius-md); border: 2px solid #10b981;">
+              <h4 style="margin-top: 0; color: #10b981;">💪 경쟁자 강점</h4>
+              <ul style="color: var(--text-secondary); margin: 0; padding-left: var(--space-lg);">
+                <li>고령층 58% 강한 지지</li>
+                <li>지역 기반 확보</li>
+                <li>전통 매체 영향력</li>
+              </ul>
+            </div>
+            <!-- W -->
+            <div style="padding: var(--space-lg); background: linear-gradient(135deg, rgba(239,68,68,0.1), rgba(239,68,68,0.05)); border-radius: var(--radius-md); border: 2px solid #ef4444;">
+              <h4 style="margin-top: 0; color: #ef4444;">⚠️ 경쟁자 약점</h4>
+              <ul style="color: var(--text-secondary); margin: 0; padding-left: var(--space-lg);">
+                <li>청년층 25% 매우 낮음</li>
+                <li>온라인 영향력 약함</li>
+                <li>정책 혁신도 낮음</li>
+              </ul>
+            </div>
+            <!-- O -->
+            <div style="padding: var(--space-lg); background: linear-gradient(135deg, rgba(245,158,11,0.1), rgba(245,158,11,0.05)); border-radius: var(--radius-md); border: 2px solid var(--warning);">
+              <h4 style="margin-top: 0; color: var(--warning);">🎯 경쟁자 기회</h4>
+              <ul style="color: var(--text-secondary); margin: 0; padding-left: var(--space-lg);">
+                <li>고령층 투표율 높음</li>
+                <li>지역 결집 가능</li>
+                <li>TV 광고 영향 크다</li>
+              </ul>
+            </div>
+            <!-- T -->
+            <div style="padding: var(--space-lg); background: linear-gradient(135deg, rgba(59,130,246,0.1), rgba(59,130,246,0.05)); border-radius: var(--radius-md); border: 2px solid var(--primary-color);">
+              <h4 style="margin-top: 0; color: var(--primary-color);">⚡ 경쟁자 위협</h4>
+              <ul style="color: var(--text-secondary); margin: 0; padding-left: var(--space-lg);">
+                <li>청년층 투표 운동</li>
+                <li>온라인 여론전</li>
+                <li>정책 혁신 이슈</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <!-- 6. 우리의 대응 전략 -->
+        <div style="padding: var(--space-lg); background-color: var(--bg-secondary); border-radius: var(--radius-md);">
+          <h3 style="margin-top: 0; color: var(--primary-color);">📌 우리의 대응 전략</h3>
+          <p style="color: var(--text-secondary); line-height: 1.7; font-size: var(--font-size-sm); margin-bottom: var(--space-lg);">
+            경쟁자의 세 가지 약점(청년층 약세, 온라인 무능, 정책 혁신 부족)에 대응하는 우리의 3단계 전략입니다. 첫째, 경쟁자의 지역 기반 강화에 맞서 우리도 전략 지역 순회를 강화하되, 청년층 밀집 지역(강남, 동작 등)과 온라인 커뮤니티에 집중합니다. 둘째, TV 광고의 고비용 구조를 비웃듯 우리는 유튜브·SNS·팟캐스트로 비용 효율을 극대화하면서 더 많은 청년층에 도달합니다. 셋째, 경쟁자의 "경험·신뢰" 메시징을 "진부성·혁신 부족"으로 프레이밍하고 우리의 정책 혁신을 강조하여 청년 지지를 52%에서 60%+로 끌어올립니다.
+          </p>
+          <div style="display: grid; gap: var(--space-lg); margin-top: var(--space-lg);">
+            <div style="padding: var(--space-lg); background-color: var(--bg-primary); border-radius: var(--radius-sm); border-left: 4px solid var(--primary-color);">
+              <div style="font-weight: 600; margin-bottom: var(--space-sm); color: var(--primary-color);">🎯 경쟁자 "지역 기반 강화" 대응</div>
+              <p style="margin: 0; color: var(--text-secondary); font-size: var(--font-size-sm);">→ 우리도 지역 순회 강화 (동작, 관악 등 주요 지역 집중) + 지역 기초 의원 네트워크 구축</p>
+            </div>
+            <div style="padding: var(--space-lg); background-color: var(--bg-primary); border-radius: var(--radius-sm); border-left: 4px solid var(--warning);">
+              <div style="font-weight: 600; margin-bottom: var(--space-sm); color: var(--warning);">📺 경쟁자 "TV 광고 집중" 대응</div>
+              <p style="margin: 0; color: var(--text-secondary); font-size: var(--font-size-sm);">→ 온라인 채널 강화 (유튜브, SNS 바이럴) + 라디오/팟캐스트 진출로 비용 효율 극대화</p>
+            </div>
+            <div style="padding: var(--space-lg); background-color: var(--bg-primary); border-radius: var(--radius-sm); border-left: 4px solid #10b981;">
+              <div style="font-weight: 600; margin-bottom: var(--space-sm); color: #10b981;">⚡ 경쟁자의 청년층 약점 공략</div>
+              <p style="margin: 0; color: var(--text-secondary); font-size: var(--font-size-sm);">→ 청년 지지 극대화 (52%→60%+) + "경쟁자는 청년을 외면" 메시징 + 청년 정책 비교 강조</p>
+            </div>
+          </div>
+        </div>
+      `;
+      type4Container.innerHTML = strategHTML;
+    }
+
+    function displayFileList(files, type) {
+      const tabContent = type === 'type-3'
+        ? document.querySelector('#type3-content')
+        : document.querySelector('#type4-content');
+
+      const fileListHtml = `
+        <div style="padding: var(--space-lg); background-color: var(--bg-secondary); border-radius: var(--radius-md); margin-bottom: var(--space-lg); border-left: 4px solid var(--primary-color);">
+          <h2 style="margin-top: 0; color: var(--primary-color);">📂 업로드된 자료</h2>
+          <div style="display: grid; gap: var(--space-lg); margin-top: var(--space-lg);">
+            ${files.map(file => `
+              <div style="padding: var(--space-lg); background-color: var(--bg-primary); border-radius: var(--radius-md); border-left: 4px solid var(--primary-color);">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: var(--space-lg);">
+                  <div style="flex: 1;">
+                    <h4 style="margin: 0 0 var(--space-sm) 0; color: var(--primary-color);">📄 ${file.name}</h4>
+                    <p style="margin: 0; font-size: var(--font-size-sm); color: var(--text-secondary);">업로드: ${file.uploadDate} • 크기: ${(file.size / 1024 / 1024).toFixed(2)}MB</p>
+                  </div>
+                  <div style="display: flex; gap: var(--space-sm);">
+                    <button class="btn btn-primary" onclick="viewFile(${file.id}, '${type}')">보기</button>
+                    <button class="btn btn-secondary" onclick="downloadFile(${file.id}, '${type}')">다운로드</button>
+                    <button class="btn btn-secondary" onclick="deleteFile(${file.id}, '${type}')">삭제</button>
+                  </div>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `;
+
+      // 기존 파일 섹션 제거 (있으면)
+      const existingFileList = tabContent.querySelector('#fileListSection-' + type);
+      if (existingFileList) {
+        existingFileList.remove();
+      }
+
+      const fileSection = document.createElement('div');
+      fileSection.innerHTML = fileListHtml;
+      fileSection.id = 'fileListSection-' + type;
+      // 파일 목록을 맨 위에 추가 (strategy-section 숨기지 않음)
+      tabContent.insertBefore(fileSection, tabContent.firstChild);
+    }
+
+    async function viewFile(id, type) {
+      try {
+        const blob = await FileStore.getFileBlob(id);
+        const url = URL.createObjectURL(blob);
+        window.open(url, '_blank');
+      } catch (error) {
+        console.error('파일 보기 실패:', error);
+        alert('파일을 열 수 없습니다.');
+      }
+    }
+
+    async function downloadFile(id, type) {
+      try {
+        const files = await FileStore.getFilesByType(type);
+        const file = files.find(f => f.id === id);
+        if (file) {
+          const blob = await FileStore.getFileBlob(id);
+          const url = URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.href = url;
+          link.download = file.name;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          URL.revokeObjectURL(url);
+        }
+      } catch (error) {
+        console.error('다운로드 실패:', error);
+        alert('다운로드에 실패했습니다.');
+      }
+    }
+
+    async function deleteFile(id, type) {
+      if (confirm('파일을 삭제하시겠습니까?')) {
+        try {
+          await FileStore.deleteFile(id);
+          alert('파일이 삭제되었습니다.');
+          location.reload();
+        } catch (error) {
+          console.error('삭제 실패:', error);
+          alert('삭제에 실패했습니다.');
+        }
+      }
+    }
+
+    // 페이지 로드 시 실행
+    if (document.readyState === 'loading') {
+      // 아직 로드 중이면 이벤트 리스너 등록
+      document.addEventListener('DOMContentLoaded', initFileDisplay);
+    } else {
+      // 이미 로드됐으면 바로 실행
+      initFileDisplay();
+    }
+  </script>
+
+  <script src="../js/party-theme.js"></script>
+
+  <script>
+    // 로컬 파일 프로토콜용 테마 초기화 (party-theme.js가 로드되지 않았을 경우)
+    if (typeof window.PartyTheme === 'undefined') {
+      function applyThemeFromStorage() {
+        const partyColors = {
+          dem: { bgPrimary: '#F0F4F9', bgSecondary: '#e0ecff', bgTertiary: '#dce6f8', primary: '#3b82f6', light: '#42a5f5', dark: '#1565c0', textPrimary: '#1e3a8a' },
+          ppp: { bgPrimary: '#FFF5F6', bgSecondary: '#ffe0e0', bgTertiary: '#ffd6d6', primary: '#ef4444', light: '#f87171', dark: '#dc2626', textPrimary: '#7f1d1d' },
+          reform: { bgPrimary: '#f0fdf4', bgSecondary: '#dbeafe', bgTertiary: '#d1f2eb', primary: '#10b981', light: '#34d399', dark: '#059669', textPrimary: '#065f46' },
+          liberty: { bgPrimary: '#fff5f7', bgSecondary: '#ffe0e6', bgTertiary: '#ffc0d0', primary: '#c41e3a', light: '#e24d5e', dark: '#a01630', textPrimary: '#7f0a1a' },
+          renewal: { bgPrimary: '#fefce8', bgSecondary: '#fef08a', bgTertiary: '#fde047', primary: '#f59e0b', light: '#fbbf24', dark: '#d97706', textPrimary: '#713f12' },
+          independent: { bgPrimary: '#f9fafb', bgSecondary: '#f3f4f6', bgTertiary: '#e5e7eb', primary: '#9ca3af', light: '#d1d5db', dark: '#4b5563', textPrimary: '#374151' }
+        };
+
+        const party = localStorage.getItem('selectedParty') || 'dem';
+        const colors = partyColors[party];
+        const root = document.documentElement;
+
+        root.style.setProperty('--primary-color', colors.primary);
+        root.style.setProperty('--primary-light', colors.light);
+        root.style.setProperty('--primary-dark', colors.dark);
+        root.style.setProperty('--bg-primary', colors.bgPrimary);
+        root.style.setProperty('--bg-secondary', colors.bgSecondary);
+        root.style.setProperty('--bg-tertiary', colors.bgTertiary);
+        root.style.setProperty('--text-primary', colors.textPrimary);
+        root.setAttribute('data-party', party);
+      }
+
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', applyThemeFromStorage);
+      } else {
+        applyThemeFromStorage();
+      }
+    }
+  </script>
+
+  <script>
+    // 사이드바 제목 동적 업데이트
+    function updateSidebarTitle() {
+      const candidateName = localStorage.getItem('candidateName') || '후보자';
+      const sidebarTitle = document.getElementById('sidebarTitle');
+      if (sidebarTitle) {
+        sidebarTitle.textContent = `🚨 ${candidateName} 선거 워룸`;
+      }
+    }
+
+    // 페이지 로드 시 실행
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', updateSidebarTitle);
+    } else {
+      updateSidebarTitle();
+    }
+
+    // localStorage 변경 감지 (다른 탭에서 변경 시)
+    window.addEventListener('storage', updateSidebarTitle);
+  </script>
+$scripts
+</body>
+</html>

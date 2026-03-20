@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>플랫폼 사용 설명서 — 선거 워룸</title>
+  <link rel="stylesheet" href="../css/theme.css">
+  <link rel="stylesheet" href="../css/responsive.css">
+  <style>
+    body { margin: 0; background-color: var(--bg-primary); display: flex; }
+
+    .sidebar { position: fixed; left: 0 !important; top: 0; width: 240px !important; height: 100vh; background-color: var(--primary-color); z-index: 100; overflow-y: auto; padding: 0; margin: 0; box-shadow: 2px 0 4px rgba(0,0,0,0.1); }
+    .sidebar-header { padding: var(--space-lg) !important; color: white; font-size: var(--font-size-lg) !important; font-weight: 600; border-bottom: 1px solid rgba(255,255,255,0.2); margin: 0; }
+    .sidebar-nav ul { list-style: none; margin: 0; padding: 0; }
+    .sidebar-nav a { display: block; padding: var(--space-md) var(--space-lg) !important; color: white; text-decoration: none; transition: background-color var(--transition-base); font-size: var(--font-size-sm) !important; border-left: 4px solid transparent; }
+    .sidebar-nav a:hover { background-color: rgba(255,255,255,0.2); }
+    .sidebar-nav a.active { background-color: rgba(255,255,255,0.3); font-weight: 600; border-left-color: white; padding-left: calc(var(--space-lg) - 4px); }
+
+    main { flex: 1; margin-left: 240px !important; }
+    .manual-container { max-width: 1000px; margin: 0 auto; padding: var(--space-xl); }
+    .manual-header { background: linear-gradient(135deg, var(--primary-color), var(--primary-dark)); color: white; padding: var(--space-xl); border-radius: var(--radius-lg); margin-bottom: var(--space-xl); }
+    .manual-header h1 { margin: 0; font-size: 30px; }
+    .manual-header p { margin: 8px 0 0 0; opacity: 0.9; }
+
+    .toc { background: linear-gradient(145deg, var(--bg-primary) 0%, var(--bg-secondary) 100%); border: 1.5px solid rgba(0,0,0,0.08); border-radius: var(--radius-lg); padding: var(--space-lg); margin-bottom: var(--space-xl); }
+    .toc h2 { margin-top: 0; color: var(--text-primary); }
+    .toc ul { list-style: none; padding: 0; margin: 0; }
+    .toc li { margin-bottom: var(--space-sm); }
+    .toc a { color: var(--primary-color); text-decoration: none; font-weight: 500; }
+    .toc a:hover { text-decoration: underline; }
+
+    .section { background: linear-gradient(145deg, var(--bg-primary) 0%, var(--bg-secondary) 100%); border: 1.5px solid rgba(0,0,0,0.08); border-radius: var(--radius-lg); padding: var(--space-lg); margin-bottom: var(--space-lg); }
+    .section h2 { color: var(--primary-color); margin-top: 0; border-bottom: 2px solid var(--primary-color); padding-bottom: var(--space-md); }
+    .section h3 { color: var(--text-primary); margin-top: var(--space-lg); }
+    .section p { line-height: var(--line-height-base); color: var(--text-primary); }
+
+    .step { background: var(--bg-secondary); padding: var(--space-md); border-left: 4px solid var(--primary-color); margin: var(--space-md) 0; border-radius: var(--radius-sm); }
+    .step strong { color: var(--primary-color); }
+
+    .tip { background: #fff3cd; border-left: 4px solid #ffc107; padding: var(--space-md); border-radius: var(--radius-sm); margin: var(--space-md) 0; }
+    .tip::before { content: "💡 팁: "; font-weight: 600; }
+
+    .faq-item { margin-bottom: var(--space-lg); }
+    .faq-question { background: var(--bg-secondary); padding: var(--space-md); border-radius: var(--radius-sm); cursor: pointer; font-weight: 600; color: var(--primary-color); user-select: none; transition: all var(--transition-fast); }
+    .faq-question:hover { background: rgba(0,0,0,0.05); }
+    .faq-answer { display: none; padding: var(--space-md); background: rgba(0,0,0,0.02); border-radius: var(--radius-sm); margin-top: var(--space-sm); }
+    .faq-answer.show { display: block; }
+
+    .download-btn { position: fixed; top: var(--space-lg); right: var(--space-lg); background: var(--primary-color); color: white; padding: 10px 16px; border-radius: var(--radius-md); border: none; cursor: pointer; font-weight: 600; transition: all var(--transition-base); box-shadow: 0 4px 12px rgba(0,0,0,0.2); display: flex; align-items: center; gap: 6px; font-size: 12px; z-index: 999; }
+    .download-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(0,0,0,0.3); }
+    .download-btn:active { transform: translateY(0); }
+
+    .back-to-top { position: fixed; bottom: var(--space-lg); right: var(--space-lg); background: var(--primary-color); color: white; width: 50px; height: 50px; border-radius: 50%; display: none; align-items: center; justify-content: center; cursor: pointer; font-size: 18px; transition: all var(--transition-base); box-shadow: 0 4px 12px rgba(0,0,0,0.2); z-index: 100; }
+    .back-to-top:hover { transform: translateY(-3px); box-shadow: 0 6px 16px rgba(0,0,0,0.3); }
+    .back-to-top.show { display: flex; }
+
+    .feature-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: var(--space-lg); margin: var(--space-lg) 0; }
+    .feature-card { background: linear-gradient(145deg, var(--bg-primary) 0%, var(--bg-secondary) 100%); border: 1.5px solid rgba(0,0,0,0.08); border-radius: var(--radius-lg); padding: var(--space-md); }
+    .feature-card h4 { color: var(--primary-color); margin-top: 0; }
+    .feature-card p { font-size: var(--font-size-sm); margin-bottom: 0; }
+
+    .menu-preview { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--space-md); margin: var(--space-lg) 0; }
+    .menu-item { background: var(--bg-secondary); padding: var(--space-md); border-radius: var(--radius-md); text-align: center; }
+    .menu-item .icon { font-size: 26px; margin-bottom: var(--space-sm); }
+    .menu-item .name { font-weight: 600; font-size: 11px; color: var(--text-primary); }
+
+    @media (max-width: 768px) {
+      .sidebar { width: 200px !important; }
+      main { margin-left: 200px !important; }
+      .sidebar-nav a { padding: var(--space-md) var(--space-lg) !important; font-size: var(--font-size-sm) !important; }
+      .manual-container { padding: var(--space-lg); }
+      .manual-header h1 { font-size: 22px; }
+      .menu-preview { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    @media (max-width: 480px) {
+      .sidebar { width: 160px !important; }
+      main { margin-left: 160px !important; }
+      .sidebar-header { padding: var(--space-lg) !important; font-size: var(--font-size-lg) !important; }
+      .sidebar-nav a { padding: var(--space-md) var(--space-lg) !important; font-size: var(--font-size-sm) !important; }
+    }
+
+    /* 인쇄 전용 스타일 (WYSIWYG) */
+    @media print {
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body { margin: 0; padding: 0; height: 100%; width: 100%; }
+      body { background: white; color: black; font-size: 11pt; line-height: 1.5; }
+
+      /* 사이드바 숨기기 */
+      .sidebar { display: none !important; }
+
+      /* 메인 콘텐츠 전체 너비 */
+      main {
+        display: block !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        width: 100% !important;
+      }
+
+      /* 버튼 숨기기 */
+      .download-btn, .back-to-top { display: none !important; }
+
+      /* 컨테이너 */
+      .manual-container {
+        display: block !important;
+        max-width: 100% !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        width: 100% !important;
+      }
+
+      /* 헤더 무조건 표시 */
+      .manual-header {
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        background: linear-gradient(135deg, #1f6fb3, #0d47a1) !important;
+        color: white !important;
+        page-break-after: avoid !important;
+        page-break-inside: avoid !important;
+        padding: 30px !important;
+        margin: 0 !important;
+        border: none !important;
+        width: 100% !important;
+      }
+
+      .manual-header h1 {
+        display: block !important;
+        visibility: visible !important;
+        margin: 0 0 10px 0 !important;
+        font-size: 28pt !important;
+        font-weight: bold !important;
+        color: white !important;
+        page-break-after: avoid !important;
+      }
+
+      .manual-header p {
+        display: block !important;
+        visibility: visible !important;
+        margin: 0 !important;
+        font-size: 12pt !important;
+        color: rgba(255, 255, 255, 0.9) !important;
+        page-break-after: avoid !important;
+      }
+
+      /* 목차 */
+      .toc {
+        background: white !important;
+        border: 1px solid #ddd !important;
+        page-break-inside: avoid;
+        margin: 20px 0;
+      }
+
+      /* 섹션 */
+      .section {
+        background: white !important;
+        border: 1px solid #ddd !important;
+        margin: 20px 0;
+        page-break-inside: avoid;
+      }
+
+      .section h2 {
+        background: #f5f5f5 !important;
+        color: var(--primary-color) !important;
+        page-break-after: avoid;
+      }
+
+      .section h3 {
+        color: var(--primary-color) !important;
+        page-break-after: avoid;
+      }
+
+      /* 이미지 최적화 */
+      img {
+        max-width: 100% !important;
+        height: auto !important;
+        page-break-inside: avoid;
+      }
+
+      /* 메뉴 아이템 이미지 */
+      .menu-item {
+        border: 1px solid #ddd !important;
+        background: white !important;
+        page-break-inside: avoid;
+      }
+
+      /* 테이블 및 목록 */
+      table { border-collapse: collapse; width: 100%; margin: 10px 0; }
+      th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+      th { background: #f5f5f5 !important; }
+
+      /* 링크 표시 */
+      a { color: var(--primary-color); text-decoration: none; }
+      a[href]::after { content: " (" attr(href) ")"; font-size: 0.8em; }
+
+      /* 페이지 분할 */
+      .step, .tip, .faq-item { page-break-inside: avoid; }
+
+      /* 폰트 */
+      body { font-size: 11pt; line-height: 1.5; }
+      h1 { font-size: 24pt; margin-top: 0; }
+      h2 { font-size: 16pt; margin-top: 15pt; }
+      h3 { font-size: 13pt; margin-top: 12pt; }
+    }
+  </style>
+</head>
+<body>
+  <aside class="sidebar">
+    <a href="../index.html" style="text-decoration: none;">
+      <div class="sidebar-header" id="sidebarTitle">🚨 선거 워룸</div>
+    </a>
+    <nav class="sidebar-nav">
+      <ul>
+        <li><a href="integrated-analysis.html">1.통합분석</a></li>
+        <li><a href="intelligence.html">2.판세정보 분석&비교</a></li>
+        <li><a href="strategy.html">3.전략 비교&추천</a></li>
+        <li><a href="pledges.html">4.공약 비교&추천</a></li>
+        <li><a href="reports.html">5.분석리포트 관리</a></li>
+        <li><a href="ai-chat.html">6.AI톡과 질문과 대화</a></li>
+        <li><a href="competitors.html">7.경쟁분석</a></li>
+        <li><a href="external-materials.html">8.외부자료 업로드</a></li>
+        <li><a href="warroom.html">9.워룸-위기대응센터</a></li>
+        <li><a href="dashboard.html">10. 대시보드-통합제어센터</a></li>
+        <li><a href="organization-chart.html">11.조직도</a></li>
+        <li><a href="strategy-comparison.html">12.수행계획 수립</a></li>
+        <li><a href="ai-premium.html">13.AI 프리미엄 도구들</a></li>
+        <li><a href="settings.html">14.설정</a></li>
+      </ul>
+    </nav>
+  </aside>
+
+  <main>
+    <!-- PDF 다운로드 버튼 -->
+    <button class="download-btn" id="downloadBtn" onclick="printPDF()">
+      <span>📥</span>
+      <span>PDF 다운로드</span>
+    </button>
+
+    <div class="manual-container">
+    <div class="manual-header">
+      <h1>📖 선거 워룸 플랫폼 사용 설명서</h1>
+      <p>AI 기반 선거 전략 도구 완벽 가이드</p>
+    </div>
+
+    <!-- 목차 -->
+    <div class="toc">
+      <h2>📋 목차</h2>
+      <ul>
+        <li><a href="#overview">1. 플랫폼 개요</a></li>
+        <li><a href="#getting-started">2. 시작하기</a></li>
+        <li><a href="#menus">3. 메뉴별 기능 설명</a></li>
+        <li><a href="#tutorials">4. 단계별 사용 가이드</a></li>
+        <li><a href="#tips">5. 팁 & 트릭</a></li>
+        <li><a href="#faq">6. FAQ</a></li>
+      </ul>
+    </div>
+
+    <!-- 플랫폼 소개 이미지 -->
+    <div style="margin: 60px 0; text-align: center;">
+      <img src="../assets/warroom-intro.png" alt="황교안 신기 워룸 플랫폼 소개" style="width: 70%; height: auto; border-radius: var(--radius-lg); box-shadow: 0 4px 12px rgba(0,0,0,0.1); margin: 0 auto; display: block;">
+    </div>
+
+    <!-- 1. 플랫폼 개요 -->
+    <div class="section" id="overview">
+      <h2>1. 플랫폼 개요</h2>
+      <p>🚨 <strong>선거 워룸</strong>은 AI 기반의 통합 선거 전략 플랫폼입니다. 데이터 분석, 여론 분석, AI 콘텐츠 생성, 팀 관리 등을 한 곳에서 처리할 수 있습니다.</p>
+
+      <h3>핵심 기능</h3>
+      <div class="feature-grid">
+        <div class="feature-card">
+          <h4>📊 데이터 분석</h4>
+          <p>여론조사, 정책 분석, 전략 비교를 통한 의사결정 지원</p>
+        </div>
+        <div class="feature-card">
+          <h4>🤖 AI 도구</h4>
+          <p>AI가 자동으로 메시지, 광고, 영상 스크립트를 생성</p>
+        </div>
+        <div class="feature-card">
+          <h4>👥 팀 관리</h4>
+          <p>캠프 구성원 조직화, 작업 할당, 실시간 추적</p>
+        </div>
+        <div class="feature-card">
+          <h4>📈 실시간 대시보드</h4>
+          <p>핵심 지표를 한눈에 파악하는 대시보드</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. 시작하기 -->
+    <div class="section" id="getting-started">
+      <h2>2. 시작하기</h2>
+
+      <h3>초기 설정</h3>
+      <div class="step">
+        <strong>Step 1: 소속 정당 선택</strong><br>
+        메인 페이지 → 우측 상단 "설정" (또는 메뉴 14번) → "소속 정당" 선택 → 저장
+      </div>
+      <div class="step">
+        <strong>Step 2: API 키 설정 (선택사항)</strong><br>
+        설정 페이지 → "Gemini API 키" 입력 → 저장<br>
+        <em>AI 기능을 사용하려면 Google Gemini API 키가 필요합니다. <a href="https://ai.google.dev" target="_blank">https://ai.google.dev</a>에서 무료 API 키를 발급받으세요.</em>
+      </div>
+      <div class="step">
+        <strong>Step 3: 캠프 팀 구성</strong><br>
+        워룸 (메뉴 9번) → "팀 추가" → 팀명 + 팀장명 → 확인<br>
+        팀을 추가하면 조직도 (메뉴 11번)에 자동 반영됩니다.
+      </div>
+
+      <div class="tip">API 키는 브라우저의 로컬 스토리지에만 저장되며, 외부로 전송되지 않습니다.</div>
+    </div>
+
+    <!-- 3. 메뉴별 기능 -->
+    <div class="section" id="menus">
+      <h2>3. 메뉴별 기능 설명</h2>
+
+      <div style="margin-bottom: var(--space-xl);">
+        <h3>메뉴 구성 (14개 메뉴)</h3>
+        <div class="menu-preview">
+          <div class="menu-item"><div class="icon">1️⃣</div><div class="name">통합분석</div></div>
+          <div class="menu-item"><div class="icon">2️⃣</div><div class="name">판세정보</div></div>
+          <div class="menu-item"><div class="icon">3️⃣</div><div class="name">전략비교</div></div>
+          <div class="menu-item"><div class="icon">4️⃣</div><div class="name">공약비교</div></div>
+          <div class="menu-item"><div class="icon">5️⃣</div><div class="name">차량전략</div></div>
+          <div class="menu-item"><div class="icon">6️⃣</div><div class="name">AI톡</div></div>
+          <div class="menu-item"><div class="icon">7️⃣</div><div class="name">대시보드</div></div>
+          <div class="menu-item"><div class="icon">8️⃣</div><div class="name">블로그</div></div>
+          <div class="menu-item"><div class="icon">9️⃣</div><div class="name">외부자료</div></div>
+          <div class="menu-item"><div class="icon">🔟</div><div class="name">워룸</div></div>
+          <div class="menu-item"><div class="icon">1️⃣1️⃣</div><div class="name">리포트</div></div>
+          <div class="menu-item"><div class="icon">1️⃣2️⃣</div><div class="name">조직도</div></div>
+          <div class="menu-item"><div class="icon">1️⃣3️⃣</div><div class="name">AI프리미엄</div></div>
+          <div class="menu-item"><div class="icon">1️⃣4️⃣</div><div class="name">설정</div></div>
+        </div>
+      </div>
+
+      <h3>📊 1. 통합분석</h3>
+      <p>선거 전반의 핵심 지표를 한눈에 파악합니다.</p>
+      <ul>
+        <li><strong>지지도 추이:</strong> 시간별 지지도 변화 그래프</li>
+        <li><strong>경쟁자 비교:</strong> 경쟁 후보와의 지표 비교</li>
+        <li><strong>핵심 이슈:</strong> 현재 가장 뜨거운 이슈 분석</li>
+      </ul>
+      <div style="margin: var(--space-lg) 0; border-radius: var(--radius-md); overflow: hidden; background: var(--bg-secondary); padding: var(--space-md); text-align: center;">
+        <img src="../assets/screenshots/menu-01-integrated-analysis.png" alt="Menu 1: Integrated Analysis" style="max-width: 100%; height: auto; border-radius: var(--radius-sm);" />
+      </div>
+
+      <h3>🎯 2. 판세정보</h3>
+      <p>지역/연령대별 세부 판세 분석을 제공합니다.</p>
+      <ul>
+        <li><strong>지역별 지지도:</strong> 시/군/구 단위 상세 분석</li>
+        <li><strong>계층별 선호도:</strong> 연령, 성별, 직업별 분석</li>
+        <li><strong>변동 요인:</strong> 지지도 변화의 원인 분석</li>
+      </ul>
+      <div style="margin: var(--space-lg) 0; border-radius: var(--radius-md); overflow: hidden; background: var(--bg-secondary); padding: var(--space-md); text-align: center;">
+        <img src="../assets/screenshots/menu-02-intelligence.png" alt="Menu 2: Intelligence" style="max-width: 100%; height: auto; border-radius: var(--radius-sm);" />
+      </div>
+
+      <h3>⚡ 3. 전략 비교&추천</h3>
+      <p>다양한 선거 전략을 시뮬레이션하고 비교합니다.</p>
+      <ul>
+        <li><strong>시나리오 분석:</strong> "만약 OO를 강조하면?" 예측</li>
+        <li><strong>리스크 평가:</strong> 각 전략의 위험 요소 분석</li>
+        <li><strong>최적 전략 추천:</strong> AI가 추천하는 승리 전략</li>
+      </ul>
+      <div style="margin: var(--space-lg) 0; border-radius: var(--radius-md); overflow: hidden; background: var(--bg-secondary); padding: var(--space-md); text-align: center;">
+        <img src="../assets/screenshots/menu-03-strategy.png" alt="Menu 3: Strategy" style="max-width: 100%; height: auto; border-radius: var(--radius-sm);" />
+      </div>
+
+      <h3>📋 4. 공약 비교&추천</h3>
+      <p>본인과 경쟁자의 공약을 체계적으로 비교합니다.</p>
+      <ul>
+        <li><strong>공약 입력:</strong> 정책 내용 저장</li>
+        <li><strong>경쟁자 공약:</strong> 경쟁 후보 공약 DB 검색</li>
+        <li><strong>차별화 포인트:</strong> 경쟁 우위 분석</li>
+      </ul>
+      <div style="margin: var(--space-lg) 0; border-radius: var(--radius-md); overflow: hidden; background: var(--bg-secondary); padding: var(--space-md); text-align: center;">
+        <img src="../assets/screenshots/menu-04-pledges.png" alt="Menu 4: Pledges" style="max-width: 100%; height: auto; border-radius: var(--radius-sm);" />
+      </div>
+
+      <h3>🚗 5. 선거차량 동선최적화</h3>
+      <p>효율적인 캠프 일정과 이동 경로를 계획합니다.</p>
+      <ul>
+        <li><strong>유세 일정 생성:</strong> 자동으로 최적 경로 계획</li>
+        <li><strong>교통 시간 고려:</strong> 실시간 교통 정보 반영</li>
+        <li><strong>팀원 배정:</strong> 각 일정에 팀원 자동 배치</li>
+      </ul>
+      <div style="margin: var(--space-lg) 0; border-radius: var(--radius-md); overflow: hidden; background: var(--bg-secondary); padding: var(--space-md); text-align: center;">
+        <img src="../assets/screenshots/menu-05-vehicle-strategy.png" alt="Menu 5: Vehicle Strategy" style="max-width: 100%; height: auto; border-radius: var(--radius-sm);" />
+      </div>
+
+      <h3>🤖 6. AI톡 - 질문과 대화</h3>
+      <p>AI에게 선거 전략을 자유롭게 물어봅니다.</p>
+      <ul>
+        <li><strong>실시간 상담:</strong> "현재 승리 확률은?" 등 자유로운 질문</li>
+        <li><strong>파일 업로드:</strong> 보도자료, 여론조사 등 업로드하여 분석</li>
+        <li><strong>RAG 기반:</strong> 업로드 문서 기반의 정확한 답변</li>
+      </ul>
+      <div style="margin: var(--space-lg) 0; border-radius: var(--radius-md); overflow: hidden; background: var(--bg-secondary); padding: var(--space-md); text-align: center;">
+        <img src="../assets/screenshots/menu-06-ai-chat.png" alt="Menu 6: AI Chat" style="max-width: 100%; height: auto; border-radius: var(--radius-sm);" />
+      </div>
+
+      <h3>📈 7. 대시보드</h3>
+      <p>선거 전략의 핵심 KPI를 실시간으로 모니터링합니다.</p>
+      <ul>
+        <li><strong>지지도 게이지:</strong> 목표 대비 달성률</li>
+        <li><strong>일일 변화:</strong> 최근 24시간 주요 변동</li>
+        <li><strong>경보 시스템:</strong> 위험 신호 자동 감지</li>
+      </ul>
+      <div style="margin: var(--space-lg) 0; border-radius: var(--radius-md); overflow: hidden; background: var(--bg-secondary); padding: var(--space-md); text-align: center;">
+        <img src="../assets/screenshots/menu-07-dashboard.png" alt="Menu 7: Dashboard" style="max-width: 100%; height: auto; border-radius: var(--radius-sm);" />
+      </div>
+
+      <h3>📰 8. 블로그-기사</h3>
+      <p>선거 전략, 정책 분석, 판세 해석 등을 블로그로 공유합니다.</p>
+      <ul>
+        <li><strong>기사 작성:</strong> 제목, 내용, 카테고리 선택하여 작성</li>
+        <li><strong>기사 편집:</strong> 기존 기사 수정 및 업데이트</li>
+        <li><strong>기사 읽기:</strong> 모달 창에서 전체 콘텐츠 확인</li>
+        <li><strong>기사 공유:</strong> 작성한 기사를 팀원과 공유</li>
+      </ul>
+      <div style="margin: var(--space-lg) 0; border-radius: var(--radius-md); overflow: hidden; background: var(--bg-secondary); padding: var(--space-md); text-align: center;">
+        <img src="../assets/screenshots/menu-08-blog.png" alt="Menu 8: Blog" style="max-width: 100%; height: auto; border-radius: var(--radius-sm);" />
+      </div>
+
+      <h3>📂 9. 외부자료</h3>
+      <p>보도자료, 여론조사, 분석 문서 등을 중앙에서 관리합니다.</p>
+      <ul>
+        <li><strong>파일 업로드:</strong> PDF, 엑셀, 이미지 등 업로드</li>
+        <li><strong>분류 관리:</strong> 카테고리별 정리</li>
+        <li><strong>다운로드:</strong> 필요한 자료 언제든 다운로드</li>
+      </ul>
+      <div style="margin: var(--space-lg) 0; border-radius: var(--radius-md); overflow: hidden; background: var(--bg-secondary); padding: var(--space-md); text-align: center;">
+        <img src="../assets/screenshots/menu-09-external-materials.png" alt="Menu 9: External Materials" style="max-width: 100%; height: auto; border-radius: var(--radius-sm);" />
+      </div>
+
+      <h3>🚨 10. 워룸-위기대응센터</h3>
+      <p>캠프의 실시간 이슈 관리와 팀 협력 중심입니다.</p>
+      <ul>
+        <li><strong>실시간 경보:</strong> 신용카드 거래 논란 등 긴급 이슈 감시</li>
+        <li><strong>팀 추가:</strong> "홍보팀", "조직팀" 등 캠프 팀 구성</li>
+        <li><strong>작업 생성:</strong> "SNS 글쓰기" 등 일일 작업 등록</li>
+        <li><strong>진행도 추적:</strong> 대기 → 진행중 → 완료 상태 관리</li>
+        <li><strong>AI 콘텐츠:</strong> 성명서, 광고, QnA 자동 생성</li>
+      </ul>
+      <div style="margin: var(--space-lg) 0; border-radius: var(--radius-md); overflow: hidden; background: var(--bg-secondary); padding: var(--space-md); text-align: center;">
+        <img src="../assets/screenshots/menu-10-warroom.png" alt="Menu 10: War Room" style="max-width: 100%; height: auto; border-radius: var(--radius-sm);" />
+      </div>
+
+      <h3>📑 11. 분석리포트</h3>
+      <p>주간/월간 선거 현황을 상세한 리포트로 정리합니다.</p>
+      <ul>
+        <li><strong>자동 생성:</strong> 수집된 데이터로 AI가 리포트 작성</li>
+        <li><strong>PDF 다운로드:</strong> 임원진 보고용으로 다운로드</li>
+        <li><strong>추세 분석:</strong> 지난주 대비 변화 분석</li>
+      </ul>
+      <div style="margin: var(--space-lg) 0; border-radius: var(--radius-md); overflow: hidden; background: var(--bg-secondary); padding: var(--space-md); text-align: center;">
+        <img src="../assets/screenshots/menu-11-reports.png" alt="Menu 11: Reports" style="max-width: 100%; height: auto; border-radius: var(--radius-sm);" />
+      </div>
+
+      <h3>📊 12. 조직도</h3>
+      <p>캠프 조직 구조를 시각화합니다.</p>
+      <ul>
+        <li><strong>자동 생성:</strong> 워룸에서 추가한 팀이 자동 반영</li>
+        <li><strong>계층 표시:</strong> 팀장과 팀원을 명확히 구분</li>
+        <li><strong>인쇄 기능:</strong> 조직도를 인쇄하여 공유</li>
+      </ul>
+      <div style="margin: var(--space-lg) 0; border-radius: var(--radius-md); overflow: hidden; background: var(--bg-secondary); padding: var(--space-md); text-align: center;">
+        <img src="../assets/screenshots/menu-12-organization-chart.png" alt="Menu 12: Organization Chart" style="max-width: 100%; height: auto; border-radius: var(--radius-sm);" />
+      </div>
+
+      <h3>🤖 13. AI 프리미엄 도구들</h3>
+      <p>고급 AI 기능으로 선거 전략을 한 단계 높입니다.</p>
+      <ul>
+        <li><strong>🔮 시나리오 분석 & 예측:</strong> 정책 실행 시 지지도 변화 및 리스크 분석</li>
+        <li><strong>💬 설득 메시지 생성:</strong> 타겟층별 핵심 메시지 3개 자동 생성</li>
+        <li><strong>📢 광고 카피 최적화:</strong> 감성/팩트/긴급 3가지 버전 제공</li>
+        <li><strong>🎬 영상 스크립트 생성:</strong> 촬영 가이드, 자막, 음악 추천 포함</li>
+      </ul>
+      <div style="margin: var(--space-lg) 0; border-radius: var(--radius-md); overflow: hidden; background: var(--bg-secondary); padding: var(--space-md); text-align: center;">
+        <img src="../assets/screenshots/menu-13-ai-premium.png" alt="Menu 13: AI Premium" style="max-width: 100%; height: auto; border-radius: var(--radius-sm);" />
+      </div>
+
+      <h3>⚙️ 14. 설정</h3>
+      <p>플랫폼 개인화 설정을 관리합니다.</p>
+      <ul>
+        <li><strong>소속 정당:</strong> 민주당/국민의힘 등 선택</li>
+        <li><strong>테마 색상:</strong> 정당별 기본 색상 자동 적용</li>
+        <li><strong>API 키:</strong> Gemini API 키 입력</li>
+        <li><strong>언어 설정:</strong> 한국어/영어 (향후 확대)</li>
+      </ul>
+      <div style="margin: var(--space-lg) 0; border-radius: var(--radius-md); overflow: hidden; background: var(--bg-secondary); padding: var(--space-md); text-align: center;">
+        <img src="../assets/screenshots/menu-14-settings.png" alt="Menu 14: Settings" style="max-width: 100%; height: auto; border-radius: var(--radius-sm);" />
+      </div>
+    </div>
+
+    <!-- 4. 단계별 사용 가이드 -->
+    <div class="section" id="tutorials">
+      <h2>4. 단계별 사용 가이드</h2>
+
+      <h3>📌 시나리오 1: 팀 구성 및 작업 배치</h3>
+      <div class="step">
+        <strong>목표:</strong> 홍보팀과 조직팀을 구성하고 일일 작업 배치<br><br>
+        <strong>Step 1:</strong> 메뉴 9번 "워룸" 클릭<br>
+        <strong>Step 2:</strong> "팀 추가" → "홍보팀" 입력 → 팀장명 "김대리" 입력 → 확인<br>
+        <strong>Step 3:</strong> 같은 방식으로 "조직팀" 추가<br>
+        <strong>Step 4:</strong> "✅ 실시간 작업 추적" 섹션에서 "작업 추가"<br>
+        <strong>Step 5:</strong> "SNS 포스트 작성" 작업 등록 → 진행도 설정 → 저장<br>
+        <strong>Step 6:</strong> 메뉴 11번 "조직도" 클릭 → 팀과 팀원이 자동 표시됨을 확인
+      </div>
+
+      <h3>📌 시나리오 2: AI로 광고 문안 생성</h3>
+      <div class="step">
+        <strong>목표:</strong> 정책 광고를 위한 3가지 버전의 카피 자동 생성<br><br>
+        <strong>Step 1:</strong> 메뉴를 클릭<br>
+        <strong>Step 2:</strong> "📢 광고 카피 최적화" 탭 클릭<br>
+        <strong>Step 3:</strong> 기존 광고 문안 입력 (예: "청년 일자리 100만 개 창출")<br>
+        <strong>Step 4:</strong> "광고 목표" → "지지율 증가" 선택<br>
+        <strong>Step 5:</strong> "광고 채널" → "유튜브" 선택<br>
+        <strong>Step 6:</strong> "최적화 시작" 클릭 (15~30초 대기)<br>
+        <strong>Step 7:</strong> Version A, B, C 3가지 버전 확인 → 마음에 드는 버전 복사
+      </div>
+
+      <h3>📌 시나리오 3: 경쟁 후보 분석</h3>
+      <div class="step">
+        <strong>목표:</strong> 경쟁자 약점 발굴 및 대응 전략 수립<br><br>
+        <strong>Step 1:</strong> 메뉴 2번 "판세정보" → 경쟁 후보 선택<br>
+        <strong>Step 2:</strong> 경쟁자의 지역별 지지도 약점 확인<br>
+        <strong>Step 3:</strong> 메뉴 3번 "승리전략비교" → 경쟁자 약점 지역에 집중 공략 전략 검토<br>
+        <strong>Step 4:</strong> 메뉴 9번 "워룸" → "💬 설득 메시지" 탭<br>
+        <strong>Step 5:</strong> 약점 지역 주민을 타겟으로 설득 메시지 생성
+      </div>
+
+      <h3>📌 시나리오 4: 영상 콘텐츠 제작 기획</h3>
+      <div class="step">
+        <strong>목표:</strong> 틱톡 30초 영상 대본 및 제작 가이드 자동 생성<br><br>
+        <strong>Step 1:</strong> 메뉴 9번 "워룸" → "🎬 영상 스크립트" 탭<br>
+        <strong>Step 2:</strong> "영상 주제" → "청년 정책: 무주택 청년 전세금 지원" 입력<br>
+        <strong>Step 3:</strong> "영상 유형" → "감성호소" 선택<br>
+        <strong>Step 4:</strong> "플랫폼" → "틱톡" 선택<br>
+        <strong>Step 5:</strong> "영상 길이" → "30초" 선택<br>
+        <strong>Step 6:</strong> "스크립트 생성" 클릭 → 전체 스크립트, 촬영 가이드, 자막 확인
+      </div>
+    </div>
+
+    <!-- 5. 팁 & 트릭 -->
+    <div class="section" id="tips">
+      <h2>5. 팁 & 트릭</h2>
+
+      <h3>💡 AI 기능을 최대로 활용하기</h3>
+      <div class="tip">
+        AI 결과가 마음에 들지 않으면 "초기화"를 클릭하고 입력 내용을 조금 수정해서 다시 시도하세요. 더 좋은 결과를 얻을 수 있습니다.
+      </div>
+      <div class="tip">
+        복사 버튼(📋)을 눌러 AI 결과를 즉시 클립보드에 복사할 수 있습니다. 이를 카톡, SNS, 메일로 바로 붙여넣을 수 있습니다.
+      </div>
+
+      <h3>💡 작업 관리 팁</h3>
+      <div class="tip">
+        워룸의 "진행도" 설정으로 각 작업의 완료율을 추적하세요. "진행도" 버튼을 클릭하면 백분율(0~100%)을 설정할 수 있습니다.
+      </div>
+      <div class="tip">
+        팀 채팅은 제공되지 않으므로, 필요한 경우 카톡/슬랙 등 별도 도구를 병행하세요.
+      </div>
+
+      <h3>💡 데이터 활용 팁</h3>
+      <div class="tip">
+        "외부자료"에 여론조사 PDF를 업로드한 후 "AI톡"에서 "이 파일을 분석해줄 수 있나?"라고 물어보면, AI가 파일을 읽고 분석해줍니다.
+      </div>
+      <div class="tip">
+        "통합분석"의 데이터를 스크린샷으로 캡처해서 SNS나 유세에서 사용할 수 있습니다. 각 그래프마다 "📥 다운로드" 버튼이 있습니다.
+      </div>
+
+      <h3>💡 정당 테마 변경</h3>
+      <div class="tip">
+        메뉴 12번 "설정"에서 정당을 선택하면 전체 사이트 색상이 자동으로 변경됩니다 (민주당=파랑, 국민의힘=빨강, 개혁신당=녹색 등). 소속 정당을 정확히 선택하세요!
+      </div>
+
+      <h3>💡 모바일 사용 팁</h3>
+      <div class="tip">
+        모바일에서는 화면이 작으므로, 큰 모니터나 태블릿에서 대시보드와 분석 페이지를 보는 것을 추천합니다.
+      </div>
+      <div class="tip">
+        모바일에서 사이드바가 보이지 않으면 화면 좌측 상단의 "☰" 버튼을 클릭하세요.
+      </div>
+    </div>
+
+    <!-- 6. FAQ -->
+    <div class="section" id="faq">
+      <h2>6. FAQ (자주 묻는 질문)</h2>
+
+      <div class="faq-item">
+        <div class="faq-question" onclick="toggleFAQ(this)">Q: API 키가 없으면 AI 기능을 사용할 수 없나요?</div>
+        <div class="faq-answer">
+          네, 맞습니다. AI 기능(6번 AI톡 등)을 사용하려면 Google Gemini API 키가 필요합니다. <a href="https://ai.google.dev" target="_blank">https://ai.google.dev</a>에서 무료로 API 키를 발급받을 수 있습니다. (월 1,500만 토큰 무료 제공)
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-question" onclick="toggleFAQ(this)">Q: 내 데이터는 안전한가요?</div>
+        <div class="faq-answer">
+          네, 안전합니다. 모든 데이터는 브라우저의 로컬 스토리지에만 저장되며, 서버에 업로드되지 않습니다. API 키도 로컬에서만 유지되어 보안이 보장됩니다.
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-question" onclick="toggleFAQ(this)">Q: 팀원이 이 플랫폼에 접속할 수 있나요?</div>
+        <div class="faq-answer">
+          현재 버전은 단일 사용자용입니다. 팀원들이 사용하려면 각각 자신의 브라우저에서 독립적으로 접속해야 합니다. 향후 버전에서 협업 기능(다중 사용자, 실시간 공동 편집 등)을 추가할 계획입니다.
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-question" onclick="toggleFAQ(this)">Q: 데이터를 백업하거나 내보낼 수 있나요?</div>
+        <div class="faq-answer">
+          현재 자동 백업 기능은 없습니다. 중요한 데이터는 주기적으로 스크린샷을 캡처하거나 "외부자료"에 파일로 저장하는 것을 추천합니다. 향후 JSON 내보내기 기능 추가를 검토 중입니다.
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-question" onclick="toggleFAQ(this)">Q: AI가 생성한 콘텐츠를 그대로 사용해도 되나요?</div>
+        <div class="faq-answer">
+          AI 결과는 "초안"으로 생각하고, 반드시 검토 후 수정해서 사용하세요. AI가 부정확한 정보를 포함할 수 있으므로, 중요한 통계나 약속은 사실 확인이 필수입니다.
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-question" onclick="toggleFAQ(this)">Q: 다른 후보의 정당으로 전환할 수 있나요?</div>
+        <div class="faq-answer">
+          네, 설정 페이지에서 언제든지 정당을 변경할 수 있습니다. 다만 기존 데이터는 유지됩니다. 완전히 새로운 캠프를 시작하려면 브라우저 개발자 도구(F12) → 콘솔에서 `localStorage.clear()` 명령으로 모든 데이터를 삭제할 수 있습니다.
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-question" onclick="toggleFAQ(this)">Q: 기술 지원은 어떻게 받나요?</div>
+        <div class="faq-answer">
+          문제가 발생하면 브라우저의 개발자 도구(F12)를 열어서 콘솔 메시지를 확인하세요. 버그 보고는 <strong>jaiwshim@gmail.com</strong> 또는 <strong>010-2397-5734</strong>로 연락 주세요.
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-question" onclick="toggleFAQ(this)">Q: 이 플랫폼의 비용은?</div>
+        <div class="faq-answer">
+          기본 기능은 완전 무료입니다.
+        </div>
+      </div>
+    </div>
+
+    <!-- 바로가기 -->
+    <div style="text-align: center; margin-top: var(--space-xl); padding: var(--space-xl); background: linear-gradient(145deg, var(--bg-primary) 0%, var(--bg-secondary) 100%); border-radius: var(--radius-lg);">
+      <h3 style="margin-top: 0; color: var(--primary-color);">❓ 추가 질문이 있으신가요?</h3>
+      <p>이메일: <strong>jaiwshim@gmail.com</strong></p>
+      <p>전화: <strong>010-2397-5734</strong></p>
+      <p style="margin-bottom: 0;"><a href="../index.html" style="color: var(--primary-color); font-weight: 600;">← 메인 페이지로 돌아가기</a></p>
+    </div>
+  </div>
+    </main>
+
+  <!-- Back to Top 버튼 -->
+  <div class="back-to-top" id="backToTop" onclick="scrollToTop()">↑</div>
+
+  <script>
+    // PDF 다운로드 함수 (브라우저 인쇄 -> PDF 저장)
+    function printPDF() {
+      const btn = document.getElementById('downloadBtn');
+      btn.disabled = true;
+      btn.innerHTML = '<span>📥</span><span>인쇄 설정 중...</span>';
+
+      try {
+        // 잠시 후 인쇄 다이얼로그 열기
+        setTimeout(() => {
+          window.print();
+
+          // 인쇄 취소 시 버튼 복구
+          setTimeout(() => {
+            btn.disabled = false;
+            btn.innerHTML = '<span>📥</span><span>PDF 다운로드</span>';
+          }, 500);
+        }, 300);
+      } catch (error) {
+        console.error('인쇄 오류:', error);
+        btn.disabled = false;
+        btn.innerHTML = '<span>📥</span><span>PDF 다운로드</span>';
+      }
+    }
+
+    // Back to Top 버튼 표시/숨기기
+    window.addEventListener('scroll', () => {
+      const btn = document.getElementById('backToTop');
+      if (window.scrollY > 300) {
+        btn.classList.add('show');
+      } else {
+        btn.classList.remove('show');
+      }
+    });
+
+    function scrollToTop() {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // FAQ 토글
+    function toggleFAQ(element) {
+      const answer = element.nextElementSibling;
+      answer.classList.toggle('show');
+    }
+
+    // 테마 초기화
+    if (typeof window.PartyTheme === 'undefined') {
+      function applyThemeFromStorage() {
+        const partyColors = {
+          dem: { bgPrimary: '#F0F4F9', bgSecondary: '#e0ecff', bgTertiary: '#dce6f8', primary: '#3b82f6', light: '#42a5f5', dark: '#1565c0', textPrimary: '#1e3a8a' },
+          ppp: { bgPrimary: '#FFF5F6', bgSecondary: '#ffe0e0', bgTertiary: '#ffd6d6', primary: '#ef4444', light: '#f87171', dark: '#dc2626', textPrimary: '#7f1d1d' },
+          reform: { bgPrimary: '#f0fdf4', bgSecondary: '#dbeafe', bgTertiary: '#d1f2eb', primary: '#10b981', light: '#34d399', dark: '#059669', textPrimary: '#065f46' },
+          liberty: { bgPrimary: '#fff5f7', bgSecondary: '#ffe0e6', bgTertiary: '#ffc0d0', primary: '#c41e3a', light: '#e24d5e', dark: '#a01630', textPrimary: '#7f0a1a' },
+          renewal: { bgPrimary: '#fefce8', bgSecondary: '#fef08a', bgTertiary: '#fde047', primary: '#f59e0b', light: '#fbbf24', dark: '#d97706', textPrimary: '#713f12' },
+          independent: { bgPrimary: '#f9fafb', bgSecondary: '#f3f4f6', bgTertiary: '#e5e7eb', primary: '#9ca3af', light: '#d1d5db', dark: '#4b5563', textPrimary: '#374151' }
+        };
+        const party = localStorage.getItem('selectedParty') || 'dem';
+        const colors = partyColors[party];
+        const root = document.documentElement;
+        root.style.setProperty('--primary-color', colors.primary);
+        root.style.setProperty('--primary-light', colors.light);
+        root.style.setProperty('--primary-dark', colors.dark);
+        root.style.setProperty('--bg-primary', colors.bgPrimary);
+        root.style.setProperty('--bg-secondary', colors.bgSecondary);
+        root.style.setProperty('--bg-tertiary', colors.bgTertiary);
+        root.style.setProperty('--text-primary', colors.textPrimary);
+        root.setAttribute('data-party', party);
+      }
+      document.readyState === 'loading' ? document.addEventListener('DOMContentLoaded', applyThemeFromStorage) : applyThemeFromStorage();
+    }
+  </script>
+
+  <script>
+    // 사이드바 제목 동적 업데이트
+    function updateSidebarTitle() {
+      const candidateName = localStorage.getItem('candidateName') || '후보자';
+      const sidebarTitle = document.getElementById('sidebarTitle');
+      if (sidebarTitle) {
+        sidebarTitle.textContent = `🚨 ${candidateName} 선거 워룸`;
+      }
+    }
+
+    // 페이지 로드 시 실행
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', updateSidebarTitle);
+    } else {
+      updateSidebarTitle();
+    }
+
+    // localStorage 변경 감지 (다른 탭에서 변경 시)
+    window.addEventListener('storage', updateSidebarTitle);
+  </script>
+  <script src="../js/party-theme.js"></script>
+</body>
+</html>

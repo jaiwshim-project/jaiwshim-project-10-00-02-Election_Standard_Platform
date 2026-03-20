@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>관리자 대시보드 — 선거 워룸</title>
+  <link rel="stylesheet" href="../css/theme.css">
+  <link rel="stylesheet" href="../css/responsive.css">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { margin: 0; background-color: var(--bg-primary); }
+
+    .admin-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    .header {
+      background: linear-gradient(135deg, var(--primary-color), var(--primary-light));
+      color: white;
+      padding: 30px;
+      border-radius: var(--radius-lg);
+      margin-bottom: 30px;
+    }
+
+    .header h1 { margin: 0; font-size: 32px; }
+    .header p { margin: 8px 0 0 0; opacity: 0.9; }
+
+    /* ========== AUTH SCREEN ========== */
+    .auth-screen {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 60vh;
+    }
+
+    .auth-box {
+      background: white;
+      padding: 40px;
+      border-radius: var(--radius-lg);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+      max-width: 400px;
+      width: 100%;
+    }
+
+    .auth-box h2 { font-size: 24px; margin-bottom: 20px; color: var(--text-primary); }
+    .auth-box p { color: var(--text-secondary); margin-bottom: 20px; font-size: 14px; }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: var(--text-primary);
+      font-size: 14px;
+    }
+
+    input[type="password"], input[type="text"] {
+      width: 100%;
+      padding: 10px 12px;
+      border: 2px solid #e0e0e0;
+      border-radius: var(--radius-md);
+      font-size: 16px;
+      transition: all var(--transition-base);
+    }
+
+    input[type="password"]:focus, input[type="text"]:focus {
+      outline: none;
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+
+    .btn {
+      width: 100%;
+      padding: 12px;
+      border: none;
+      border-radius: var(--radius-md);
+      font-weight: 600;
+      cursor: pointer;
+      font-size: 16px;
+      transition: all var(--transition-base);
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--primary-color), var(--primary-light));
+      color: white;
+    }
+
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(59, 130, 246, 0.3); }
+    .btn-primary:active { transform: translateY(0); }
+
+    .btn-secondary {
+      background: #f3f4f6;
+      color: var(--text-primary);
+      margin-top: 12px;
+    }
+
+    .btn-secondary:hover { background: #e5e7eb; }
+
+    .message {
+      padding: 12px;
+      border-radius: var(--radius-md);
+      margin-bottom: 16px;
+      font-size: 14px;
+      display: none;
+    }
+
+    .message.error {
+      background: #fee2e2;
+      color: #dc2626;
+      border: 1px solid #fca5a5;
+      display: block;
+    }
+
+    .message.success {
+      background: #d1fae5;
+      color: #047857;
+      border: 1px solid #6ee7b7;
+      display: block;
+    }
+
+    /* ========== CONTENT SCREEN ========== */
+    .admin-content {
+      display: none;
+    }
+
+    .admin-content.active {
+      display: block;
+    }
+
+    .tabs {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 30px;
+      border-bottom: 2px solid #e0e0e0;
+    }
+
+    .tab-button {
+      padding: 12px 20px;
+      background: transparent;
+      border: none;
+      border-bottom: 3px solid transparent;
+      color: var(--text-secondary);
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 14px;
+      transition: all var(--transition-base);
+    }
+
+    .tab-button.active {
+      color: var(--primary-color);
+      border-bottom-color: var(--primary-color);
+    }
+
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    .section {
+      background: white;
+      padding: 30px;
+      border-radius: var(--radius-lg);
+      margin-bottom: 30px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    }
+
+    .section h2 { font-size: 20px; margin-bottom: 20px; color: var(--text-primary); }
+
+    .member-list {
+      margin-bottom: 20px;
+    }
+
+    .member-item {
+      background: var(--bg-secondary);
+      padding: 16px;
+      border-radius: var(--radius-md);
+      margin-bottom: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .member-info h3 { margin: 0 0 4px 0; color: var(--text-primary); font-size: 14px; }
+    .member-info p { margin: 0; color: var(--text-secondary); font-size: 12px; }
+
+    .btn-sm {
+      padding: 6px 12px;
+      font-size: 12px;
+      border: none;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: all var(--transition-base);
+    }
+
+    .btn-danger {
+      background: #fee2e2;
+      color: #dc2626;
+    }
+
+    .btn-danger:hover { background: #fecaca; }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .upload-area {
+      border: 2px dashed #e0e0e0;
+      border-radius: var(--radius-md);
+      padding: 40px 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: all var(--transition-base);
+    }
+
+    .upload-area:hover {
+      border-color: var(--primary-color);
+      background: rgba(59, 130, 246, 0.05);
+    }
+
+    .upload-area.dragover {
+      border-color: var(--primary-color);
+      background: rgba(59, 130, 246, 0.1);
+    }
+
+    .logout-button {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      padding: 8px 16px;
+      background: rgba(255, 255, 255, 0.2);
+      color: white;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 14px;
+    }
+
+    .logout-button:hover {
+      background: rgba(255, 255, 255, 0.3);
+    }
+
+    @media (max-width: 768px) {
+      .header { padding: 20px; }
+      .header h1 { font-size: 24px; }
+      .section { padding: 20px; }
+      .member-item { flex-direction: column; align-items: flex-start; }
+      .form-row { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="admin-container">
+    <!-- 헤더 -->
+    <div class="header" style="position: relative;">
+      <h1>🔐 관리자 대시보드</h1>
+      <p id="campNameDisplay">캠프 로딩 중...</p>
+      <button class="logout-button" onclick="logout()" style="display: none;" id="logoutBtn">로그아웃</button>
+    </div>
+
+    <!-- ========== 인증 화면 ========== -->
+    <div id="authScreen" class="auth-screen">
+      <div class="auth-box">
+        <h2>🔑 관리자 로그인</h2>
+        <p>캠프를 관리하려면 관리자 비밀번호를 입력하세요.</p>
+
+        <div id="authMessage" class="message"></div>
+
+        <div class="form-group">
+          <label for="campCode">캠프 코드</label>
+          <input type="text" id="campCode" placeholder="예: kim-dongjaek-2024" />
+        </div>
+
+        <div class="form-group">
+          <label for="adminPassword">관리자 비밀번호</label>
+          <input type="password" id="adminPassword" placeholder="••••••••" />
+        </div>
+
+        <button class="btn btn-primary" onclick="verifyAdmin()">로그인</button>
+        <button class="btn btn-secondary" onclick="goBack()">돌아가기</button>
+      </div>
+    </div>
+
+    <!-- ========== 관리 화면 ========== -->
+    <div id="adminContent" class="admin-content">
+      <div class="tabs">
+        <button class="tab-button active" onclick="switchTab(event, 'members')">👥 멤버 관리</button>
+        <button class="tab-button" onclick="switchTab(event, 'files')">📁 자료 업로드</button>
+        <button class="tab-button" onclick="switchTab(event, 'settings')">⚙️ 캠프 설정</button>
+      </div>
+
+      <!-- 멤버 관리 탭 -->
+      <div id="members" class="tab-content active">
+        <div class="section">
+          <h2>👥 멤버 관리</h2>
+
+          <div id="memberList" class="member-list"></div>
+
+          <h3 style="margin-top: 30px; margin-bottom: 16px;">새 멤버 추가</h3>
+          <div class="form-row">
+            <input type="text" id="newMemberName" placeholder="이름" />
+            <input type="text" id="newMemberRole" placeholder="역할 (예: 스탭, 기자, 리더)" />
+            <input type="email" id="newMemberEmail" placeholder="이메일" />
+            <input type="tel" id="newMemberPhone" placeholder="전화번호" />
+          </div>
+          <button class="btn btn-primary" onclick="addMember()" style="max-width: 200px;">멤버 추가</button>
+        </div>
+      </div>
+
+      <!-- 자료 업로드 탭 -->
+      <div id="files" class="tab-content">
+        <div class="section">
+          <h2>📁 자료 업로드</h2>
+
+          <div class="form-row">
+            <select id="fileType" style="padding: 10px; border: 2px solid #e0e0e0; border-radius: var(--radius-md);">
+              <option value="">파일 유형 선택</option>
+              <option value="type-1">📋 전략 문서</option>
+              <option value="type-2">📊 여론조사</option>
+              <option value="type-3">📢 보도자료</option>
+              <option value="type-4">🗂️ 회의 자료</option>
+              <option value="type-5">💰 예산 자료</option>
+              <option value="type-6">🎯 선거 전략</option>
+              <option value="type-7">📈 분석 자료</option>
+              <option value="type-8">🔧 기타</option>
+            </select>
+          </div>
+
+          <div class="upload-area" id="uploadArea" ondrop="handleDrop(event)" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)">
+            <p style="font-size: 32px; margin-bottom: 12px;">📤</p>
+            <p style="color: var(--text-primary); font-weight: 600; margin-bottom: 4px;">파일을 여기에 드래그하거나 클릭하세요</p>
+            <p style="color: var(--text-secondary); font-size: 12px; margin: 0;">PDF, PPTX, DOCX, XLSX, JPG, PNG 등 지원</p>
+            <input type="file" id="fileInput" style="display: none;" onchange="handleFileSelect(event)" />
+          </div>
+
+          <div style="margin-top: 20px;">
+            <button class="btn btn-primary" onclick="document.getElementById('fileInput').click()" style="max-width: 200px;">파일 선택</button>
+            <button class="btn btn-secondary" onclick="uploadFile()" style="max-width: 200px; margin-top: 10px;">업로드</button>
+          </div>
+
+          <div id="fileList" style="margin-top: 30px;"></div>
+        </div>
+      </div>
+
+      <!-- 설정 탭 -->
+      <div id="settings" class="tab-content">
+        <div class="section">
+          <h2>⚙️ 캠프 설정</h2>
+
+          <div class="form-row">
+            <div>
+              <label>후보자명</label>
+              <input type="text" id="settingName" readonly style="background: #f3f4f6;" />
+            </div>
+            <div>
+              <label>정당</label>
+              <input type="text" id="settingParty" readonly style="background: #f3f4f6;" />
+            </div>
+            <div>
+              <label>선거구</label>
+              <input type="text" id="settingRegion" readonly style="background: #f3f4f6;" />
+            </div>
+          </div>
+
+          <p style="color: var(--text-secondary); font-size: 12px; margin-bottom: 20px;">
+            💡 기본 설정은 수정 불가능합니다. 변경하려면 Supabase 관리자에게 문의하세요.
+          </p>
+
+          <h3 style="margin-top: 30px; margin-bottom: 16px;">관리자 비밀번호 변경</h3>
+          <div class="form-row">
+            <input type="password" id="newPassword" placeholder="새 비밀번호" />
+            <input type="password" id="confirmPassword" placeholder="비밀번호 확인" />
+          </div>
+          <button class="btn btn-primary" onclick="changePassword()" style="max-width: 200px;">비밀번호 변경</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Supabase JS -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="../js/supabase-client.js"></script>
+  <script src="../js/auth-manager.js"></script>
+  <script src="../js/camp-context.js"></script>
+
+  <script>
+    let selectedFile = null;
+
+    // 페이지 로드 시 관리자 권한 확인
+    window.addEventListener('DOMContentLoaded', async () => {
+      // 인증 확인
+      AuthManager.requireAdmin();
+
+      // 캠프 컨텍스트 초기화
+      await CampContext.init();
+
+      // 관리자 인증 화면 숨김 (로그인 페이지에서 이미 인증됨)
+      document.getElementById('authScreen').style.display = 'none';
+      document.getElementById('adminContent').classList.add('active');
+      document.getElementById('logoutBtn').style.display = 'block';
+
+      // 캠프 정보 표시
+      const candidateId = CampContext.getId();
+      const campName = CampContext.getName();
+      document.getElementById('campNameDisplay').textContent = `${campName} 캠프`;
+
+      // 데이터 로드
+      if (candidateId) {
+        await loadMembers(candidateId);
+        await loadFiles(candidateId);
+        await loadSettings(candidateId);
+      }
+
+      showMessage(document.getElementById('authMessage'), `✅ ${campName} 캠프 관리자로 로그인되었습니다`, 'success');
+    });
+    }
+
+    /**
+     * 멤버 목록 로드
+     */
+    async function loadMembers(candidateId) {
+      try {
+        const { data, error } = await window.supabase
+          .from('camp_members')
+          .select('*')
+          .eq('candidate_id', candidateId)
+          .eq('is_active', true);
+
+        if (error) throw error;
+
+        const memberList = document.getElementById('memberList');
+        memberList.innerHTML = '';
+
+        if (!data || data.length === 0) {
+          memberList.innerHTML = '<p style="color: var(--text-secondary); font-size: 14px;">아직 멤버가 없습니다.</p>';
+          return;
+        }
+
+        data.forEach(member => {
+          const item = document.createElement('div');
+          item.className = 'member-item';
+          item.innerHTML = `
+            <div class="member-info">
+              <h3>${member.name}</h3>
+              <p>${member.role} • ${member.email || '(없음)'} • ${member.phone || '(없음)'}</p>
+            </div>
+            <button class="btn-sm btn-danger" onclick="deleteMember('${member.id}')">삭제</button>
+          `;
+          memberList.appendChild(item);
+        });
+      } catch (err) {
+        console.error('❌ 멤버 로드 실패:', err);
+      }
+    }
+
+    /**
+     * 멤버 추가
+     */
+    async function addMember() {
+      const name = document.getElementById('newMemberName').value.trim();
+      const role = document.getElementById('newMemberRole').value.trim();
+      const email = document.getElementById('newMemberEmail').value.trim();
+      const phone = document.getElementById('newMemberPhone').value.trim();
+
+      if (!name) {
+        alert('❌ 이름을 입력하세요');
+        return;
+      }
+
+      try {
+        const { data, error } = await window.supabase
+          .from('camp_members')
+          .insert([{
+            candidate_id: CampContext.getId(),
+            name,
+            role,
+            email,
+            phone
+          }])
+          .select();
+
+        if (error) throw error;
+
+        alert('✅ 멤버가 추가되었습니다');
+        document.getElementById('newMemberName').value = '';
+        document.getElementById('newMemberRole').value = '';
+        document.getElementById('newMemberEmail').value = '';
+        document.getElementById('newMemberPhone').value = '';
+
+        loadMembers(CampContext.getId());
+      } catch (err) {
+        console.error('❌ 멤버 추가 실패:', err);
+        alert('❌ 멤버 추가에 실패했습니다');
+      }
+    }
+
+    /**
+     * 멤버 삭제
+     */
+    async function deleteMember(memberId) {
+      if (!confirm('정말 이 멤버를 삭제하시겠습니까?')) return;
+
+      try {
+        const { error } = await window.supabase
+          .from('camp_members')
+          .update({ is_active: false })
+          .eq('id', memberId);
+
+        if (error) throw error;
+
+        alert('✅ 멤버가 삭제되었습니다');
+        loadMembers(CampContext.getId());
+      } catch (err) {
+        console.error('❌ 멤버 삭제 실패:', err);
+        alert('❌ 멤버 삭제에 실패했습니다');
+      }
+    }
+
+    /**
+     * 파일 목록 로드
+     */
+    async function loadFiles(candidateId) {
+      try {
+        const { data, error } = await window.supabase
+          .from('shared_files')
+          .select('*')
+          .eq('candidate_id', candidateId)
+          .eq('is_active', true)
+          .order('upload_date', { ascending: false });
+
+        if (error) throw error;
+
+        const fileList = document.getElementById('fileList');
+        fileList.innerHTML = '<h3 style="margin-bottom: 16px;">📂 업로드된 파일</h3>';
+
+        if (!data || data.length === 0) {
+          fileList.innerHTML += '<p style="color: var(--text-secondary); font-size: 14px;">아직 업로드된 파일이 없습니다.</p>';
+          return;
+        }
+
+        const filesByType = {};
+        data.forEach(file => {
+          if (!filesByType[file.file_type]) filesByType[file.file_type] = [];
+          filesByType[file.file_type].push(file);
+        });
+
+        Object.keys(filesByType).forEach(type => {
+          const typeLabel = {
+            'type-1': '📋 전략 문서',
+            'type-2': '📊 여론조사',
+            'type-3': '📢 보도자료',
+            'type-4': '🗂️ 회의 자료',
+            'type-5': '💰 예산 자료',
+            'type-6': '🎯 선거 전략',
+            'type-7': '📈 분석 자료',
+            'type-8': '🔧 기타'
+          }[type] || type;
+
+          fileList.innerHTML += `<h4 style="margin-top: 20px; margin-bottom: 10px;">${typeLabel}</h4>`;
+
+          filesByType[type].forEach(file => {
+            const date = new Date(file.upload_date).toLocaleDateString('ko-KR');
+            fileList.innerHTML += `
+              <div style="background: var(--bg-secondary); padding: 12px; border-radius: var(--radius-md); margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                  <p style="margin: 0; color: var(--text-primary); font-weight: 600; font-size: 14px;">${file.file_name}</p>
+                  <p style="margin: 4px 0 0 0; color: var(--text-secondary); font-size: 12px;">${date}</p>
+                </div>
+                <button class="btn-sm btn-danger" onclick="deleteFile('${file.id}')">삭제</button>
+              </div>
+            `;
+          });
+        });
+      } catch (err) {
+        console.error('❌ 파일 로드 실패:', err);
+      }
+    }
+
+    /**
+     * 파일 선택 핸들러
+     */
+    function handleFileSelect(event) {
+      selectedFile = event.target.files[0];
+      if (selectedFile) {
+        document.getElementById('uploadArea').textContent = `선택됨: ${selectedFile.name}`;
+      }
+    }
+
+    /**
+     * 드래그 오버 핸들러
+     */
+    function handleDragOver(event) {
+      event.preventDefault();
+      document.getElementById('uploadArea').classList.add('dragover');
+    }
+
+    /**
+     * 드래그 리브 핸들러
+     */
+    function handleDragLeave(event) {
+      document.getElementById('uploadArea').classList.remove('dragover');
+    }
+
+    /**
+     * 드롭 핸들러
+     */
+    function handleDrop(event) {
+      event.preventDefault();
+      document.getElementById('uploadArea').classList.remove('dragover');
+      const files = event.dataTransfer.files;
+      if (files.length > 0) {
+        selectedFile = files[0];
+        document.getElementById('uploadArea').textContent = `선택됨: ${selectedFile.name}`;
+      }
+    }
+
+    /**
+     * 파일 업로드 (실제 구현은 Phase 4에서)
+     */
+    async function uploadFile() {
+      const fileType = document.getElementById('fileType').value;
+
+      if (!fileType) {
+        alert('❌ 파일 유형을 선택하세요');
+        return;
+      }
+
+      if (!selectedFile) {
+        alert('❌ 파일을 선택하세요');
+        return;
+      }
+
+      alert('✅ 파일 업로드 기능은 Phase 4에서 구현됩니다\n현재는 메타데이터만 저장합니다');
+      // 여기에 실제 업로드 로직 구현 필요 (Supabase Storage)
+    }
+
+    /**
+     * 파일 삭제
+     */
+    async function deleteFile(fileId) {
+      if (!confirm('정말 이 파일을 삭제하시겠습니까?')) return;
+
+      try {
+        const { error } = await window.supabase
+          .from('shared_files')
+          .update({ is_active: false })
+          .eq('id', fileId);
+
+        if (error) throw error;
+
+        alert('✅ 파일이 삭제되었습니다');
+        loadFiles(CampContext.getId());
+      } catch (err) {
+        console.error('❌ 파일 삭제 실패:', err);
+        alert('❌ 파일 삭제에 실패했습니다');
+      }
+    }
+
+    /**
+     * 캠프 설정 로드
+     */
+    async function loadSettings(candidateId) {
+      try {
+        const { data, error } = await window.supabase
+          .from('candidates')
+          .select('id, name, party, region')
+          .eq('id', candidateId)
+          .single();
+
+        if (error || !data) {
+          console.error('❌ 캠프 정보 로드 실패:', error);
+          return;
+        }
+
+        document.getElementById('settingName').value = data.name || '';
+        document.getElementById('settingParty').value = data.party || '';
+        document.getElementById('settingRegion').value = data.region || '';
+      } catch (error) {
+        console.error('❌ 캠프 설정 로드 오류:', error);
+      }
+    }
+
+    /**
+     * 비밀번호 변경
+     */
+    async function changePassword() {
+      const newPassword = document.getElementById('newPassword').value;
+      const confirmPassword = document.getElementById('confirmPassword').value;
+
+      if (!newPassword || !confirmPassword) {
+        alert('❌ 비밀번호를 입력하세요');
+        return;
+      }
+
+      if (newPassword !== confirmPassword) {
+        alert('❌ 비밀번호가 일치하지 않습니다');
+        return;
+      }
+
+      try {
+        const { error } = await window.supabase
+          .from('candidates')
+          .update({ admin_password: newPassword })
+          .eq('id', CampContext.getId());
+
+        if (error) throw error;
+
+        alert('✅ 비밀번호가 변경되었습니다');
+        document.getElementById('newPassword').value = '';
+        document.getElementById('confirmPassword').value = '';
+      } catch (err) {
+        console.error('❌ 비밀번호 변경 실패:', err);
+        alert('❌ 비밀번호 변경에 실패했습니다');
+      }
+    }
+
+    /**
+     * 탭 전환
+     */
+    function switchTab(event, tabName) {
+      document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+
+      event.target.classList.add('active');
+      document.getElementById(tabName).classList.add('active');
+    }
+
+    /**
+     * 메시지 표시
+     */
+    function showMessage(element, text, type) {
+      element.textContent = text;
+      element.className = `message ${type}`;
+    }
+
+    /**
+     * 로그아웃
+     */
+    function logout() {
+      if (confirm('정말 로그아웃하시겠습니까?')) {
+        AuthManager.logout();
+        window.location.href = 'login.html';
+      }
+    }
+
+    /**
+     * 돌아가기
+     */
+    function goBack() {
+      window.history.back();
+    }
+
+    // 페이지 로드 시 초기화
+    window.addEventListener('DOMContentLoaded', async () => {
+      // Supabase 초기화
+      const supabaseUrl = localStorage.getItem('supabaseUrl');
+      const supabaseKey = localStorage.getItem('supabaseKey');
+
+      if (supabaseUrl && supabaseKey) {
+        window.supabase = supabase.createClient(supabaseUrl, supabaseKey);
+      } else {
+        document.getElementById('authMessage').textContent = '⚠️ Supabase 설정이 필요합니다';
+        document.getElementById('authMessage').className = 'message error';
+      }
+    });
+  </script>
+</body>
+</html>

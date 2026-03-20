@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>판세정보 — 선거 워룸</title>
+  <link rel="stylesheet" href="../css/theme.css">
+  <link rel="stylesheet" href="../css/responsive.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
+  <style>
+    body { margin: 0; background-color: var(--bg-primary); display: flex; }
+
+    .sidebar { position: fixed; left: 0; top: 0; width: 240px; height: 100vh; background-color: var(--primary-color); z-index: 100; overflow-y: auto; padding: 0; margin: 0; box-shadow: 2px 0 4px rgba(0,0,0,0.1); }
+    .sidebar-header { padding: var(--space-lg); color: white; font-size: var(--font-size-lg); font-weight: 600; border-bottom: 1px solid rgba(255,255,255,0.2); margin: 0; }
+    .sidebar-nav ul { list-style: none; margin: 0; padding: 0; }
+    .sidebar-nav a { display: block; padding: var(--space-md) var(--space-lg); color: white; text-decoration: none; transition: background-color var(--transition-base); font-size: var(--font-size-sm); border-left: 4px solid transparent; }
+    .sidebar-nav a:hover { background-color: rgba(255,255,255,0.2); }
+    .sidebar-nav a.active { background-color: rgba(255,255,255,0.3); font-weight: 600; border-left-color: white; padding-left: calc(var(--space-lg) - 4px); }
+
+    main { flex: 1; margin-left: 240px; }
+    .container { max-width: 1200px; margin: 0 auto; padding: var(--space-lg); }
+
+    .header { background: linear-gradient(135deg, var(--primary-color), var(--primary-light)); color: white; padding: var(--space-lg); margin: -var(--space-lg) -var(--space-lg) var(--space-lg) -var(--space-lg); border-radius: 0; }
+    .header h1 { margin: 0; }
+
+    .info-card { padding: var(--space-lg); background-color: var(--bg-secondary); border-radius: var(--radius-md); border-left: 4px solid var(--primary-color); margin-bottom: var(--space-lg); }
+    .info-card h3 { margin-top: 0; color: var(--primary-color); }
+
+    .poll-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: var(--space-lg); margin-top: var(--space-lg); }
+    .poll-card { padding: var(--space-lg); background-color: var(--bg-secondary); border-radius: var(--radius-md); }
+    .poll-card h4 { margin-top: 0; color: var(--primary-color); font-size: var(--font-size-base); }
+
+    .bar-chart { margin-top: var(--space-md); }
+    .bar-item { display: flex; align-items: center; gap: var(--space-md); margin-bottom: var(--space-md); }
+    .bar-label { min-width: 80px; font-size: var(--font-size-sm); font-weight: 600; }
+    .bar-container { flex: 1; background-color: var(--bg-primary); border-radius: var(--radius-sm); height: 20px; overflow: hidden; }
+    .bar-fill { background-color: var(--primary-color); height: 100%; display: flex; align-items: center; justify-content: flex-end; padding-right: 6px; color: white; font-size: 12px; font-weight: 600; }
+    .bar-percent { min-width: 40px; text-align: right; font-size: var(--font-size-sm); font-weight: 600; }
+
+    .demographic-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: var(--space-lg); margin-top: var(--space-lg); }
+    .demographic-card { padding: var(--space-lg); background-color: var(--bg-primary); border-radius: var(--radius-md); border: 1px solid var(--bg-secondary); }
+    .demographic-label { font-size: var(--font-size-sm); color: var(--text-secondary); margin-bottom: var(--space-sm); }
+    .demographic-number { font-size: 24px; font-weight: 700; color: var(--primary-color); }
+
+    .timeline { margin-top: var(--space-lg); }
+    .timeline-item { display: flex; gap: var(--space-lg); margin-bottom: var(--space-lg); }
+    .timeline-date { min-width: 100px; font-weight: 600; color: var(--primary-color); font-size: var(--font-size-sm); }
+    .timeline-content { flex: 1; padding: var(--space-md); background-color: var(--bg-primary); border-radius: var(--radius-sm); }
+    .timeline-content h4 { margin-top: 0; font-size: var(--font-size-base); }
+    .timeline-content p { margin: var(--space-xs) 0; font-size: var(--font-size-sm); }
+
+    @media (max-width: 768px) {
+      .sidebar { width: 200px; }
+      main { margin-left: 200px; }
+      .sidebar-nav a { padding: var(--space-sm) var(--space-md); font-size: var(--font-size-xs); }
+      .bar-item { flex-direction: column; align-items: flex-start; }
+    }
+  </style>
+</head>
+<body>
+  <aside class="sidebar">
+    <a href="../index.html" style="text-decoration: none;">
+      <div class="sidebar-header" id="sidebarTitle">🚨 선거 워룸</div>
+    </a>
+    <nav class="sidebar-nav">
+      <ul>
+        <li><a href="index.html">대시보드</a></li>
+        <li><a href="integrated-analysis.html">1.통합분석</a></li>
+        <li><a href="intelligence.html" class="active">2.판세정보 분석&비교</a></li>
+        <li><a href="strategy.html">3.전략 비교&추천</a></li>
+        <li><a href="pledges.html">4.공약 비교&추천</a></li>
+        <li><a href="vehicle-strategy.html">5.차량 전략</a></li>
+        <li><a href="online-sentiment-analysis.html">6.온라인 여론분석 비교&추천</a></li>
+        <li><a href="ai-chat.html">7.AI톡과 질문과 대화</a></li>
+        <li><a href="dashboard.html">8.대시보드</a></li>
+        <li><a href="blog.html">9.블로그-기사</a></li>
+        <li><a href="external-materials.html">10.외부자료 업로드</a></li>
+        <li><a href="warroom.html">11.워룸-위기대응센터</a></li>
+        <li><a href="reports.html">12.분석리포트 관리</a></li>
+        <li><a href="organization-chart.html">13.조직도</a></li>
+        <li><a href="ai-premium.html">14.AI 프리미엄 도구들</a></li>
+        <li><a href="settings.html">15.설정</a></li>
+      </ul>
+    </nav>
+  </aside>
+
+  <main>
+    <div class="container">
+    <div class="header">
+      <h1>📈 판세정보</h1>
+      <p>최신 여론조사 데이터와 선거 판세를 실시간으로 확인합니다</p>
+    </div>
+
+    <!-- 파일 없을 때 안내 -->
+    <div id="emptyStateContainer" style="display: none; text-align: center; padding: 60px 20px; background-color: var(--bg-secondary); border-radius: var(--radius-md); margin: var(--space-lg) 0;">
+      <div style="font-size: 64px; margin-bottom: var(--space-lg); opacity: 0.5;">📁</div>
+      <h3 style="color: var(--text-secondary); margin-bottom: var(--space-sm);">업로드된 판세정보 자료가 없습니다</h3>
+      <p style="color: var(--text-secondary); margin-bottom: var(--space-lg); font-size: var(--font-size-sm);">외부자료 페이지에서 판세정보 리포트를 업로드하면 여기에 표시됩니다.</p>
+      <div style="display: flex; gap: var(--space-md); justify-content: center; flex-wrap: wrap;">
+        <button class="btn btn-primary" onclick="location.href='external-materials.html'" style="cursor: pointer;">📤 외부자료 업로드</button>
+        <button class="btn btn-secondary" onclick="alert('리포트 구매 문의: jaiwshim@gmail.com | 010-2397-5734')" style="cursor: pointer;">🛒 리포트 구매하기</button>
+      </div>
+    </div>
+
+    <!-- 파일 있을 때 콘텐츠 -->
+    <div id="contentContainer">
+
+    <!-- 최신 여론조사 정보 -->
+    <div class="info-card">
+      <h3>📊 최신 여론조사</h3>
+      <p style="margin: 0; font-size: var(--font-size-sm); color: var(--text-secondary);">조사일: 2026년 3월 19일 | 표본: 1,500명 | 신뢰도: 95%</p>
+    </div>
+
+    <!-- 전체 지지율 -->
+    <div class="poll-card">
+      <h4>전체 지지율</h4>
+      <div class="bar-chart">
+        <div class="bar-item">
+          <div class="bar-label">우리 후보</div>
+          <div class="bar-container">
+            <div class="bar-fill" style="width: 45.2%;">45.2%</div>
+          </div>
+          <div class="bar-percent">45.2%</div>
+        </div>
+        <div class="bar-item">
+          <div class="bar-label">경쟁자 1</div>
+          <div class="bar-container">
+            <div class="bar-fill" style="width: 38%; background-color: #f59e0b;">38%</div>
+          </div>
+          <div class="bar-percent">38%</div>
+        </div>
+        <div class="bar-item">
+          <div class="bar-label">경쟁자 2</div>
+          <div class="bar-container">
+            <div class="bar-fill" style="width: 22%; background-color: #ef4444;">22%</div>
+          </div>
+          <div class="bar-percent">22%</div>
+        </div>
+        <div class="bar-item">
+          <div class="bar-label">미정</div>
+          <div class="bar-container">
+            <div class="bar-fill" style="width: 12.3%; background-color: #9ca3af;">12.3%</div>
+          </div>
+          <div class="bar-percent">12.3%</div>
+        </div>
+      </div>
+      <div style="margin-top: var(--space-lg); padding: var(--space-md); background-color: var(--bg-primary); border-radius: var(--radius-sm); font-size: var(--font-size-sm); line-height: 1.8; color: var(--text-primary);">
+        <strong>📌 종합평가:</strong> 우리 후보가 45.2%로 1위를 차지하고 있으며, 경쟁자1(38%)과 7.2%포인트 격차를 유지하고 있습니다. 경쟁자2(22%)는 현저히 뒤쳐져 있어 양자 구도로 수렴되고 있음을 보여줍니다. 주목할 점은 미정층이 12.3%로 상당한 규모를 차지한다는 것입니다. 이는 향후 선거 결과에 큰 영향을 미칠 수 있는 부동층입니다. 현재의 1위 우위를 더욱 견고히 하면서 동시에 미정층 흡수에 전략을 집중해야 합니다.
+      </div>
+    </div>
+
+    <!-- 연령대별 지지율 -->
+    <div class="poll-grid">
+      <div class="poll-card">
+        <h4>📍 연령대별 지지율</h4>
+        <div class="bar-chart">
+          <div class="bar-item">
+            <div class="bar-label">20-30대</div>
+            <div class="bar-container">
+              <div class="bar-fill" style="width: 52%;">52%</div>
+            </div>
+          </div>
+          <div class="bar-item">
+            <div class="bar-label">40-50대</div>
+            <div class="bar-container">
+              <div class="bar-fill" style="width: 42%;">42%</div>
+            </div>
+          </div>
+          <div class="bar-item">
+            <div class="bar-label">60대+</div>
+            <div class="bar-container">
+              <div class="bar-fill" style="width: 35%;">35%</div>
+            </div>
+          </div>
+        </div>
+        <div style="margin-top: var(--space-lg); padding: var(--space-md); background-color: var(--bg-primary); border-radius: var(--radius-sm); font-size: var(--font-size-sm); line-height: 1.8; color: var(--text-primary);">
+          <strong>📌 종합평가:</strong> 청년층(20-30대)이 52%로 가장 높은 지지율을 보여 혁신 이미지와 미래 정책에 대한 긍정 반응을 확인할 수 있습니다. 중년층(40-50대)은 42%로 중간 수준이며, 고령층(60대+)은 35%로 낮은 수준입니다. 세대 간 격차가 17%포인트로 상당하며, 특히 고령층의 낮은 지지율은 즉시 개선이 필요한 부분입니다. 전략: 청년층의 우위는 계속 강화하되, 고령층 대상 복지정책 강조, 지역 간담회 확대, 고령층 매체(라디오, TV) 중심 홍보로 격차 해소를 추진해야 합니다.
+        </div>
+      </div>
+
+      <div class="poll-card">
+        <h4>🏘️ 지역별 지지율</h4>
+        <div class="bar-chart">
+          <div class="bar-item">
+            <div class="bar-label">강남·서초</div>
+            <div class="bar-container">
+              <div class="bar-fill" style="width: 55%;">55%</div>
+            </div>
+          </div>
+          <div class="bar-item">
+            <div class="bar-label">강북권</div>
+            <div class="bar-container">
+              <div class="bar-fill" style="width: 42%;">42%</div>
+            </div>
+          </div>
+          <div class="bar-item">
+            <div class="bar-label">외곽지역</div>
+            <div class="bar-container">
+              <div class="bar-fill" style="width: 35%;">35%</div>
+            </div>
+          </div>
+        </div>
+        <div style="margin-top: var(--space-lg); padding: var(--space-md); background-color: var(--bg-primary); border-radius: var(--radius-sm); font-size: var(--font-size-sm); line-height: 1.8; color: var(--text-primary);">
+          <strong>📌 종합평가:</strong> 지역별 편차가 명확하게 나타났습니다. 강남·서초에서 55%로 우호적이며, 강북권 42%, 외곽지역 35%로 하락합니다. 강남·서초와 외곽지역 간 20%포인트 격차는 지역 경제 수준, 정책 영향도의 차이를 반영합니다. 외곽지역의 낮은 지지율(35%)은 중요한 약점입니다. 전략: 외곽지역 집중 투자, 지역 현안 청취, 교통·복지·교육 정책 강화, 지역 이벤트 참여 확대가 필요합니다. 외곽지역 지지율을 45% 이상으로 끌어올리면 전체 지지율이 3~4%포인트 상승할 수 있습니다.
+        </div>
+      </div>
+    </div>
+
+    <!-- 직업별 지지율 -->
+    <div class="info-card">
+      <h3>💼 직업별 지지율</h3>
+      <div class="demographic-grid">
+        <div class="demographic-card">
+          <div class="demographic-label">직장인</div>
+          <div class="demographic-number">48%</div>
+          <p style="margin: var(--space-xs) 0 0 0; font-size: var(--font-size-xs); color: var(--text-secondary);">+3.2% (전주)</p>
+        </div>
+        <div class="demographic-card">
+          <div class="demographic-label">자영업</div>
+          <div class="demographic-number">42%</div>
+          <p style="margin: var(--space-xs) 0 0 0; font-size: var(--font-size-xs); color: var(--text-secondary);">-1.5% (전주)</p>
+        </div>
+        <div class="demographic-card">
+          <div class="demographic-label">학생</div>
+          <div class="demographic-number">56%</div>
+          <p style="margin: var(--space-xs) 0 0 0; font-size: var(--font-size-xs); color: var(--text-secondary);">+2.1% (전주)</p>
+        </div>
+        <div class="demographic-card">
+          <div class="demographic-label">무직/기타</div>
+          <div class="demographic-number">38%</div>
+          <p style="margin: var(--space-xs) 0 0 0; font-size: var(--font-size-xs); color: var(--text-secondary);">-0.8% (전주)</p>
+        </div>
+      </div>
+
+      <div style="margin-top: var(--space-lg); padding: var(--space-lg); background-color: var(--bg-primary); border-radius: var(--radius-md);">
+        <h4 style="margin-top: 0; color: var(--primary-color);">📊 직업별 지지율 비교</h4>
+        <canvas id="occupationChart" style="max-height: 300px;"></canvas>
+      </div>
+
+      <div style="margin-top: var(--space-lg); padding: var(--space-md); background-color: var(--bg-secondary); border-radius: var(--radius-sm); font-size: var(--font-size-sm); line-height: 1.8; color: var(--text-primary);">
+        <strong>📌 종합평가:</strong> 직업군별 분석에서 학생(56%)과 직장인(48%)이 높은 지지율을 보입니다. 학생의 56%는 청년층과 겹치며, +2.1% 증가 추세로 긍정적입니다. 직장인도 +3.2% 상승하여 경제 정책과 일자리 대책이 호응을 얻고 있음을 보여줍니다. 우려할 점은 자영업(42%, -1.5%)의 하락세입니다. 이는 소상공인 대책이 부족하다는 신호입니다. 무직/기타층(38%)도 낮은 수준입니다. 전략: 자영업 대상 금리 인하, 세제 혜택, 경영 지원 강화, 취약계층 대상 복지 정책 구체화가 필요합니다.
+      </div>
+    </div>
+
+    <!-- 주요 이슈별 관심도 -->
+    <div class="info-card">
+      <h3>⚡ 주요 이슈별 관심도</h3>
+      <div class="bar-chart">
+        <div class="bar-item">
+          <div class="bar-label">경제정책</div>
+          <div class="bar-container">
+            <div class="bar-fill" style="width: 45%;">45%</div>
+          </div>
+          <div class="bar-percent">45%</div>
+        </div>
+        <div class="bar-item">
+          <div class="bar-label">교육정책</div>
+          <div class="bar-container">
+            <div class="bar-fill" style="width: 32%;">32%</div>
+          </div>
+          <div class="bar-percent">32%</div>
+        </div>
+        <div class="bar-item">
+          <div class="bar-label">일자리</div>
+          <div class="bar-container">
+            <div class="bar-fill" style="width: 28%;">28%</div>
+          </div>
+          <div class="bar-percent">28%</div>
+        </div>
+        <div class="bar-item">
+          <div class="bar-label">복지정책</div>
+          <div class="bar-container">
+            <div class="bar-fill" style="width: 24%;">24%</div>
+          </div>
+          <div class="bar-percent">24%</div>
+        </div>
+      </div>
+      <div style="margin-top: var(--space-lg); padding: var(--space-md); background-color: var(--bg-secondary); border-radius: var(--radius-sm); font-size: var(--font-size-sm); line-height: 1.8; color: var(--text-primary);">
+        <strong>📌 종합평가:</strong> 유권자들의 관심사는 경제정책(45%)에 집중되어 있으며, 이는 현 경기 침체와 물가 부담을 반영합니다. 교육정책(32%)과 일자리(28%)도 높은 관심도를 보입니다. 흥미로운 점은 복지정책(24%)의 상대적 저관심입니다. 이는 고령층이 생각하는 것보다 전반 인구에서 복지보다 경제를 더 중시한다는 뜻입니다. 전략: 경제정책이 가장 효과적인 공약이므로, 구체적이고 현실적인 대안 제시가 시급합니다. 청년층을 위한 일자리 창출, 중소기업 지원, 소비 진작 방안을 통합 패키지로 제시하면 경제관심층의 표를 확보할 수 있습니다.
+      </div>
+    </div>
+
+    <!-- 판세 변화 추이 -->
+    <div class="info-card">
+      <h3>📊 판세 변화 추이 (4주)</h3>
+      <div class="timeline">
+        <div class="timeline-item">
+          <div class="timeline-date">3월 19일</div>
+          <div class="timeline-content">
+            <h4 style="margin-top: 0;">현재</h4>
+            <p>우리 후보 지지율 45.2% | 경쟁자1: 38% | 경쟁자2: 22%</p>
+          </div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-date">3월 12일</div>
+          <div class="timeline-content">
+            <h4 style="margin-top: 0;">지난주</h4>
+            <p>우리 후보 지지율 43.1% (+2.1%) | 경쟁자1: 39.2% (-1.2%)</p>
+          </div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-date">3월 5일</div>
+          <div class="timeline-content">
+            <h4 style="margin-top: 0;">2주전</h4>
+            <p>우리 후보 지지율 40.5% | 경쟁자1: 40.8% (경쟁 중)</p>
+          </div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-date">2월 26일</div>
+          <div class="timeline-content">
+            <h4 style="margin-top: 0;">3주전</h4>
+            <p>우리 후보 지지율 38.2% | 경쟁자1: 42.1% (뒤쳐짐)</p>
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-top: var(--space-lg); padding: var(--space-lg); background-color: var(--bg-primary); border-radius: var(--radius-md);">
+        <h4 style="margin-top: 0; color: var(--primary-color);">📈 4주 판세 변화 그래프</h4>
+        <canvas id="pollTrendChart" style="max-height: 300px;"></canvas>
+      </div>
+
+      <div style="margin-top: var(--space-lg); padding: var(--space-md); background-color: var(--bg-secondary); border-radius: var(--radius-sm); font-size: var(--font-size-sm); line-height: 1.8; color: var(--text-primary);">
+        <strong>📌 종합평가:</strong> 4주 추이를 보면 극적인 반전이 나타났습니다. 2주 전 경쟁자1(40.8%)에 뒤쳐져 있던 상황에서 현재 우리가 45.2%로 1위로 올라섰습니다. 이는 +7%포인트의 강한 상승세이며, 주당 평균 1.75%씩 증가하는 추세입니다. 경쟁자1은 42.1% → 38%로 하락세를 보이고 있습니다. 이러한 긍정적 추세는 최근 정책 발표, 미디어 노출 확대, 청년층 공략 등이 효과를 보고 있음을 의미합니다. 현재의 모멘텀을 유지하면서 더욱 공격적인 캠페인을 전개한다면 50% 돌파도 충분히 가능합니다.
+      </div>
+    </div>
+
+    <!-- 예측 -->
+    <div class="info-card">
+      <h3>🔮 AI 판세 예측 (4주 후)</h3>
+      <p style="margin: var(--space-sm) 0; font-size: var(--font-size-sm);"><strong>예상 지지율:</strong> 48-52% (현재 전략 유지 시)</p>
+      <p style="margin: var(--space-sm) 0; font-size: var(--font-size-sm);"><strong>신뢰도:</strong> 87%</p>
+      <p style="margin: 0; font-size: var(--font-size-sm); color: var(--text-secondary);">경제정책 강화 + 청년층 공략 시 52% 이상 달성 가능</p>
+      <div style="margin-top: var(--space-lg); padding: var(--space-md); background-color: var(--bg-secondary); border-radius: var(--radius-sm); font-size: var(--font-size-sm); line-height: 1.8; color: var(--text-primary);">
+        <strong>📌 종합평가:</strong> AI 분석 결과, 4주 후 지지율은 48-52% 범위로 예상되며 신뢰도는 87%입니다. 현재의 상승세가 유지된다면 기본값 50% 달성이 가능합니다. 낙관적 시나리오는 경제정책 강화, 청년층 SNS 캠페인 확대, 외곽지역 집중 방문으로 52% 이상도 충분합니다. 보수적 시나리오는 경쟁자1의 반격, 부정적 뉴스 발생 시 48%까지 하락할 수 있습니다. 위험요소: 미정층의 변심, 경쟁자1의 정책 공세, 부동층의 결집. 현재의 모멘텀 유지와 미정층 흡수에 집중하면 선거 당일 50% 이상 최종 득표도 달성 가능합니다.
+      </div>
+    </div>
+  </div>
+  </div>
+
+  <script src="../js/ui.js"></script>
+  <script src="../js/api-client.js"></script>
+  <script src="../js/file-store.js"></script>
+  <script>
+    const CURRENT_TYPE = 'type-2'; // 판세정보
+
+    async function initFileDisplay() {
+      try {
+        await FileStore.init();
+        const files = await FileStore.getFilesByType(CURRENT_TYPE);
+
+        const emptyState = document.getElementById('emptyStateContainer');
+        const content = document.getElementById('contentContainer');
+
+        if (false) { // 기본 콘텐츠 항상 표시
+          emptyState.style.display = "none"; // 파일이 없어도 기본 콘텐츠 표시
+          // 기존 콘텐츠 숨기기
+          const sections = content.querySelectorAll('h3, .info-card, .poll-card, .poll-grid, .demographic-grid, .bar-chart, .timeline');
+          sections.forEach(el => el.style.display = 'none');
+        } else {
+          emptyState.style.display = 'none';
+          // 파일 목록 표시
+          displayFileList(files);
+        }
+      } catch (error) {
+        console.error('파일 로드 실패:', error);
+      }
+    }
+
+    function displayFileList(files) {
+      const container = document.getElementById('contentContainer');
+      const fileListHtml = `
+        <h2 style="margin-top: var(--space-xl);">📂 업로드된 자료</h2>
+        <div style="display: grid; gap: var(--space-lg); margin-top: var(--space-lg);">
+          ${files.map(file => `
+            <div style="padding: var(--space-lg); background-color: var(--bg-secondary); border-radius: var(--radius-md); border-left: 4px solid var(--primary-color);">
+              <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: var(--space-lg);">
+                <div style="flex: 1;">
+                  <h4 style="margin: 0 0 var(--space-sm) 0; color: var(--primary-color);">📄 ${file.name}</h4>
+                  <p style="margin: 0; font-size: var(--font-size-sm); color: var(--text-secondary);">업로드: ${file.uploadDate} • 크기: ${(file.size / 1024 / 1024).toFixed(2)}MB</p>
+                </div>
+                <div style="display: flex; gap: var(--space-sm);">
+                  <button class="btn btn-primary" onclick="viewFile(${file.id}, '${CURRENT_TYPE}')">보기</button>
+                  <button class="btn btn-secondary" onclick="downloadFile(${file.id}, '${CURRENT_TYPE}')">다운로드</button>
+                  <button class="btn btn-secondary" onclick="deleteFile(${file.id}, '${CURRENT_TYPE}')">삭제</button>
+                </div>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      `;
+
+      const fileSection = document.createElement('div');
+      fileSection.innerHTML = fileListHtml;
+
+      // 기존 콘텐츠 앞에 파일 리스트 추가
+      const firstInfo = container.querySelector('.info-card');
+      if (firstInfo) {
+        firstInfo.parentNode.insertBefore(fileSection, firstInfo);
+      }
+    }
+
+    async function viewFile(id, type) {
+      try {
+        const blob = await FileStore.getFileBlob(id);
+        const url = URL.createObjectURL(blob);
+        window.open(url, '_blank');
+      } catch (error) {
+        console.error('파일 보기 실패:', error);
+        alert('파일을 열 수 없습니다.');
+      }
+    }
+
+    async function downloadFile(id, type) {
+      try {
+        const files = await FileStore.getFilesByType(type);
+        const file = files.find(f => f.id === id);
+        if (file) {
+          const blob = await FileStore.getFileBlob(id);
+          const url = URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.href = url;
+          link.download = file.name;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          URL.revokeObjectURL(url);
+        }
+      } catch (error) {
+        console.error('다운로드 실패:', error);
+        alert('다운로드에 실패했습니다.');
+      }
+    }
+
+    async function deleteFile(id, type) {
+      if (confirm('파일을 삭제하시겠습니까?')) {
+        try {
+          await FileStore.deleteFile(id);
+          alert('파일이 삭제되었습니다.');
+          location.reload();
+        } catch (error) {
+          console.error('삭제 실패:', error);
+          alert('삭제에 실패했습니다.');
+        }
+      }
+    }
+
+    // 페이지 로드 시 실행
+    document.addEventListener('DOMContentLoaded', initFileDisplay);
+
+    // ============ 판세 변화 추이 차트 생성 ============
+    function initPollTrendChart() {
+      const textPrimary = getComputedStyle(document.documentElement).getPropertyValue('--text-primary').trim();
+
+      const pollTrendCtx = document.getElementById('pollTrendChart');
+      if (pollTrendCtx) {
+        new Chart(pollTrendCtx, {
+          type: 'line',
+          data: {
+            labels: ['2월 26일\n(3주전)', '3월 5일\n(2주전)', '3월 12일\n(지난주)', '3월 19일\n(현재)'],
+            datasets: [
+              {
+                label: '우리 후보',
+                data: [38.2, 40.5, 43.1, 45.2],
+                borderColor: '#3b82f6',
+                backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                tension: 0.4,
+                fill: true,
+                pointRadius: 6,
+                pointBackgroundColor: '#3b82f6',
+                pointBorderColor: '#fff',
+                pointBorderWidth: 2
+              },
+              {
+                label: '경쟁자 1',
+                data: [42.1, 40.8, 39.2, 38],
+                borderColor: '#f59e0b',
+                backgroundColor: 'rgba(245, 158, 11, 0.1)',
+                tension: 0.4,
+                fill: true,
+                pointRadius: 6,
+                pointBackgroundColor: '#f59e0b',
+                pointBorderColor: '#fff',
+                pointBorderWidth: 2
+              },
+              {
+                label: '경쟁자 2',
+                data: [null, null, null, 22],
+                borderColor: '#ef4444',
+                backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                tension: 0.4,
+                fill: true,
+                pointRadius: 6,
+                pointBackgroundColor: '#ef4444',
+                pointBorderColor: '#fff',
+                pointBorderWidth: 2
+              }
+            ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+              legend: {
+                display: true,
+                labels: {
+                  color: textPrimary,
+                  font: { size: 12 },
+                  padding: 15,
+                  usePointStyle: true
+                }
+              },
+              tooltip: {
+                backgroundColor: 'rgba(0,0,0,0.8)',
+                padding: 12,
+                titleFont: { size: 13, weight: 'bold' },
+                bodyFont: { size: 12 },
+                displayColors: true
+              }
+            },
+            scales: {
+              y: {
+                min: 20,
+                max: 50,
+                ticks: {
+                  color: textPrimary,
+                  callback: function(value) { return value + '%'; }
+                },
+                grid: { color: 'rgba(0,0,0,0.05)' }
+              },
+              x: {
+                ticks: { color: textPrimary },
+                grid: { color: 'rgba(0,0,0,0.05)' }
+              }
+            }
+          }
+        });
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', initPollTrendChart);
+
+    // ============ 직업별 지지율 차트 생성 ============
+    function initOccupationChart() {
+      const textPrimary = getComputedStyle(document.documentElement).getPropertyValue('--text-primary').trim();
+
+      const occupationCtx = document.getElementById('occupationChart');
+      if (occupationCtx) {
+        new Chart(occupationCtx, {
+          type: 'bar',
+          data: {
+            labels: ['학생', '직장인', '자영업', '무직/기타'],
+            datasets: [{
+              label: '지지율 (%)',
+              data: [56, 48, 42, 38],
+              backgroundColor: ['#3b82f6', '#10b981', '#f59e0b', '#ef4444']
+            }]
+          },
+          options: {
+            indexAxis: 'x',
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+              legend: { display: false }
+            },
+            scales: {
+              y: {
+                min: 0,
+                max: 60,
+                ticks: {
+                  color: textPrimary,
+                  callback: function(value) { return value + '%'; }
+                },
+                grid: { color: 'rgba(0,0,0,0.05)' }
+              },
+              x: {
+                ticks: { color: textPrimary },
+                grid: { drawBorder: false }
+              }
+            }
+          }
+        });
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', initOccupationChart);
+  </script>
+  <script src="../js/party-theme.js"></script>
+$scripts
+</body>
+
+  <script>
+    // 로컬 파일 프로토콜용 테마 초기화
+    if (typeof window.PartyTheme === 'undefined') {
+      function applyThemeFromStorage() {
+        const partyColors = {
+          dem: { bgPrimary: '#F0F4F9', bgSecondary: '#e0ecff', bgTertiary: '#dce6f8', primary: '#3b82f6', light: '#42a5f5', dark: '#1565c0', textPrimary: '#1e3a8a' },
+          ppp: { bgPrimary: '#FFF5F6', bgSecondary: '#ffe0e0', bgTertiary: '#ffd6d6', primary: '#ef4444', light: '#f87171', dark: '#dc2626', textPrimary: '#7f1d1d' },
+          reform: { bgPrimary: '#f0fdf4', bgSecondary: '#dbeafe', bgTertiary: '#d1f2eb', primary: '#10b981', light: '#34d399', dark: '#059669', textPrimary: '#065f46' },
+          liberty: { bgPrimary: '#fff5f7', bgSecondary: '#ffe0e6', bgTertiary: '#ffc0d0', primary: '#c41e3a', light: '#e24d5e', dark: '#a01630', textPrimary: '#7f0a1a' },
+          renewal: { bgPrimary: '#fefce8', bgSecondary: '#fef08a', bgTertiary: '#fde047', primary: '#f59e0b', light: '#fbbf24', dark: '#d97706', textPrimary: '#713f12' },
+          independent: { bgPrimary: '#f9fafb', bgSecondary: '#f3f4f6', bgTertiary: '#e5e7eb', primary: '#9ca3af', light: '#d1d5db', dark: '#4b5563', textPrimary: '#374151' }
+        };
+        const party = localStorage.getItem('selectedParty') || 'dem';
+        const colors = partyColors[party];
+        const root = document.documentElement;
+        root.style.setProperty('--primary-color', colors.primary);
+        root.style.setProperty('--primary-light', colors.light);
+        root.style.setProperty('--primary-dark', colors.dark);
+        root.style.setProperty('--bg-primary', colors.bgPrimary);
+        root.style.setProperty('--bg-secondary', colors.bgSecondary);
+        root.style.setProperty('--bg-tertiary', colors.bgTertiary);
+        root.style.setProperty('--text-primary', colors.textPrimary);
+        root.setAttribute('data-party', party);
+      }
+      document.readyState === 'loading' ? document.addEventListener('DOMContentLoaded', applyThemeFromStorage) : applyThemeFromStorage();
+    }
+  </script>
+
+  <script>
+    // 사이드바 제목 동적 업데이트
+    function updateSidebarTitle() {
+      const candidateName = localStorage.getItem('candidateName') || '후보자';
+      const sidebarTitle = document.getElementById('sidebarTitle');
+      if (sidebarTitle) {
+        sidebarTitle.textContent = `🚨 ${candidateName} 선거 워룸`;
+      }
+    }
+
+    // 페이지 로드 시 실행
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', updateSidebarTitle);
+    } else {
+      updateSidebarTitle();
+    }
+
+    // localStorage 변경 감지 (다른 탭에서 변경 시)
+    window.addEventListener('storage', updateSidebarTitle);
+  </script>
+</html>

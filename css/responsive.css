@@ -1,0 +1,532 @@
+/* Responsive Design — Mobile-First Approach */
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+/* Base Mobile (320px - 768px) */
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+
+/* Mobile Button Touch Targets */
+.btn {
+  min-height: 44px;
+  padding: 12px 20px !important;
+  font-size: var(--font-size-sm);
+}
+
+/* Mobile Card Spacing */
+.card {
+  padding: 16px !important;
+  margin-bottom: var(--space-md);
+}
+
+section {
+  padding: 16px !important;
+  margin-bottom: var(--space-md);
+}
+
+/* Mobile Headings */
+h1 {
+  font-size: 22px;
+  line-height: 1.3;
+  margin-bottom: var(--space-md);
+}
+
+h2 {
+  font-size: 18px;
+  line-height: 1.4;
+  margin-bottom: var(--space-md);
+}
+
+h3 {
+  font-size: 16px;
+  line-height: 1.4;
+  margin-bottom: var(--space-sm);
+}
+
+/* Mobile Text */
+p {
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-base);
+}
+
+/* Mobile Grid → Single Column */
+.grid,
+.alert-grid,
+.stats-grid,
+.menu-grid,
+[class*="grid"] {
+  grid-template-columns: 1fr !important;
+  gap: var(--space-md) !important;
+}
+
+/* Mobile Table → Card Layout */
+table {
+  border: none;
+  display: block;
+  width: 100%;
+  box-shadow: none;
+}
+
+thead {
+  display: none;
+}
+
+tbody {
+  display: block;
+}
+
+tr {
+  display: block;
+  border: 1.5px solid rgba(0, 0, 0, 0.08);
+  border-radius: var(--radius-md);
+  padding: var(--space-md);
+  margin-bottom: var(--space-md);
+  background: linear-gradient(145deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08), 0 1px 4px rgba(0, 0, 0, 0.04);
+}
+
+tr:hover {
+  background-color: var(--bg-secondary);
+  border-color: var(--primary-color);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+td {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-sm) 0 !important;
+  border: none;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+}
+
+td::before {
+  content: attr(data-label);
+  font-weight: var(--font-weight-bold);
+  color: var(--text-secondary);
+  min-width: 30%;
+  text-transform: uppercase;
+  font-size: var(--font-size-xs);
+  letter-spacing: 0.05em;
+}
+
+td:last-child {
+  border: none;
+}
+
+/* Mobile Sidebar */
+.sidebar {
+  position: fixed;
+  left: -100%;
+  top: 0;
+  width: 240px;
+  height: 100vh;
+  transition: left var(--transition-base);
+  z-index: 1000;
+  overflow-y: auto;
+}
+
+.sidebar.open {
+  left: 0;
+  box-shadow: 2px 0 20px rgba(0, 0, 0, 0.3);
+}
+
+/* Mobile Hamburger Menu */
+.mobile-menu-toggle {
+  display: block;
+  position: fixed;
+  top: var(--space-md);
+  right: var(--space-md);
+  z-index: 1001;
+  width: 48px;
+  height: 48px;
+  background: var(--primary-color);
+  border: none;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  color: white;
+  font-size: 24px;
+  transition: all var(--transition-base);
+}
+
+.mobile-menu-toggle:active {
+  transform: scale(0.95);
+}
+
+/* Mobile Overlay */
+.sidebar-overlay {
+  display: none;
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 999;
+  transition: opacity var(--transition-base);
+}
+
+.sidebar-overlay.open {
+  display: block;
+}
+
+/* Mobile Form Elements */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="number"],
+input[type="date"],
+input[type="time"],
+textarea,
+select {
+  min-height: 44px;
+  font-size: 16px; /* Prevent zoom on iOS */
+  padding: 12px var(--space-md) !important;
+}
+
+/* Mobile Input Focus */
+input:focus,
+textarea:focus,
+select:focus {
+  outline: 2px solid var(--primary-color);
+  outline-offset: 2px;
+}
+
+/* Mobile Modal */
+.modal {
+  width: 90vw !important;
+  max-width: 400px;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+/* Mobile Padding Adjustments */
+.container {
+  padding: var(--space-md);
+  max-width: 100%;
+}
+
+main {
+  margin-left: 0 !important;
+  padding: var(--space-md);
+}
+
+/* Mobile Flex Stacking */
+.flex-row {
+  flex-direction: column !important;
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+/* Tablet (768px - 1024px) */
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+
+@media (min-width: 768px) {
+  /* Tablet Headings */
+  h1 {
+    font-size: 24px;
+  }
+
+  h2 {
+    font-size: 20px;
+  }
+
+  h3 {
+    font-size: 18px;
+  }
+
+  /* Tablet Button */
+  .btn {
+    min-height: 40px;
+    padding: 10px 20px !important;
+  }
+
+  /* Tablet Card & Section */
+  .card {
+    padding: 20px !important;
+  }
+
+  section {
+    padding: 20px !important;
+  }
+
+  /* Tablet Grid → 2 Columns */
+  .grid,
+  .alert-grid,
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+
+  /* Tablet Sidebar */
+  .sidebar {
+    position: fixed;
+    left: 0;
+    width: 200px;
+    transform: none !important;
+  }
+
+  .mobile-menu-toggle {
+    display: none;
+  }
+
+  .sidebar-overlay {
+    display: none !important;
+  }
+
+  main {
+    margin-left: 200px !important;
+  }
+
+  /* Tablet Container */
+  .container {
+    max-width: 720px;
+    padding: var(--space-lg);
+  }
+
+  /* Tablet Table */
+  table {
+    display: table;
+    border: 1.5px solid rgba(0, 0, 0, 0.08);
+    border-radius: var(--radius-lg);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08), 0 1px 4px rgba(0, 0, 0, 0.04);
+    overflow: hidden;
+  }
+
+  thead {
+    display: table-header-group;
+  }
+
+  tbody {
+    display: table-row-group;
+  }
+
+  tr {
+    display: table-row;
+    border: none;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+    padding: 0 !important;
+    margin: 0 !important;
+    background: transparent;
+    box-shadow: none;
+  }
+
+  tr:hover {
+    background-color: var(--bg-secondary);
+    box-shadow: none;
+  }
+
+  td,
+  th {
+    display: table-cell;
+    padding: var(--space-md) var(--space-lg) !important;
+    text-align: left;
+  }
+
+  td::before {
+    content: none;
+  }
+
+  th {
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+    color: white;
+    font-weight: var(--font-weight-bold);
+  }
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+/* Desktop (1024px - 1440px) */
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+
+@media (min-width: 1024px) {
+  /* Desktop Headings */
+  h1 {
+    font-size: 26px;
+  }
+
+  h2 {
+    font-size: 22px;
+  }
+
+  h3 {
+    font-size: 20px;
+  }
+
+  /* Desktop Button */
+  .btn {
+    min-height: 40px;
+  }
+
+  /* Desktop Card & Section */
+  .card {
+    padding: var(--space-lg) !important;
+  }
+
+  section {
+    padding: var(--space-lg) !important;
+  }
+
+  /* Desktop Grid → 3 Columns */
+  .grid,
+  .alert-grid,
+  .stats-grid {
+    grid-template-columns: repeat(3, 1fr) !important;
+  }
+
+  /* Desktop Sidebar */
+  .sidebar {
+    width: 240px;
+  }
+
+  main {
+    margin-left: 240px !important;
+  }
+
+  /* Desktop Container */
+  .container {
+    max-width: 960px;
+  }
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+/* Large Desktop (1440px+) */
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+
+@media (min-width: 1440px) {
+  /* Large Desktop Headings */
+  h1 {
+    font-size: 28px;
+  }
+
+  h2 {
+    font-size: 24px;
+  }
+
+  /* Large Desktop Container */
+  .container {
+    max-width: 1200px;
+  }
+
+  /* Large Desktop Grid → 4 Columns */
+  .grid {
+    grid-template-columns: repeat(4, 1fr) !important;
+  }
+
+  .alert-grid,
+  .stats-grid {
+    grid-template-columns: repeat(4, 1fr) !important;
+  }
+
+  .menu-grid {
+    grid-template-columns: repeat(4, 1fr) !important;
+  }
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+/* Print Styles */
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+
+@media print {
+  .no-print,
+  .sidebar,
+  .mobile-menu-toggle,
+  .sidebar-overlay {
+    display: none !important;
+  }
+
+  body {
+    background-color: white;
+    color: black;
+  }
+
+  a {
+    text-decoration: none;
+  }
+
+  .card,
+  section {
+    page-break-inside: avoid;
+    box-shadow: none;
+    border: 1px solid #ccc;
+  }
+
+  .btn {
+    border: 1px solid #333;
+    background: white !important;
+    color: black !important;
+  }
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+/* Ultra-Small Devices (320px - 480px) - Extra Mobile */
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+
+@media (max-width: 480px) {
+  /* Extra Small Button */
+  .btn {
+    font-size: 13px;
+    padding: 10px 16px !important;
+  }
+
+  /* Extra Small Headings */
+  h1 {
+    font-size: 20px;
+  }
+
+  h2 {
+    font-size: 17px;
+  }
+
+  h3 {
+    font-size: 15px;
+  }
+
+  /* Extra Small Input */
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  input[type="number"],
+  input[type="date"],
+  input[type="time"],
+  textarea,
+  select {
+    font-size: 14px;
+    padding: 10px 12px !important;
+  }
+
+  /* Extra Small Card */
+  .card {
+    padding: 12px !important;
+  }
+
+  section {
+    padding: 12px !important;
+  }
+
+  .container {
+    padding: var(--space-sm);
+  }
+
+  main {
+    padding: var(--space-sm);
+  }
+
+  /* Extra Small Modal */
+  .modal {
+    width: 95vw !important;
+    max-width: 320px;
+  }
+
+  /* Extra Small Sidebar */
+  .sidebar {
+    width: 220px;
+  }
+
+  /* Table Adjustments */
+  td {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: var(--space-xs) 0 !important;
+  }
+
+  td::before {
+    margin-bottom: var(--space-xs);
+    display: block;
+  }
+}

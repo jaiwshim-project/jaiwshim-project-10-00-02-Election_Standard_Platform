@@ -1,0 +1,902 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>외부자료 관리 — 선거 워룸</title>
+  <link rel="stylesheet" href="../css/theme.css">
+  <link rel="stylesheet" href="../css/responsive.css">
+  <style>
+    body { margin: 0; background-color: var(--bg-primary); display: flex; }
+
+    .sidebar { position: fixed; left: 0; top: 0; width: 240px; height: 100vh; background-color: var(--primary-color); z-index: 100; overflow-y: auto; padding: 0; margin: 0; box-shadow: 2px 0 4px rgba(0,0,0,0.1); }
+    .sidebar-header { padding: var(--space-lg); color: white; font-size: var(--font-size-lg); font-weight: 600; border-bottom: 1px solid rgba(255,255,255,0.2); margin: 0; }
+    .sidebar-nav ul { list-style: none; margin: 0; padding: 0; }
+    .sidebar-nav a { display: block; padding: var(--space-md) var(--space-lg); color: white; text-decoration: none; transition: background-color var(--transition-base); font-size: var(--font-size-sm); border-left: 4px solid transparent; }
+    .sidebar-nav a:hover { background-color: rgba(255,255,255,0.2); }
+    .sidebar-nav a.active { background-color: rgba(255,255,255,0.3); font-weight: 600; border-left-color: white; padding-left: calc(var(--space-lg) - 4px); }
+
+    main { flex: 1; margin-left: 240px; }
+    .container { max-width: 1200px; margin: 0 auto; padding: var(--space-lg); }
+
+    @media (max-width: 768px) {
+      .sidebar { width: 200px; }
+      main { margin-left: 200px; }
+      .sidebar-nav a { padding: var(--space-sm) var(--space-md); font-size: var(--font-size-xs); }
+    }
+
+    @media (max-width: 480px) {
+      .sidebar { width: 160px; }
+      main { margin-left: 160px; }
+      .sidebar-header { padding: var(--space-md); font-size: var(--font-size-base); }
+      .sidebar-nav a { padding: var(--space-xs) var(--space-sm); font-size: var(--font-size-xs); }
+    }
+
+    .header { background: linear-gradient(135deg, var(--primary-color), var(--primary-light)); color: white; padding: var(--space-lg); margin: -var(--space-lg) -var(--space-lg) var(--space-lg) -var(--space-lg); border-radius: 0; }
+    .header h1 { margin: 0; }
+
+    .upload-section { margin-bottom: var(--space-xl); padding: var(--space-lg); background-color: var(--bg-secondary); border-radius: var(--radius-md); border-left: 5px solid; }
+    .upload-section.type-1 { border-left-color: #3b82f6; }
+    .upload-section.type-2 { border-left-color: #8b5cf6; }
+    .upload-section.type-3 { border-left-color: #ec4899; }
+    .upload-section.type-4 { border-left-color: #f59e0b; }
+    .upload-section.type-5 { border-left-color: #10b981; }
+    .upload-section.type-6 { border-left-color: #ef4444; }
+    .upload-section.type-7 { border-left-color: #06b6d4; }
+    .upload-section.type-8 { border-left-color: #8b5cf6; }
+
+    .section-header { display: flex; align-items: center; gap: var(--space-md); margin-bottom: var(--space-lg); }
+    .section-number { font-size: 28px; font-weight: 700; min-width: 50px; }
+    .section-title-container h3 { margin: 0; font-size: var(--font-size-lg); font-weight: 600; }
+    .section-title-container p { margin: var(--space-xs) 0 0 0; font-size: var(--font-size-sm); color: var(--text-secondary); }
+
+    .upload-area { border: 3px dashed; border-radius: var(--radius-md); padding: 8px 12px; text-align: center; background-color: var(--bg-primary); transition: all var(--transition-base); cursor: pointer; }
+    .upload-area:hover { transform: translateY(-2px); }
+    .upload-area.dragover { opacity: 0.8; }
+
+    .type-1 .upload-area { border-color: #3b82f6; }
+    .type-1 .upload-area.dragover { background-color: #dbeafe; }
+    .type-2 .upload-area { border-color: #8b5cf6; }
+    .type-2 .upload-area.dragover { background-color: #f3e8ff; }
+    .type-3 .upload-area { border-color: #ec4899; }
+    .type-3 .upload-area.dragover { background-color: #fce7f3; }
+    .type-4 .upload-area { border-color: #f59e0b; }
+    .type-4 .upload-area.dragover { background-color: #fef3c7; }
+    .type-5 .upload-area { border-color: #10b981; }
+    .type-5 .upload-area.dragover { background-color: #d1fae5; }
+    .type-6 .upload-area { border-color: #ef4444; }
+    .type-6 .upload-area.dragover { background-color: #fee2e2; }
+    .type-7 .upload-area { border-color: #06b6d4; }
+    .type-7 .upload-area.dragover { background-color: #cffafe; }
+    .type-8 .upload-area { border-color: #8b5cf6; }
+    .type-8 .upload-area.dragover { background-color: #f3e8ff; }
+
+    .upload-icon { font-size: 24px; margin-bottom: 4px; }
+    .upload-text { font-size: var(--font-size-sm); font-weight: 600; margin-bottom: 2px; color: var(--text-primary); }
+    .upload-hint { font-size: 12px; color: var(--text-secondary); }
+    .file-input-hidden { display: none; }
+
+    .progress-section { margin-top: var(--space-lg); display: none; padding: var(--space-lg); background-color: var(--bg-secondary); border-radius: var(--radius-md); }
+    .progress-bar { background-color: #e5e7eb; border-radius: var(--radius-sm); height: 10px; overflow: hidden; margin-bottom: var(--space-md); }
+    .progress-fill { background-color: var(--primary-color); height: 100%; width: 0%; transition: width 0.3s ease; }
+
+    .materials-list { margin-top: var(--space-xl); }
+    .materials-section { margin-bottom: var(--space-xl); padding: var(--space-lg); background-color: var(--bg-secondary); border-radius: var(--radius-md); border-left: 4px solid; }
+    .materials-section.type-1 { border-left-color: #3b82f6; }
+    .materials-section.type-2 { border-left-color: #8b5cf6; }
+    .materials-section.type-3 { border-left-color: #ec4899; }
+    .materials-section.type-4 { border-left-color: #f59e0b; }
+    .materials-section.type-5 { border-left-color: #10b981; }
+    .materials-section.type-6 { border-left-color: #ef4444; }
+    .materials-section.type-7 { border-left-color: #06b6d4; }
+    .materials-section.type-8 { border-left-color: #8b5cf6; }
+
+    .materials-section-title { display: flex; align-items: center; gap: var(--space-md); margin-bottom: var(--space-lg); padding-bottom: var(--space-md); border-bottom: 2px solid var(--bg-primary); }
+    .section-icon { font-size: 28px; }
+    .section-name { font-size: var(--font-size-lg); font-weight: 600; }
+    .section-count { background-color: var(--bg-primary); padding: 2px 8px; border-radius: 12px; font-size: var(--font-size-sm); color: var(--text-secondary); }
+
+    .material-item { padding: var(--space-lg); background-color: var(--bg-primary); border-radius: var(--radius-md); margin-bottom: var(--space-md); border-left: 4px solid; display: flex; justify-content: space-between; align-items: center; }
+    .material-item.type-1 { border-left-color: #3b82f6; }
+    .material-item.type-2 { border-left-color: #8b5cf6; }
+    .material-item.type-3 { border-left-color: #ec4899; }
+    .material-item.type-4 { border-left-color: #f59e0b; }
+    .material-item.type-5 { border-left-color: #10b981; }
+    .material-item.type-6 { border-left-color: #ef4444; }
+    .material-item.type-7 { border-left-color: #06b6d4; }
+    .material-item.type-8 { border-left-color: #8b5cf6; }
+
+    .material-info { flex: 1; }
+    .material-name { font-weight: 600; color: var(--primary-color); margin-bottom: var(--space-xs); }
+    .material-date { font-size: var(--font-size-sm); color: var(--text-secondary); }
+    .material-actions { display: flex; gap: var(--space-sm); }
+    .material-actions button { padding: var(--space-sm) var(--space-md); font-size: var(--font-size-sm); }
+
+    .empty-state { padding: var(--space-xl); text-align: center; color: var(--text-secondary); }
+    .empty-icon { font-size: 48px; margin-bottom: var(--space-md); opacity: 0.5; }
+
+    @media (max-width: 768px) {
+      .navbar ul { flex-wrap: wrap; gap: var(--space-sm); }
+      .navbar a { font-size: var(--font-size-sm); padding: var(--space-xs) var(--space-sm); }
+      .section-header { flex-wrap: wrap; }
+      .material-item { flex-direction: column; align-items: flex-start; }
+      .material-actions { width: 100%; margin-top: var(--space-md); }
+    }
+  </style>
+$auth_script
+</head>
+<body>
+  <aside class="sidebar">
+    <a href="../index.html" style="text-decoration: none;">
+      <div class="sidebar-header" id="sidebarTitle">🚨 선거 워룸</div>
+    </a>
+    <nav class="sidebar-nav">
+      <ul>
+        <li><a href="index.html">대시보드</a></li>
+        <li><a href="integrated-analysis.html">1.통합분석</a></li>
+        <li><a href="intelligence.html">2.판세정보 분석&비교</a></li>
+        <li><a href="strategy.html">3.전략 비교&추천</a></li>
+        <li><a href="pledges.html">4.공약 비교&추천</a></li>
+        <li><a href="vehicle-strategy.html">5.차량 전략</a></li>
+        <li><a href="online-sentiment-analysis.html">6.온라인 여론분석 비교&추천</a></li>
+        <li><a href="ai-chat.html">7.AI톡과 질문과 대화</a></li>
+        <li><a href="dashboard.html">8.대시보드</a></li>
+        <li><a href="blog.html">9.블로그-기사</a></li>
+        <li><a href="external-materials.html" class="active">10.외부자료 업로드</a></li>
+        <li><a href="warroom.html">11.워룸-위기대응센터</a></li>
+        <li><a href="reports.html">12.분석리포트 관리</a></li>
+        <li><a href="organization-chart.html">13.조직도</a></li>
+        <li><a href="ai-premium.html">14.AI 프리미엄 도구들</a></li>
+        <li><a href="settings.html">15.설정</a></li>
+      </ul>
+    </nav>
+  </aside>
+
+  <main>
+    <div class="container">
+    <div class="header">
+      <h1>📂 외부자료 관리</h1>
+      <p>선거 관련 분석 자료, 인텔리전스, 전략 보고서를 관리합니다</p>
+    </div>
+
+    <!-- 자료 업로드 섹션 -->
+    <h2>📤 자료 업로드</h2>
+
+    <!-- 1. 통합분석 -->
+    <div class="upload-section type-1">
+      <div class="section-header">
+        <div class="section-number">1️⃣</div>
+        <div class="section-title-container">
+          <h3>통합분석</h3>
+          <p>01. 통합 분석 리포트</p>
+        </div>
+      </div>
+      <div class="upload-area" ondrop="handleDrop(event, 'type-1')" ondragover="handleDragOver(event, this)" ondragleave="handleDragLeave(event, this)" onclick="triggerFileInput('type-1')">
+        <div class="upload-icon">📊</div>
+        <div class="upload-text">파일을 여기로 드래그하세요</div>
+        <div class="upload-hint">또는 클릭하여 PDF 파일을 선택하세요</div>
+        <input type="file" class="file-input-hidden" id="input-type-1" accept=".pdf" multiple onchange="handleFileSelect(event, 'type-1')">
+      </div>
+    </div>
+
+    <!-- 2. 판세정보 -->
+    <div class="upload-section type-2">
+      <div class="section-header">
+        <div class="section-number">2️⃣</div>
+        <div class="section-title-container">
+          <h3>판세정보</h3>
+          <p>02. 선거 판세 인텔리전스</p>
+        </div>
+      </div>
+      <div class="upload-area" ondrop="handleDrop(event, 'type-2')" ondragover="handleDragOver(event, this)" ondragleave="handleDragLeave(event, this)" onclick="triggerFileInput('type-2')">
+        <div class="upload-icon">📈</div>
+        <div class="upload-text">파일을 여기로 드래그하세요</div>
+        <div class="upload-hint">또는 클릭하여 PDF 파일을 선택하세요</div>
+        <input type="file" class="file-input-hidden" id="input-type-2" accept=".pdf" multiple onchange="handleFileSelect(event, 'type-2')">
+      </div>
+    </div>
+
+    <!-- 3-1. 우리전략 -->
+    <div class="upload-section type-3">
+      <div class="section-header">
+        <div class="section-number">3️⃣1️⃣</div>
+        <div class="section-title-container">
+          <h3>우리전략</h3>
+          <p>03-1. 후보자 당선 전략보고서</p>
+        </div>
+      </div>
+      <div class="upload-area" ondrop="handleDrop(event, 'type-3')" ondragover="handleDragOver(event, this)" ondragleave="handleDragLeave(event, this)" onclick="triggerFileInput('type-3')">
+        <div class="upload-icon">📄</div>
+        <div class="upload-text">파일을 여기로 드래그하세요</div>
+        <div class="upload-hint">또는 클릭하여 PDF 파일을 선택하세요</div>
+        <input type="file" class="file-input-hidden" id="input-type-3" accept=".pdf" multiple onchange="handleFileSelect(event, 'type-3')">
+      </div>
+    </div>
+
+    <!-- 3-2. 경쟁자전략 -->
+    <div class="upload-section type-4">
+      <div class="section-header">
+        <div class="section-number">3️⃣2️⃣</div>
+        <div class="section-title-container">
+          <h3>경쟁자전략</h3>
+          <p>03-2. 경쟁후보 당선 전략 보고서</p>
+        </div>
+      </div>
+      <div class="upload-area" ondrop="handleDrop(event, 'type-4')" ondragover="handleDragOver(event, this)" ondragleave="handleDragLeave(event, this)" onclick="triggerFileInput('type-4')">
+        <div class="upload-icon">⚔️</div>
+        <div class="upload-text">파일을 여기로 드래그하세요</div>
+        <div class="upload-hint">또는 클릭하여 PDF 파일을 선택하세요</div>
+        <input type="file" class="file-input-hidden" id="input-type-4" accept=".pdf" multiple onchange="handleFileSelect(event, 'type-4')">
+      </div>
+    </div>
+
+    <!-- 4. 정책 -->
+    <div class="upload-section type-5">
+      <div class="section-header">
+        <div class="section-number">4️⃣</div>
+        <div class="section-title-container">
+          <h3>정책</h3>
+          <p>04. 선거공약(정책)</p>
+        </div>
+      </div>
+      <div class="upload-area" ondrop="handleDrop(event, 'type-5')" ondragover="handleDragOver(event, this)" ondragleave="handleDragLeave(event, this)" onclick="triggerFileInput('type-5')">
+        <div class="upload-icon">📋</div>
+        <div class="upload-text">파일을 여기로 드래그하세요</div>
+        <div class="upload-hint">또는 클릭하여 PDF 파일을 선택하세요</div>
+        <input type="file" class="file-input-hidden" id="input-type-5" accept=".pdf" multiple onchange="handleFileSelect(event, 'type-5')">
+      </div>
+    </div>
+
+    <!-- 5. 선거차량 동선 & 후보자 연설 최적화 -->
+    <div class="upload-section type-6">
+      <div class="section-header">
+        <div class="section-number">5️⃣</div>
+        <div class="section-title-container">
+          <h3>선거차량 동선 & 후보자 연설 최적화</h3>
+          <p>05. 선거 차량 이동 경로 및 후보자 연설 일정 최적화 자료</p>
+        </div>
+      </div>
+      <div class="upload-area" ondrop="handleDrop(event, 'type-6')" ondragover="handleDragOver(event, this)" ondragleave="handleDragLeave(event, this)" onclick="triggerFileInput('type-6')">
+        <div class="upload-icon">🚗</div>
+        <div class="upload-text">파일을 여기로 드래그하세요</div>
+        <div class="upload-hint">또는 클릭하여 PDF 파일을 선택하세요</div>
+        <input type="file" class="file-input-hidden" id="input-type-6" accept=".pdf" multiple onchange="handleFileSelect(event, 'type-6')">
+      </div>
+    </div>
+
+    <!-- 6-1. 우리 후보 온라인 여론분석 -->
+    <div class="upload-section type-7">
+      <div class="section-header">
+        <div class="section-number">6️⃣1️⃣</div>
+        <div class="section-title-container">
+          <h3>우리 후보 온라인 여론분석</h3>
+          <p>06-1. 우리 후보 SNS, 뉴스, 커뮤니티 온라인 여론 수집 및 분석</p>
+        </div>
+      </div>
+      <div class="upload-area" ondrop="handleDrop(event, 'type-7')" ondragover="handleDragOver(event, this)" ondragleave="handleDragLeave(event, this)" onclick="triggerFileInput('type-7')">
+        <div class="upload-icon">💬</div>
+        <div class="upload-text">파일을 여기로 드래그하세요</div>
+        <div class="upload-hint">또는 클릭하여 PDF 파일을 선택하세요 (여러 개 가능)</div>
+        <input type="file" class="file-input-hidden" id="input-type-7" accept=".pdf" multiple onchange="handleFileSelect(event, 'type-7')">
+      </div>
+    </div>
+
+    <!-- 6-2. 경쟁 후보 온라인 여론분석 -->
+    <div class="upload-section type-8">
+      <div class="section-header">
+        <div class="section-number">6️⃣2️⃣</div>
+        <div class="section-title-container">
+          <h3>경쟁 후보 온라인 여론분석</h3>
+          <p>06-2. 경쟁 후보 SNS, 뉴스, 커뮤니티 온라인 여론 수집 및 분석</p>
+        </div>
+      </div>
+      <div class="upload-area" ondrop="handleDrop(event, 'type-8')" ondragover="handleDragOver(event, this)" ondragleave="handleDragLeave(event, this)" onclick="triggerFileInput('type-8')">
+        <div class="upload-icon">⚔️</div>
+        <div class="upload-text">파일을 여기로 드래그하세요</div>
+        <div class="upload-hint">또는 클릭하여 PDF 파일을 선택하세요 (여러 개 가능)</div>
+        <input type="file" class="file-input-hidden" id="input-type-8" accept=".pdf" multiple onchange="handleFileSelect(event, 'type-8')">
+      </div>
+    </div>
+
+    <!-- 진행 상황 -->
+    <div class="progress-section" id="progressSection">
+      <h3>파일 처리 중...</h3>
+      <div class="progress-bar">
+        <div class="progress-fill" id="progressFill"></div>
+      </div>
+      <p id="progressText" style="text-align: center; color: var(--text-secondary);">0%</p>
+    </div>
+
+    <!-- RAG 참고자료 가이드 -->
+    <div style="margin-bottom: var(--space-xl); padding: var(--space-lg); background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(99, 102, 241, 0.1)); border-radius: var(--radius-md); border-left: 5px solid #3b82f6;">
+      <div class="section-header" style="margin-bottom: var(--space-md);">
+        <div style="font-size: 28px; min-width: 50px;">🤖</div>
+        <div class="section-title-container">
+          <h3 style="margin: 0;">7.RAG 참고자료 활용</h3>
+          <p style="margin: var(--space-xs) 0 0 0; font-size: var(--font-size-sm); color: var(--text-secondary);">AI 분석을 위한 참고자료 업로드 가이드</p>
+        </div>
+      </div>
+
+      <div style="background-color: var(--bg-primary); border-radius: var(--radius-sm); padding: var(--space-lg); margin-bottom: var(--space-lg);">
+        <h4 style="margin-top: 0; color: #3b82f6;">📘 RAG(Retrieval-Augmented Generation)란?</h4>
+        <p style="color: var(--text-secondary); line-height: 1.7; font-size: var(--font-size-sm); margin-bottom: var(--space-md);">
+          RAG는 AI가 업로드된 문서에서 관련 정보를 자동으로 찾아 더 정확하고 맥락에 맞는 분석을 제공하는 기술입니다.
+          당선 전략 수립을 위해 필요한 모든 자료(정책 분석, 선거 판세 데이터, 경쟁자 전략, 지역 통계)를 미리 업로드하면,
+          AI 분석 시 이 자료들이 자동으로 참고되어 더욱 신뢰할 수 있는 인사이트를 제공합니다.
+        </p>
+
+        <h4 style="color: #3b82f6; margin-top: var(--space-lg);">📋 추천 자료 유형</h4>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: var(--space-md); margin-bottom: var(--space-lg);">
+          <div style="background-color: var(--bg-secondary); padding: var(--space-md); border-radius: var(--radius-sm); border-left: 3px solid #3b82f6;">
+            <p style="margin: 0 0 var(--space-sm) 0; font-weight: 600; font-size: var(--font-size-sm);">📊 통합분석 자료</p>
+            <ul style="margin: 0; padding-left: var(--space-lg); font-size: var(--font-size-sm); color: var(--text-secondary); line-height: 1.7;">
+              <li>지역구 인구통계 및 사회경제 분석</li>
+              <li>선거 역사 데이터 및 투표율 추이</li>
+              <li>기존 선거 결과 분석 보고서</li>
+              <li>지역 경제 현황 및 주요 이슈</li>
+            </ul>
+          </div>
+
+          <div style="background-color: var(--bg-secondary); padding: var(--space-md); border-radius: var(--radius-sm); border-left: 3px solid #8b5cf6;">
+            <p style="margin: 0 0 var(--space-sm) 0; font-weight: 600; font-size: var(--font-size-sm);">📈 판세정보 자료</p>
+            <ul style="margin: 0; padding-left: var(--space-lg); font-size: var(--font-size-sm); color: var(--text-secondary); line-height: 1.7;">
+              <li>최신 여론조사 결과 및 추이 분석</li>
+              <li>경쟁 후보자별 지지율 데이터</li>
+              <li>유권자 성향 및 선호도 조사</li>
+              <li>언론 보도 및 여론 트렌드</li>
+            </ul>
+          </div>
+
+          <div style="background-color: var(--bg-secondary); padding: var(--space-md); border-radius: var(--radius-sm); border-left: 3px solid #ec4899;">
+            <p style="margin: 0 0 var(--space-sm) 0; font-weight: 600; font-size: var(--font-size-sm);">📄 전략 자료</p>
+            <ul style="margin: 0; padding-left: var(--space-lg); font-size: var(--font-size-sm); color: var(--text-secondary); line-height: 1.7;">
+              <li>당선 전략 보고서 및 액션 플랜</li>
+              <li>경쟁 후보 전략 분석</li>
+              <li>SWOT 분석 자료</li>
+              <li>주간 캠페인 실행 계획</li>
+            </ul>
+          </div>
+
+          <div style="background-color: var(--bg-secondary); padding: var(--space-md); border-radius: var(--radius-sm); border-left: 3px solid #f59e0b;">
+            <p style="margin: 0 0 var(--space-sm) 0; font-weight: 600; font-size: var(--font-size-sm);">📋 정책 자료</p>
+            <ul style="margin: 0; padding-left: var(--space-lg); font-size: var(--font-size-sm); color: var(--text-secondary); line-height: 1.7;">
+              <li>선거 공약 및 정책 제안서</li>
+              <li>정책별 소요 예산 및 효과 분석</li>
+              <li>공약 이행 로드맵</li>
+              <li>정책 차별성 및 경쟁력 자료</li>
+            </ul>
+          </div>
+
+          <div style="background-color: var(--bg-secondary); padding: var(--space-md); border-radius: var(--radius-sm); border-left: 3px solid #10b981;">
+            <p style="margin: 0 0 var(--space-sm) 0; font-weight: 600; font-size: var(--font-size-sm);">🚗 선거운동 자료</p>
+            <ul style="margin: 0; padding-left: var(--space-lg); font-size: var(--font-size-sm); color: var(--text-secondary); line-height: 1.7;">
+              <li>선거 차량 동선 최적화 데이터</li>
+              <li>주요 거점 및 집회 장소 정보</li>
+              <li>후보자 연설 일정표</li>
+              <li>지역별 지지자 분포 현황</li>
+            </ul>
+          </div>
+
+          <div style="background-color: var(--bg-secondary); padding: var(--space-md); border-radius: var(--radius-sm); border-left: 3px solid #ef4444;">
+            <p style="margin: 0 0 var(--space-sm) 0; font-weight: 600; font-size: var(--font-size-sm);">📑 기타 자료</p>
+            <ul style="margin: 0; padding-left: var(--space-lg); font-size: var(--font-size-sm); color: var(--text-secondary); line-height: 1.7;">
+              <li>언론 자료 및 보도 자료</li>
+              <li>시민 의견 수렴 결과</li>
+              <li>지역 주민 민원 및 요청사항</li>
+              <li>경쟁 후보자 이슈 분석</li>
+            </ul>
+          </div>
+        </div>
+
+        <h4 style="color: #3b82f6; margin-top: var(--space-lg);">✨ 효과적인 활용 팁</h4>
+        <div style="background-color: var(--bg-secondary); padding: var(--space-md); border-radius: var(--radius-sm); margin-bottom: var(--space-lg);">
+          <ul style="margin: 0; padding-left: var(--space-lg); font-size: var(--font-size-sm); color: var(--text-secondary); line-height: 1.8;">
+            <li><strong style="color: var(--text-primary);">파일명 명확하게:</strong> "2024년 지역구 통계.pdf", "여론조사_2024년1월.pdf" 처럼 명확하게 작성하면 AI가 더 정확하게 참고합니다.</li>
+            <li><strong style="color: var(--text-primary);">최신 데이터 우선:</strong> 최근 자료일수록 현재의 선거 상황을 더 정확히 반영합니다.</li>
+            <li><strong style="color: var(--text-primary);">완전한 정보 제공:</strong> 편향되지 않은 균형잡힌 자료를 업로드하면 더 객관적인 분석을 받을 수 있습니다.</li>
+            <li><strong style="color: var(--text-primary);">정기적 업데이트:</strong> 선거 일정이 가까워질수록 더 자주 업로드하여 최신 정보를 반영하세요.</li>
+            <li><strong style="color: var(--text-primary);">카테고리별 정리:</strong> 동일한 유형의 자료는 같은 카테고리에 업로드하면 AI가 더 효율적으로 활용합니다.</li>
+          </ul>
+        </div>
+
+        <h4 style="color: #3b82f6; margin-top: var(--space-lg);">🔗 AI 분석과의 연동</h4>
+        <div style="background-color: var(--bg-secondary); padding: var(--space-md); border-radius: var(--radius-sm);">
+          <p style="margin: 0; color: var(--text-secondary); font-size: var(--font-size-sm); line-height: 1.7;">
+            아래에서 업로드한 자료들은 자동으로 <strong style="color: var(--text-primary);">7. AI톡과 질문과 대화</strong> 페이지의 AI 챗봇에 참고 자료로 연동됩니다.
+            AI에게 전략 관련 질문을 하면, 이곳에 업로드된 자료에서 자동으로 관련 정보를 찾아 더욱 정확하고 구체적인 답변을 제공합니다.
+            따라서 정보가 완전하고 최신일수록 더 좋은 AI 분석 결과를 얻을 수 있습니다.
+          </p>
+        </div>
+      </div>
+
+      <!-- RAG 참고자료 드래그&드롭 -->
+      <div style="background: linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(99, 102, 241, 0.05)); border: 2px dashed #3b82f6; border-radius: var(--radius-md); padding: var(--space-xl); text-align: center; margin-top: var(--space-lg); cursor: pointer; transition: all var(--transition-base);" id="ragDropZone" ondrop="handleRagDrop(event)" ondragover="handleRagDragOver(event)" ondragleave="handleRagDragLeave(event)">
+        <div style="font-size: 48px; margin-bottom: var(--space-md);">📄</div>
+        <h4 style="color: #3b82f6; margin: var(--space-md) 0;">RAG 참고자료 업로드</h4>
+        <p style="color: var(--text-secondary); font-size: var(--font-size-sm); margin: var(--space-sm) 0; line-height: 1.6;">
+          분석에 사용할 PDF 파일을 여기로 드래그하세요<br>
+          <span style="font-size: 0.9em;">또는 클릭하여 파일을 선택하세요</span>
+        </p>
+        <input type="file" id="ragFileInput" multiple accept=".pdf" style="display: none;" onchange="handleRagFileSelect(event)">
+        <button onclick="document.getElementById('ragFileInput').click()" style="margin-top: var(--space-md); padding: 10px 20px; background-color: #3b82f6; color: white; border: none; border-radius: var(--radius-sm); cursor: pointer; font-size: var(--font-size-sm); font-weight: 600;">📁 파일 선택</button>
+      </div>
+    </div>
+
+    <!-- 업로드된 자료 목록 -->
+    <div class="materials-list" id="materialsList">
+      <h2>📚 업로드된 자료</h2>
+
+      <!-- 타입 1 -->
+      <div class="materials-section type-1" id="section-type-1" style="display: none;">
+        <div class="materials-section-title">
+          <span class="section-icon">📊</span>
+          <span class="section-name">1. 통합분석</span>
+          <span class="section-count" id="count-type-1">0개</span>
+        </div>
+        <div id="list-type-1"></div>
+      </div>
+
+      <!-- 타입 2 -->
+      <div class="materials-section type-2" id="section-type-2" style="display: none;">
+        <div class="materials-section-title">
+          <span class="section-icon">📈</span>
+          <span class="section-name">2. 판세정보</span>
+          <span class="section-count" id="count-type-2">0개</span>
+        </div>
+        <div id="list-type-2"></div>
+      </div>
+
+      <!-- 타입 3 -->
+      <div class="materials-section type-3" id="section-type-3" style="display: none;">
+        <div class="materials-section-title">
+          <span class="section-icon">📄</span>
+          <span class="section-name">3-1. 우리전략</span>
+          <span class="section-count" id="count-type-3">0개</span>
+        </div>
+        <div id="list-type-3"></div>
+      </div>
+
+      <!-- 타입 4 -->
+      <div class="materials-section type-4" id="section-type-4" style="display: none;">
+        <div class="materials-section-title">
+          <span class="section-icon">⚔️</span>
+          <span class="section-name">3-2. 경쟁자전략</span>
+          <span class="section-count" id="count-type-4">0개</span>
+        </div>
+        <div id="list-type-4"></div>
+      </div>
+
+      <!-- 타입 5 -->
+      <div class="materials-section type-5" id="section-type-5" style="display: none;">
+        <div class="materials-section-title">
+          <span class="section-icon">📋</span>
+          <span class="section-name">4. 정책</span>
+          <span class="section-count" id="count-type-5">0개</span>
+        </div>
+        <div id="list-type-5"></div>
+      </div>
+
+      <!-- 타입 6 -->
+      <div class="materials-section type-6" id="section-type-6" style="display: none;">
+        <div class="materials-section-title">
+          <span class="section-icon">🚗</span>
+          <span class="section-name">5. 선거차량 동선 & 후보자 연설 최적화</span>
+          <span class="section-count" id="count-type-6">0개</span>
+        </div>
+        <div id="list-type-6"></div>
+      </div>
+
+      <!-- 타입 7 -->
+      <div class="materials-section type-7" id="section-type-7" style="display: none;">
+        <div class="materials-section-title">
+          <span class="section-icon">💬</span>
+          <span class="section-name">6-1. 우리 후보 온라인 여론분석</span>
+          <span class="section-count" id="count-type-7">0개</span>
+        </div>
+        <div id="list-type-7"></div>
+      </div>
+
+      <!-- 타입 8 -->
+      <div class="materials-section type-8" id="section-type-8" style="display: none;">
+        <div class="materials-section-title">
+          <span class="section-icon">⚔️</span>
+          <span class="section-name">6-2. 경쟁 후보 온라인 여론분석</span>
+          <span class="section-count" id="count-type-8">0개</span>
+        </div>
+        <div id="list-type-8"></div>
+      </div>
+
+      <!-- RAG 참고자료 -->
+      <div class="materials-section" id="section-rag-only" style="display: none; border-left-color: #3b82f6;">
+        <div class="materials-section-title">
+          <span class="section-icon">🤖</span>
+          <span class="section-name">7. RAG 참고자료 (AI톡용)</span>
+          <span class="section-count" id="count-rag-only">0개</span>
+        </div>
+        <div id="list-rag-only"></div>
+      </div>
+
+      <!-- 빈 상태 -->
+      <div id="emptyState" style="text-align: center;">
+        <div class="empty-icon">📁</div>
+        <p>업로드된 자료가 없습니다.</p>
+        <p style="font-size: var(--font-size-sm); color: var(--text-secondary);">위의 섹션에서 파일을 드래그하거나 클릭하여 업로드하세요.</p>
+      </div>
+    </div>
+  </div>
+
+  <script src="../js/ui.js"></script>
+  <script src="../js/api-client.js"></script>
+  <script src="../js/file-store-cloud.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="../js/camp-context.js"></script>
+  <script>
+    const typeInfo = {
+      'type-1': { name: '통합분석', icon: '📊', order: '1', page: 'integrated-analysis.html' },
+      'type-2': { name: '판세정보', icon: '📈', order: '2', page: 'intelligence.html' },
+      'type-3': { name: '우리전략', icon: '📄', order: '3-1', page: 'strategy.html' },
+      'type-4': { name: '경쟁자전략', icon: '⚔️', order: '3-2', page: 'strategy.html' },
+      'type-5': { name: '정책', icon: '📋', order: '4', page: 'pledges.html' },
+      'type-6': { name: '선거차량 동선 & 후보자 연설 최적화', icon: '🚗', order: '5', page: 'vehicle-strategy.html' },
+      'type-7': { name: '우리 후보 온라인 여론분석', icon: '💬', order: '6-1', page: 'online-sentiment-analysis.html' },
+      'type-8': { name: '경쟁 후보 온라인 여론분석', icon: '⚔️', order: '6-2', page: 'online-sentiment-analysis.html' }
+    };
+
+    // 파일 입력 트리거
+    function triggerFileInput(type) {
+      document.getElementById(`input-${type}`).click();
+    }
+
+    // 드래그 오버
+    function handleDragOver(e, element) {
+      e.preventDefault();
+      e.stopPropagation();
+      element.classList.add('dragover');
+    }
+
+    // 드래그 리브
+    function handleDragLeave(e, element) {
+      e.preventDefault();
+      e.stopPropagation();
+      element.classList.remove('dragover');
+    }
+
+    // 드롭 (다중 파일)
+    function handleDrop(e, type) {
+      e.preventDefault();
+      e.stopPropagation();
+      const element = e.currentTarget;
+      element.classList.remove('dragover');
+
+      const files = e.dataTransfer.files;
+      if (files.length > 0) {
+        Array.from(files).forEach(file => {
+          if (file.type === 'application/pdf') {
+            processFile(file, type);
+          }
+        });
+      } else {
+        alert('PDF 파일만 업로드 가능합니다.');
+      }
+    }
+
+    // 파일 선택 (다중 파일)
+    async function handleFileSelect(e, type) {
+      const files = e.target.files;
+      if (files.length > 0) {
+        for (const file of files) {
+          await processFile(file, type);
+        }
+      }
+    }
+
+    // 파일 처리 (IndexedDB 저장)
+    async function processFile(file, type) {
+      const progressSection = document.getElementById('progressSection');
+      const progressFill = document.getElementById('progressFill');
+      const progressText = document.getElementById('progressText');
+
+      progressSection.style.display = 'block';
+
+      // 진행 상황 시뮬레이션
+      let progress = 0;
+      const interval = setInterval(() => {
+        progress += Math.random() * 30;
+        if (progress >= 100) progress = 100;
+        progressFill.style.width = progress + '%';
+        progressText.textContent = Math.floor(progress) + '%';
+
+        if (progress === 100) {
+          clearInterval(interval);
+        }
+      }, 300);
+
+      try {
+        // Supabase Storage에 파일 저장
+        const candidateId = CampContext.candidateId;
+        if (!candidateId) {
+          throw new Error('캠프 정보를 찾을 수 없습니다.');
+        }
+
+        await CloudFileStore.saveFile(type, file, candidateId);
+
+        // 목록 업데이트
+        await updateMaterialsList();
+
+        const typeName = typeInfo[type].name;
+        alert(`'${file.name}'이(가) ${typeName}에 업로드되었습니다.`);
+      } catch (error) {
+        console.error('파일 저장 실패:', error);
+        alert('파일 저장에 실패했습니다.');
+      } finally {
+        setTimeout(() => {
+          progressSection.style.display = 'none';
+          progressFill.style.width = '0%';
+        }, 1000);
+      }
+    }
+
+    // 자료 목록 업데이트
+    async function updateMaterialsList() {
+      const candidateId = CampContext.candidateId;
+      if (!candidateId) {
+        console.warn('캠프 정보를 찾을 수 없습니다.');
+        return;
+      }
+
+      let hasAnyMaterial = false;
+
+      // 1~8 타입 표시
+      for (const type of Object.keys(typeInfo)) {
+        const files = await CloudFileStore.getFilesByType(type, candidateId);
+        const section = document.getElementById(`section-${type}`);
+        const listDiv = document.getElementById(`list-${type}`);
+        const countSpan = document.getElementById(`count-${type}`);
+
+        if (files.length > 0) {
+          hasAnyMaterial = true;
+          section.style.display = 'block';
+          countSpan.textContent = `${files.length}개`;
+
+          listDiv.innerHTML = files.map(file => `
+            <div class="material-item ${type}">
+              <div class="material-info">
+                <div class="material-name">📄 ${file.name}</div>
+                <div class="material-date">업로드: ${file.uploadDate} • 크기: ${(file.size / 1024 / 1024).toFixed(2)}MB</div>
+              </div>
+              <div class="material-actions">
+                <button class="btn btn-secondary" onclick="viewMaterial('${file.id}', '${type}')">보기</button>
+                <button class="btn btn-secondary" onclick="downloadMaterial('${file.id}', '${type}')">다운로드</button>
+                <button class="btn btn-secondary" onclick="deleteMaterial('${file.id}', '${type}')">삭제</button>
+              </div>
+            </div>
+          `).join('');
+        } else {
+          section.style.display = 'none';
+        }
+      }
+
+      // RAG 참고자료 표시
+      const ragFiles = await CloudFileStore.getFilesByType('rag-only', candidateId);
+      const ragSection = document.getElementById('section-rag-only');
+      const ragListDiv = document.getElementById('list-rag-only');
+      const ragCountSpan = document.getElementById('count-rag-only');
+
+      if (ragFiles.length > 0) {
+        hasAnyMaterial = true;
+        ragSection.style.display = 'block';
+        ragCountSpan.textContent = `${ragFiles.length}개`;
+
+        ragListDiv.innerHTML = ragFiles.map(file => `
+          <div class="material-item" style="border-left-color: #3b82f6;">
+            <div class="material-info">
+              <div class="material-name">📄 ${file.name}</div>
+              <div class="material-date">업로드: ${file.uploadDate} • 크기: ${(file.size / 1024 / 1024).toFixed(2)}MB</div>
+            </div>
+            <div class="material-actions">
+              <button class="btn btn-secondary" onclick="viewMaterial('${file.id}', 'rag-only')">보기</button>
+              <button class="btn btn-secondary" onclick="downloadMaterial('${file.id}', 'rag-only')">다운로드</button>
+              <button class="btn btn-secondary" onclick="deleteMaterial('${file.id}', 'rag-only')">삭제</button>
+            </div>
+          </div>
+        `).join('');
+      } else {
+        ragSection.style.display = 'none';
+      }
+
+      // 빈 상태 표시
+      document.getElementById('emptyState').style.display = hasAnyMaterial ? 'none' : 'block';
+    }
+
+    // 자료 보기
+    async function viewMaterial(id, type) {
+      try {
+        const candidateId = CampContext.candidateId;
+        const files = await CloudFileStore.getFilesByType(type, candidateId);
+        const file = files.find(f => f.id === id);
+        if (file && file.storagePath) {
+          const url = await CloudFileStore.getSignedUrl(file.storagePath);
+          window.open(url, '_blank');
+        }
+      } catch (error) {
+        console.error('파일 보기 실패:', error);
+        alert('파일을 열 수 없습니다.');
+      }
+    }
+
+    // 자료 다운로드
+    async function downloadMaterial(id, type) {
+      try {
+        const candidateId = CampContext.candidateId;
+        const files = await CloudFileStore.getFilesByType(type, candidateId);
+        const file = files.find(f => f.id === id);
+        if (file && file.storagePath) {
+          const url = await CloudFileStore.getSignedUrl(file.storagePath);
+          const link = document.createElement('a');
+          link.href = url;
+          link.download = file.name;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+        }
+      } catch (error) {
+        console.error('다운로드 실패:', error);
+        alert('다운로드에 실패했습니다.');
+      }
+    }
+
+    // 자료 삭제
+    async function deleteMaterial(id, type) {
+      if (confirm('정말 삭제하시겠습니까?')) {
+        try {
+          const candidateId = CampContext.candidateId;
+          const files = await CloudFileStore.getFilesByType(type, candidateId);
+          const file = files.find(f => f.id === id);
+          if (file) {
+            await CloudFileStore.deleteFile(id, file.storagePath);
+            await updateMaterialsList();
+            alert('자료가 삭제되었습니다.');
+          }
+        } catch (error) {
+          console.error('삭제 실패:', error);
+          alert('삭제에 실패했습니다.');
+        }
+      }
+    }
+
+    // RAG 드래그&드롭 처리
+    function handleRagDragOver(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      const dropZone = document.getElementById('ragDropZone');
+      dropZone.style.backgroundColor = 'rgba(59, 130, 246, 0.2)';
+      dropZone.style.borderColor = '#1d4ed8';
+      dropZone.style.transform = 'scale(1.02)';
+    }
+
+    function handleRagDragLeave(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      const dropZone = document.getElementById('ragDropZone');
+      dropZone.style.backgroundColor = '';
+      dropZone.style.borderColor = '#3b82f6';
+      dropZone.style.transform = '';
+    }
+
+    function handleRagDrop(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      const dropZone = document.getElementById('ragDropZone');
+      dropZone.style.backgroundColor = '';
+      dropZone.style.borderColor = '#3b82f6';
+      dropZone.style.transform = '';
+
+      const files = e.dataTransfer.files;
+      if (files.length > 0) {
+        Array.from(files).forEach(async (file) => {
+          if (file.type === 'application/pdf') {
+            await saveRagFile(file);
+          }
+        });
+      } else {
+        alert('PDF 파일만 업로드 가능합니다.');
+      }
+    }
+
+    function handleRagFileSelect(e) {
+      const files = e.target.files;
+      if (files.length > 0) {
+        Array.from(files).forEach(async (file) => {
+          if (file.type === 'application/pdf') {
+            await saveRagFile(file);
+          }
+        });
+      }
+    }
+
+    // RAG 파일 저장 (카테고리 선택 없이 바로 저장)
+    async function saveRagFile(file) {
+      try {
+        const candidateId = CampContext.candidateId;
+        if (!candidateId) {
+          throw new Error('캠프 정보를 찾을 수 없습니다.');
+        }
+
+        // "rag-only" 타입으로 AI 분석용 RAG 파일 저장
+        await CloudFileStore.saveFile('rag-only', file, candidateId);
+        alert(`'${file.name}'이(가) AI 분석용 참고자료로 업로드되었습니다.`);
+        document.getElementById('ragFileInput').value = '';
+        await updateMaterialsList();
+      } catch (error) {
+        console.error('파일 저장 실패:', error);
+        alert('파일 저장에 실패했습니다.');
+      }
+    }
+
+    // 초기화: 캠프 컨텍스트 로드 후 자료 목록 표시
+    window.addEventListener('DOMContentLoaded', async () => {
+      const initialized = await CampContext.init();
+      if (!initialized) {
+        // 캠프 컨텍스트 초기화 실패 시 camp-select.html로 이동
+        return;
+      }
+
+      // 사이드바 제목 업데이트
+      CampContext.updateSidebarTitle();
+
+      // 자료 목록 로드
+      await updateMaterialsList();
+    });
+  </script>
+  <script src="../js/party-theme.js"></script>
+</body>
+
+  <script>
+    // 로컬 파일 프로토콜용 테마 초기화
+    if (typeof window.PartyTheme === 'undefined') {
+      function applyThemeFromStorage() {
+        const partyColors = {
+          dem: { bgPrimary: '#F0F4F9', bgSecondary: '#e0ecff', bgTertiary: '#dce6f8', primary: '#3b82f6', light: '#42a5f5', dark: '#1565c0', textPrimary: '#1e3a8a' },
+          ppp: { bgPrimary: '#FFF5F6', bgSecondary: '#ffe0e0', bgTertiary: '#ffd6d6', primary: '#ef4444', light: '#f87171', dark: '#dc2626', textPrimary: '#7f1d1d' },
+          reform: { bgPrimary: '#f0fdf4', bgSecondary: '#dbeafe', bgTertiary: '#d1f2eb', primary: '#10b981', light: '#34d399', dark: '#059669', textPrimary: '#065f46' },
+          liberty: { bgPrimary: '#fff5f7', bgSecondary: '#ffe0e6', bgTertiary: '#ffc0d0', primary: '#c41e3a', light: '#e24d5e', dark: '#a01630', textPrimary: '#7f0a1a' },
+          renewal: { bgPrimary: '#fefce8', bgSecondary: '#fef08a', bgTertiary: '#fde047', primary: '#f59e0b', light: '#fbbf24', dark: '#d97706', textPrimary: '#713f12' },
+          independent: { bgPrimary: '#f9fafb', bgSecondary: '#f3f4f6', bgTertiary: '#e5e7eb', primary: '#9ca3af', light: '#d1d5db', dark: '#4b5563', textPrimary: '#374151' }
+        };
+        const party = localStorage.getItem('selectedParty') || 'dem';
+        const colors = partyColors[party];
+        const root = document.documentElement;
+        root.style.setProperty('--primary-color', colors.primary);
+        root.style.setProperty('--primary-light', colors.light);
+        root.style.setProperty('--primary-dark', colors.dark);
+        root.style.setProperty('--bg-primary', colors.bgPrimary);
+        root.style.setProperty('--bg-secondary', colors.bgSecondary);
+        root.style.setProperty('--bg-tertiary', colors.bgTertiary);
+        root.style.setProperty('--text-primary', colors.textPrimary);
+        root.setAttribute('data-party', party);
+      }
+      document.readyState === 'loading' ? document.addEventListener('DOMContentLoaded', applyThemeFromStorage) : applyThemeFromStorage();
+    }
+  </script>
+
+  <script>
+    // 사이드바 제목 동적 업데이트
+    function updateSidebarTitle() {
+      const candidateName = localStorage.getItem('candidateName') || '후보자';
+      const sidebarTitle = document.getElementById('sidebarTitle');
+      if (sidebarTitle) {
+        sidebarTitle.textContent = `🚨 ${candidateName} 선거 워룸`;
+      }
+    }
+
+    // 페이지 로드 시 실행
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', updateSidebarTitle);
+    } else {
+      updateSidebarTitle();
+    }
+
+    // localStorage 변경 감지 (다른 탭에서 변경 시)
+    window.addEventListener('storage', updateSidebarTitle);
+  </script>
+</html>

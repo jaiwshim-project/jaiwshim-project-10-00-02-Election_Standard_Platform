@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>로그인 — 선거 워룸 AI 플랫폼</title>
+  <link rel="stylesheet" href="../css/theme.css">
+  <link rel="stylesheet" href="../css/responsive.css">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-light) 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-family-base);
+    }
+
+    .login-container {
+      background: white;
+      border-radius: var(--radius-lg);
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      padding: 60px 40px;
+      max-width: 420px;
+      width: 90%;
+      text-align: center;
+    }
+
+    .logo {
+      font-size: 64px;
+      margin-bottom: 24px;
+    }
+
+    h1 {
+      font-size: 32px;
+      color: var(--text-primary);
+      margin-bottom: 8px;
+      font-weight: 700;
+    }
+
+    .subtitle {
+      font-size: 14px;
+      color: var(--text-secondary);
+      margin-bottom: 40px;
+      line-height: 1.6;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+      text-align: left;
+    }
+
+    label {
+      display: block;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 8px;
+      font-size: 14px;
+    }
+
+    input[type="text"],
+    input[type="password"] {
+      width: 100%;
+      padding: 12px 16px;
+      border: 2px solid #e0e0e0;
+      border-radius: var(--radius-md);
+      font-size: 16px;
+      font-family: var(--font-family-base);
+      transition: all var(--transition-base);
+    }
+
+    input[type="text"]:focus,
+    input[type="password"]:focus {
+      outline: none;
+      border-color: var(--primary-color);
+      background-color: rgba(59, 130, 246, 0.02);
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+
+    .message {
+      padding: 12px 16px;
+      border-radius: var(--radius-md);
+      margin-bottom: 20px;
+      font-size: 14px;
+      display: none;
+      animation: slideDown 0.3s ease-out;
+    }
+
+    @keyframes slideDown {
+      from {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .message.success {
+      background-color: #d1fae5;
+      color: #047857;
+      border: 1px solid #6ee7b7;
+      display: block;
+    }
+
+    .message.error {
+      background-color: #fee2e2;
+      color: #dc2626;
+      border: 1px solid #fca5a5;
+      display: block;
+    }
+
+    .message.info {
+      background-color: #dbeafe;
+      color: #1e40af;
+      border: 1px solid #93c5fd;
+      display: block;
+    }
+
+    .login-button {
+      width: 100%;
+      padding: 12px 24px;
+      background: linear-gradient(135deg, var(--primary-color), var(--primary-light));
+      color: white;
+      border: none;
+      border-radius: var(--radius-md);
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all var(--transition-base);
+      margin-bottom: 16px;
+    }
+
+    .login-button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 20px rgba(59, 130, 246, 0.3);
+    }
+
+    .login-button:active {
+      transform: translateY(0);
+    }
+
+    .login-button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .help-section {
+      margin-top: 32px;
+      padding-top: 32px;
+      border-top: 1px solid #e0e0e0;
+    }
+
+    .help-section h3 {
+      font-size: 14px;
+      color: var(--text-primary);
+      font-weight: 600;
+      margin-bottom: 12px;
+    }
+
+    .help-text {
+      font-size: 12px;
+      color: var(--text-secondary);
+      line-height: 1.8;
+      margin-bottom: 8px;
+    }
+
+    .contact-info {
+      background-color: var(--bg-secondary);
+      padding: 12px;
+      border-radius: var(--radius-sm);
+      margin-top: 12px;
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+
+    @media (max-width: 480px) {
+      .login-container {
+        padding: 40px 24px;
+      }
+
+      h1 {
+        font-size: 24px;
+      }
+
+      .logo {
+        font-size: 48px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="login-container">
+    <div class="logo">🗳️</div>
+
+    <h1>선거 워룸</h1>
+    <p class="subtitle">AI 정치 전략 플랫폼</p>
+
+    <div class="message" id="message"></div>
+
+    <form id="loginForm" onsubmit="handleLogin(event)">
+      <div class="form-group">
+        <label for="accountId">아이디</label>
+        <input
+          type="text"
+          id="accountId"
+          placeholder="예: kim2024 또는 admin_kim2024"
+          autocomplete="username"
+          required
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="password">비밀번호</label>
+        <input
+          type="password"
+          id="password"
+          placeholder="비밀번호를 입력하세요"
+          autocomplete="current-password"
+          required
+        />
+      </div>
+
+      <button type="submit" class="login-button" id="loginBtn">로그인</button>
+    </form>
+
+    <div class="help-section">
+      <h3>❓ 로그인 정보가 없으신가요?</h3>
+      <p class="help-text">
+        캠프의 관리자(대표, 캠프리더)에게 아이디와 비밀번호를 요청하세요.
+      </p>
+      <div class="contact-info">
+        📞 캠프 관리자 연락처를 통해 계정 정보를 받을 수 있습니다.
+      </div>
+    </div>
+  </div>
+
+  <!-- Supabase JS 라이브러리 -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <!-- Supabase 클라이언트 초기화 -->
+  <script src="../js/supabase-client.js"></script>
+
+  <!-- 인증 관리자 -->
+  <script src="../js/auth-manager.js"></script>
+
+  <script>
+    const accountIdInput = document.getElementById('accountId');
+    const passwordInput = document.getElementById('password');
+    const messageDiv = document.getElementById('message');
+    const loginBtn = document.getElementById('loginBtn');
+
+    // Enter 키로 로그인
+    [accountIdInput, passwordInput].forEach(input => {
+      input.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+          handleLogin(e);
+        }
+      });
+    });
+
+    // 이미 로그인된 경우 dashboard로 리다이렉트
+    window.addEventListener('DOMContentLoaded', () => {
+      if (AuthManager.isAuthenticated()) {
+        window.location.href = 'dashboard.html';
+      }
+    });
+
+    /**
+     * 로그인 처리
+     */
+    async function handleLogin(e) {
+      e.preventDefault();
+
+      const accountId = accountIdInput.value.trim();
+      const password = passwordInput.value.trim();
+
+      if (!accountId || !password) {
+        showMessage('❌ 아이디와 비밀번호를 입력해주세요.', 'error');
+        return;
+      }
+
+      loginBtn.disabled = true;
+      loginBtn.textContent = '로그인 중...';
+      messageDiv.innerHTML = '';
+
+      try {
+        const result = await AuthManager.login(accountId, password);
+
+        if (result.success) {
+          showMessage(`✅ ${result.message}`, 'success');
+          setTimeout(() => {
+            window.location.href = 'dashboard.html';
+          }, 1000);
+        } else {
+          showMessage(`❌ ${result.message}`, 'error');
+        }
+      } catch (error) {
+        console.error('❌ 로그인 오류:', error);
+        showMessage('❌ 시스템 오류가 발생했습니다. 다시 시도해주세요.', 'error');
+      } finally {
+        loginBtn.disabled = false;
+        loginBtn.textContent = '로그인';
+      }
+    }
+
+    /**
+     * 메시지 표시
+     */
+    function showMessage(text, type) {
+      messageDiv.textContent = text;
+      messageDiv.className = `message ${type}`;
+      messageDiv.style.display = 'block';
+    }
+
+    // 초기 포커스
+    accountIdInput.focus();
+  </script>
+</body>
+</html>

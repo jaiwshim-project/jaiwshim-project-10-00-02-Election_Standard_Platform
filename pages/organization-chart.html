@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>조직도 — AI 정치 전략 플랫폼</title>
+  <link rel="stylesheet" href="../css/theme.css">
+  <link rel="stylesheet" href="../css/responsive.css">
+  <style>
+    body { margin: 0; background-color: var(--bg-primary); display: flex; }
+
+    .sidebar { position: fixed; left: 0 !important; top: 0; width: 240px !important; height: 100vh; background-color: var(--primary-color); z-index: 100; overflow-y: auto; padding: 0; margin: 0; box-shadow: 2px 0 4px rgba(0,0,0,0.1); }
+    .sidebar-header { padding: var(--space-lg) !important; color: white; font-size: var(--font-size-lg) !important; font-weight: 600; border-bottom: 1px solid rgba(255,255,255,0.2); margin: 0; }
+    .sidebar-nav ul { list-style: none; margin: 0; padding: 0; }
+    .sidebar-nav a { display: block; padding: var(--space-md) var(--space-lg) !important; color: white; text-decoration: none; transition: background-color var(--transition-base); font-size: var(--font-size-sm) !important; border-left: 4px solid transparent; }
+    .sidebar-nav a:hover { background-color: rgba(255,255,255,0.2); }
+    .sidebar-nav a.active { background-color: rgba(255,255,255,0.3); font-weight: 600; border-left-color: white; padding-left: calc(var(--space-lg) - 4px); }
+
+    main { flex: 1; margin-left: 240px !important; }
+    .container { max-width: 1400px; margin: 0 auto; padding: var(--space-lg); }
+
+    .org-header { background: linear-gradient(135deg, var(--primary-color), var(--primary-dark)); color: white; padding: var(--space-lg); margin: -var(--space-lg) -var(--space-lg) var(--space-lg) -var(--space-lg); border-radius: 0; }
+    .org-header h1 { margin: 0; }
+
+    #chart-container {
+      background-color: var(--bg-secondary);
+      padding: var(--space-lg);
+      border-radius: var(--radius-md);
+      overflow: auto;
+      min-height: 600px;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    svg {
+      max-width: 100%;
+      height: auto;
+      min-height: 500px;
+    }
+
+    .org-box {
+      fill: white;
+      stroke: var(--primary-color);
+      stroke-width: 2;
+    }
+
+    .org-box-leader {
+      fill: #e8f4f8;
+      stroke: var(--primary-color);
+      stroke-width: 2;
+    }
+
+    .org-text {
+      font-size: 17px;
+      text-anchor: middle;
+      font-weight: 600;
+    }
+
+    .org-text-small {
+      font-size: 15px;
+      text-anchor: middle;
+      color: var(--text-secondary);
+    }
+
+    .org-line {
+      stroke: var(--primary-color);
+      stroke-width: 2;
+      fill: none;
+    }
+
+    .empty-state {
+      text-align: center;
+      color: var(--text-secondary);
+      padding: var(--space-xl);
+    }
+
+    .empty-state-icon {
+      font-size: 64px;
+      margin-bottom: var(--space-lg);
+    }
+
+    @media (max-width: 768px) {
+      .sidebar { width: 200px !important; }
+      main { margin-left: 200px !important; }
+      .sidebar-nav a { padding: var(--space-md) var(--space-lg) !important; font-size: var(--font-size-sm) !important; }
+    }
+
+    @media (max-width: 480px) {
+      .sidebar { width: 160px !important; }
+      main { margin-left: 160px !important; }
+      .sidebar-header { padding: var(--space-lg) !important; font-size: var(--font-size-lg) !important; }
+      .sidebar-nav a { padding: var(--space-md) var(--space-lg) !important; font-size: var(--font-size-sm) !important; }
+    }
+  </style>
+</head>
+<body>
+  <aside class="sidebar">
+    <a href="../index.html" style="text-decoration: none;">
+      <div class="sidebar-header" id="sidebarTitle">🚨 선거 워룸</div>
+    </a>
+    <nav class="sidebar-nav">
+      <ul>
+        <li><a href="index.html">대시보드</a></li>
+        <li><a href="integrated-analysis.html">1.통합분석</a></li>
+        <li><a href="intelligence.html">2.판세정보 분석&비교</a></li>
+        <li><a href="strategy.html">3.전략 비교&추천</a></li>
+        <li><a href="pledges.html">4.공약 비교&추천</a></li>
+        <li><a href="vehicle-strategy.html">5.차량 전략</a></li>
+        <li><a href="online-sentiment-analysis.html">6.온라인 여론분석 비교&추천</a></li>
+        <li><a href="ai-chat.html">7.AI톡과 질문과 대화</a></li>
+        <li><a href="dashboard.html">8.대시보드</a></li>
+        <li><a href="blog.html">9.블로그-기사</a></li>
+        <li><a href="external-materials.html">10.외부자료 업로드</a></li>
+        <li><a href="warroom.html">11.워룸-위기대응센터</a></li>
+        <li><a href="reports.html">12.분석리포트 관리</a></li>
+        <li><a href="organization-chart.html" class="active">13.조직도</a></li>
+        <li><a href="ai-premium.html">14.AI 프리미엄 도구들</a></li>
+        <li><a href="settings.html">15.설정</a></li>
+      </ul>
+    </nav>
+  </aside>
+
+  <main>
+    <div class="container">
+      <div class="org-header">
+        <h1>📊 조직도</h1>
+        <p>캠프 조직 구조 및 팀 구성</p>
+      </div>
+
+      <div id="chart-container">
+        <div class="empty-state">
+          <div class="empty-state-icon">📋</div>
+          <h3>조직 정보 없음</h3>
+          <p>워룸에서 팀을 추가하면 여기에 조직도가 표시됩니다.</p>
+          <a href="warroom.html" style="color: var(--primary-color); text-decoration: none; font-weight: 600;">👉 워룸으로 이동</a>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script src="../js/ui.js"></script>
+  <script src="../js/api-client.js"></script>
+  <script>
+    // 조직도 SVG 생성 함수
+    function createOrganizationChartSVG(teams) {
+      if (!teams || teams.length === 0) {
+        return null;
+      }
+
+      const svgWidth = Math.max(1200, teams.length * 250);
+      // 동적 높이 계산: 팀원이 많은 팀의 박스 높이에 맞춰서 SVG 높이 결정
+      const maxMembers = Math.max(...teams.map(t => t.members.length));
+      const dynamicSvgHeight = 300 + (maxMembers * 15);
+      const boxWidth = 180;
+      const boxHeight = 100; // 기본값 (동적으로 변경될 예정)
+      const startX = 50;
+      const startY = 50;
+      const spacing = 250;
+
+      let svg = `<svg viewBox="0 0 ${svgWidth} ${dynamicSvgHeight}" width="100%" height="auto" xmlns="http://www.w3.org/2000/svg" style="border: 1px solid var(--bg-tertiary); border-radius: var(--radius-md); background: white; max-width: 100%; display: block;">`;
+
+      // CEO/대표 박스 (상단 중앙)
+      const ceoX = svgWidth / 2 - boxWidth / 2;
+      const ceoY = 30;
+
+      svg += `
+        <rect class="org-box-leader" x="${ceoX}" y="${ceoY}" width="${boxWidth}" height="80" rx="8"/>
+        <text class="org-text" x="${ceoX + boxWidth / 2}" y="${ceoY + 30}">🎯 캠프 대표</text>
+        <text class="org-text-small" x="${ceoX + boxWidth / 2}" y="${ceoY + 55}">(선거 총괄)</text>
+      `;
+
+      // CEO에서 각 팀으로 연결선
+      const lineY = ceoY + 80;
+      const targetY = startY + 200;
+
+      teams.forEach((team, index) => {
+        const x = startX + index * spacing;
+        const midX = ceoX + boxWidth / 2;
+        const midTeamX = x + boxWidth / 2;
+
+        svg += `
+          <line class="org-line" x1="${midX}" y1="${lineY}" x2="${midX}" y2="${lineY + 40}"/>
+          <line class="org-line" x1="${midX}" y1="${lineY + 40}" x2="${midTeamX}" y2="${lineY + 40}"/>
+          <line class="org-line" x1="${midTeamX}" y1="${lineY + 40}" x2="${midTeamX}" y2="${targetY}"/>
+        `;
+      });
+
+      // 팀 박스들
+      teams.forEach((team, index) => {
+        const x = startX + index * spacing;
+        const y = targetY;
+        const lineHeight = 14;
+        const headerHeight = 50; // 팀 이름 + 팀장
+        const memberHeight = team.members.length * lineHeight + 10;
+        const dynamicBoxHeight = Math.max(100, headerHeight + memberHeight);
+
+        // 팀 박스
+        svg += `
+          <rect class="org-box" x="${x}" y="${y}" width="${boxWidth}" height="${dynamicBoxHeight}" rx="8"/>
+        `;
+
+        // 팀 이름
+        svg += `
+          <text class="org-text" x="${x + boxWidth / 2}" y="${y + 25}" style="font-size: 16px;">${team.name}</text>
+        `;
+
+        // 팀장 (강조)
+        svg += `
+          <text class="org-text" x="${x + boxWidth / 2}" y="${y + 50}" style="font-size: 14px; fill: var(--primary-color); font-weight: bold;">👤 ${team.leader}</text>
+        `;
+
+        // 팀원 이름들
+        let memberY = y + 70;
+        team.members.forEach((member, memberIdx) => {
+          svg += `
+            <text class="org-text-small" x="${x + boxWidth / 2}" y="${memberY + (memberIdx * lineHeight)}" style="font-size: 12px; color: var(--text-secondary);">${member}</text>
+          `;
+        });
+      });
+
+      svg += `</svg>`;
+
+      return svg;
+    }
+
+    // 페이지 로드 시 조직도 생성
+    function displayOrganizationChart() {
+      const teams = JSON.parse(localStorage.getItem('responseTeams')) || [];
+      const container = document.getElementById('chart-container');
+
+      if (teams.length === 0) {
+        // 빈 상태 표시 (HTML이 이미 있으므로 변경 없음)
+        return;
+      }
+
+      const svgContent = createOrganizationChartSVG(teams);
+      if (svgContent) {
+        container.innerHTML = svgContent;
+      }
+    }
+
+    // 로컬 파일 프로토콜용 테마 초기화
+    if (typeof window.PartyTheme === 'undefined') {
+      function applyThemeFromStorage() {
+        const partyColors = {
+          dem: { bgPrimary: '#F0F4F9', bgSecondary: '#e0ecff', bgTertiary: '#dce6f8', primary: '#3b82f6', light: '#42a5f5', dark: '#1565c0', textPrimary: '#1e3a8a' },
+          ppp: { bgPrimary: '#FFF5F6', bgSecondary: '#ffe0e0', bgTertiary: '#ffd6d6', primary: '#ef4444', light: '#f87171', dark: '#dc2626', textPrimary: '#7f1d1d' },
+          reform: { bgPrimary: '#f0fdf4', bgSecondary: '#dbeafe', bgTertiary: '#d1f2eb', primary: '#10b981', light: '#34d399', dark: '#059669', textPrimary: '#065f46' },
+          liberty: { bgPrimary: '#fff5f7', bgSecondary: '#ffe0e6', bgTertiary: '#ffc0d0', primary: '#c41e3a', light: '#e24d5e', dark: '#a01630', textPrimary: '#7f0a1a' },
+          renewal: { bgPrimary: '#fefce8', bgSecondary: '#fef08a', bgTertiary: '#fde047', primary: '#f59e0b', light: '#fbbf24', dark: '#d97706', textPrimary: '#713f12' },
+          independent: { bgPrimary: '#f9fafb', bgSecondary: '#f3f4f6', bgTertiary: '#e5e7eb', primary: '#9ca3af', light: '#d1d5db', dark: '#4b5563', textPrimary: '#374151' }
+        };
+        const party = localStorage.getItem('selectedParty') || 'dem';
+        const colors = partyColors[party];
+        const root = document.documentElement;
+        root.style.setProperty('--primary-color', colors.primary);
+        root.style.setProperty('--primary-light', colors.light);
+        root.style.setProperty('--primary-dark', colors.dark);
+        root.style.setProperty('--bg-primary', colors.bgPrimary);
+        root.style.setProperty('--bg-secondary', colors.bgSecondary);
+        root.style.setProperty('--bg-tertiary', colors.bgTertiary);
+        root.style.setProperty('--text-primary', colors.textPrimary);
+        root.setAttribute('data-party', party);
+      }
+      document.readyState === 'loading' ? document.addEventListener('DOMContentLoaded', applyThemeFromStorage) : applyThemeFromStorage();
+    }
+
+    // 문서 로드 후 조직도 표시
+    document.addEventListener('DOMContentLoaded', displayOrganizationChart);
+  </script>
+
+  <script>
+    // 사이드바 제목 동적 업데이트
+    function updateSidebarTitle() {
+      const candidateName = localStorage.getItem('candidateName') || '후보자';
+      const sidebarTitle = document.getElementById('sidebarTitle');
+      if (sidebarTitle) {
+        sidebarTitle.textContent = `🚨 ${candidateName} 선거 워룸`;
+      }
+    }
+
+    // 페이지 로드 시 실행
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', updateSidebarTitle);
+    } else {
+      updateSidebarTitle();
+    }
+
+    // localStorage 변경 감지 (다른 탭에서 변경 시)
+    window.addEventListener('storage', updateSidebarTitle);
+  </script>
+  <script src="../js/party-theme.js"></script>
+$scripts
+</body>
+</html>
