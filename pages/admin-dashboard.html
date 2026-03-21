@@ -166,6 +166,7 @@
       <a data-section="backup">💾 백업/복구</a>
       <a data-section="sites">🌐 사이트 접속</a>
       <a data-section="settings">⚙️ 시스템 설정</a>
+      <a data-section="manual" style="margin-top: 20px; border-top: 1px solid rgba(255,255,255,0.2); padding-top: 12px;">📖 메뉴얼</a>
     </nav>
     <div class="sidebar-footer">
       <button class="btn-logout">🚪 로그아웃</button>
@@ -580,6 +581,379 @@
           </div>
           <div style="font-size:12px;color:var(--text-secondary);">
             현재 실제 이메일 API 없이 시뮬레이션 모드로 동작합니다. 실제 발송은 SendGrid / Supabase Edge Function 연동이 필요합니다.
+          </div>
+        </div>
+      </div>
+
+      <!-- Manual 섹션 -->
+      <div id="section-manual" class="admin-section">
+        <style>
+          .manual-container { max-width: 900px; }
+          .manual-section { margin-bottom: 40px; }
+          .manual-section h2 { font-size: 20px; font-weight: 700; color: var(--primary-color); margin-bottom: 15px; padding-bottom: 10px; border-bottom: 2px solid var(--primary-color); }
+          .manual-section h3 { font-size: 16px; font-weight: 700; color: var(--text-primary); margin-top: 20px; margin-bottom: 10px; }
+          .manual-section p, .manual-section li { font-size: 14px; line-height: 1.8; color: var(--text-primary); margin-bottom: 8px; }
+          .manual-section ul, .manual-section ol { margin-left: 20px; margin-bottom: 15px; }
+          .manual-section li { margin-bottom: 8px; }
+          .manual-box { background: var(--bg-primary); border-left: 4px solid var(--primary-color); padding: 15px; margin: 15px 0; border-radius: 6px; }
+          .manual-box-title { font-weight: 700; color: var(--primary-color); margin-bottom: 8px; }
+          .manual-warning { background: rgba(255,193,7,0.1); border-left: 4px solid #ffc107; }
+          .manual-tip { background: rgba(76,175,80,0.1); border-left: 4px solid #4caf50; }
+          .manual-danger { background: rgba(244,67,54,0.1); border-left: 4px solid #f44336; }
+          .key-feature { background: var(--bg-secondary); padding: 12px; border-radius: 6px; margin: 10px 0; }
+          .table-responsive { overflow-x: auto; margin: 15px 0; }
+          .manual-table { width: 100%; border-collapse: collapse; background: var(--bg-secondary); border-radius: 6px; }
+          .manual-table th { background: var(--primary-color); color: white; padding: 10px; text-align: left; font-weight: 600; }
+          .manual-table td { padding: 10px; border-bottom: 1px solid var(--border-color); }
+          .manual-table tr:hover { background: rgba(0,0,0,0.02); }
+          .manual-step { background: var(--bg-secondary); padding: 15px; margin: 12px 0; border-radius: 6px; }
+          .manual-step strong { color: var(--primary-color); }
+        </style>
+
+        <div class="manual-container">
+          <h1 style="font-size: 24px; font-weight: 700; color: var(--text-primary); margin-bottom: 30px;">📖 관리자 대시보드 사용설명서</h1>
+
+          <!-- 1. 개요 -->
+          <div class="manual-section">
+            <h2>1️⃣ 시스템 개요</h2>
+            <p>선거 워룸 관리자 대시보드는 선거캠프 전체를 관리하는 통합 운영 플랫폼입니다.</p>
+
+            <h3>주요 기능</h3>
+            <div class="key-feature">
+              <strong>📊 대시보드</strong> - 캠프 통계 및 최근 활동 한눈에 파악<br>
+              <strong>👥 회원 관리</strong> - 등록 캠프 정보 조회 및 승인/거부<br>
+              <strong>💬 메시지</strong> - 캠프에 공지사항 및 알림 발송<br>
+              <strong>🚨 신고 관리</strong> - 신고 접수 및 처리<br>
+              <strong>🔐 권한 관리</strong> - 관리자 역할 및 권한 설정<br>
+              <strong>📧 이메일</strong> - 메일 템플릿 관리<br>
+              <strong>💾 백업/복구</strong> - 데이터 정기 백업 및 복구<br>
+              <strong>📈 통계</strong> - 실시간 통계 및 데이터 분석
+            </div>
+
+            <div class="manual-box manual-warning">
+              <div class="manual-box-title">⚠️ 중요 안내</div>
+              <p>이 대시보드는 시스템 관리자만 접근할 수 있습니다. 계정 정보는 절대 공유하지 마세요.</p>
+            </div>
+          </div>
+
+          <!-- 2. 로그인 및 인증 -->
+          <div class="manual-section">
+            <h2>2️⃣ 로그인 및 인증</h2>
+
+            <h3>로그인 방법</h3>
+            <ol>
+              <li><strong>대시보드 URL 접속:</strong> https://your-domain.vercel.app/pages/admin-dashboard.html</li>
+              <li><strong>관리자 계정 입력:</strong> Username(사용자명)과 Password(비밀번호) 입력</li>
+              <li><strong>로그인:</strong> [로그인] 버튼 클릭</li>
+            </ol>
+
+            <h3>초기 계정</h3>
+            <div class="manual-box">
+              <div class="manual-box-title">기본 계정</div>
+              <p>Username: <strong>admin</strong></p>
+              <p>Password: <strong>admin</strong></p>
+              <p style="color: var(--text-secondary); font-size: 12px; margin-top: 10px;">첫 로그인 후 반드시 비밀번호를 변경하세요.</p>
+            </div>
+
+            <h3>세션 관리</h3>
+            <ul>
+              <li>세션 유효기간: <strong>12시간</strong> (자동 로그아웃)</li>
+              <li>로그아웃: 사이드바 하단의 [🚪 로그아웃] 버튼 클릭</li>
+              <li>브라우저 종료 시 세션 자동 삭제</li>
+            </ul>
+
+            <div class="manual-box manual-tip">
+              <div class="manual-box-title">💡 팁</div>
+              <p>개인 기기가 아닌 공용 기기에서는 브라우저 종료 후 반드시 로그아웃하세요.</p>
+            </div>
+          </div>
+
+          <!-- 3. 각 섹션별 사용법 -->
+          <div class="manual-section">
+            <h2>3️⃣ 각 섹션별 사용 가이드</h2>
+
+            <!-- 3-1 대시보드 -->
+            <h3>📊 대시보드</h3>
+            <p>시스템의 현황을 한눈에 파악할 수 있는 메인 화면입니다.</p>
+            <div class="manual-box">
+              <div class="manual-box-title">대시보드 구성</div>
+              <ul>
+                <li><strong>총 캠프:</strong> 전체 등록된 캠프 수</li>
+                <li><strong>대기 중:</strong> 승인 대기 중인 캠프</li>
+                <li><strong>승인됨:</strong> 승인된 활성 캠프</li>
+                <li><strong>거부됨:</strong> 거부된 캠프</li>
+                <li><strong>최근 가입 캠프:</strong> 최근 5개 등록 캠프 목록</li>
+                <li><strong>최근 활동:</strong> 최근 10개의 관리자 활동 기록</li>
+              </ul>
+            </div>
+
+            <!-- 3-2 회원 관리 -->
+            <h3>👥 회원 관리</h3>
+            <p>등록된 모든 캠프의 정보를 조회하고 승인/거부 처리합니다.</p>
+            <div class="manual-step">
+              <strong>캠프 승인 절차:</strong><br>
+              1. 좌측 메뉴에서 [회원 관리] 클릭<br>
+              2. 승인 대기 캠프 목록 확인<br>
+              3. 캠프명 클릭 → 상세 정보 확인<br>
+              4. [✅ 승인] 또는 [❌ 거부] 버튼 클릭<br>
+              5. 필요시 거부 사유 입력 후 제출
+            </div>
+
+            <!-- 3-3 메시지 -->
+            <h3>💬 메시지</h3>
+            <p>캠프에 공지사항, 공공정보 등을 발송할 수 있습니다.</p>
+            <div class="manual-step">
+              <strong>메시지 발송 방법:</strong><br>
+              1. [메시지] 메뉴 선택<br>
+              2. [📤 메시지 발송] 버튼 클릭<br>
+              3. 수신 캠프 선택 (전체 또는 특정 캠프)<br>
+              4. 제목과 내용 입력<br>
+              5. [발송] 버튼으로 즉시 발송<br><br>
+              <strong>메시지 조회:</strong> 발송된 모든 메시지와 읽음/미읽음 상태 확인 가능
+            </div>
+
+            <div class="manual-box">
+              <div class="manual-box-title">메시지 필드 설명</div>
+              <ul>
+                <li><strong>수신자 캠프:</strong> 선택 안 하면 전체 캠프에 발송</li>
+                <li><strong>제목:</strong> 메시지 제목 (필수)</li>
+                <li><strong>내용:</strong> 메시지 본문 (필수, 최대 1000자)</li>
+                <li><strong>우선순위:</strong> 일반/높음/긴급 (기본값: 일반)</li>
+              </ul>
+            </div>
+
+            <!-- 3-4 신고 관리 -->
+            <h3>🚨 신고 관리</h3>
+            <p>캠프로부터 접수된 신고 사항을 조회하고 처리합니다.</p>
+            <div class="manual-step">
+              <strong>신고 처리 절차:</strong><br>
+              1. [신고 관리] 메뉴 선택<br>
+              2. 신고 상태별 필터링 (대기/조사/해결/기각/상향)<br>
+              3. 신고건 클릭 → 상세 정보 확인<br>
+              4. 관리자 응답 작성<br>
+              5. 상태 변경 ([✅ 승인] / [❌ 거부] / [🔵 해결])
+            </div>
+
+            <!-- 3-5 권한 관리 -->
+            <h3>🔐 권한 관리</h3>
+            <p>관리자 역할과 권한을 설정합니다. (Super Admin만 접근)</p>
+            <div class="manual-box">
+              <div class="manual-box-title">권한 역할 구분</div>
+              <ul>
+                <li><strong>Super Admin:</strong> 모든 기능 접근 가능 (최고 관리자)</li>
+                <li><strong>Admin:</strong> 대부분의 기능 접근 가능</li>
+                <li><strong>Moderator:</strong> 신고 처리 및 메시지만 관리</li>
+                <li><strong>Viewer:</strong> 조회만 가능 (수정 불가)</li>
+              </ul>
+            </div>
+
+            <!-- 3-6 이메일 -->
+            <h3>📧 이메일 설정</h3>
+            <p>캠프에 발송할 이메일 템플릿을 관리합니다.</p>
+            <div class="manual-box">
+              <div class="manual-box-title">사용 가능한 변수</div>
+              <ul>
+                <li><strong>{{캠프명}}</strong> - 수신 캠프 이름</li>
+                <li><strong>{{후보자명}}</strong> - 후보자 이름</li>
+                <li><strong>{{날짜}}</strong> - 발송일 (형식: YYYY-MM-DD)</li>
+                <li><strong>{{시간}}</strong> - 발송 시간</li>
+                <li><strong>{{지역}}</strong> - 선거 지역</li>
+                <li><strong>{{정당}}</strong> - 정당명</li>
+                <li><strong>{{관리자}}</strong> - 관리자 이름</li>
+              </ul>
+            </div>
+            <div class="manual-step">
+              <strong>이메일 발송 절차:</strong><br>
+              1. 이메일 템플릿 입력<br>
+              2. [💾 저장] 버튼으로 템플릿 저장<br>
+              3. 테스트 이메일 주소 입력<br>
+              4. [📧 테스트 발송] 클릭하여 미리보기 확인
+            </div>
+
+            <!-- 3-7 백업/복구 -->
+            <h3>💾 백업/복구</h3>
+            <p>중요한 데이터를 정기적으로 백업하고 필요시 복구합니다.</p>
+            <div class="manual-step">
+              <strong>데이터 백업:</strong><br>
+              1. [백업/복구] 메뉴 선택<br>
+              2. [💾 전체 백업] 버튼 클릭<br>
+              3. JSON 형식 파일이 자동으로 다운로드됨<br>
+              4. 안전한 장소에 저장<br><br>
+              <strong>데이터 복구:</strong><br>
+              1. [복구 파일 선택] 버튼으로 백업 파일 선택<br>
+              2. [🔄 복구] 버튼 클릭<br>
+              3. 복구 대상 테이블 선택 후 진행
+            </div>
+
+            <div class="manual-box manual-warning">
+              <div class="manual-box-title">⚠️ 백업 주의사항</div>
+              <ul>
+                <li><strong>정기 백업:</strong> 최소 주 1회 자동 백업 권장</li>
+                <li><strong>중요 데이터:</strong> 중대한 변경 전에 반드시 백업 실행</li>
+                <li><strong>파일 보관:</strong> 백업 파일을 안전한 클라우드에 보관</li>
+              </ul>
+            </div>
+
+            <!-- 3-8 통계 분석 -->
+            <h3>📈 통계 분석</h3>
+            <p>실시간 통계 데이터를 차트와 숫자로 시각화합니다.</p>
+            <div class="manual-box">
+              <div class="manual-box-title">통계 구성</div>
+              <ul>
+                <li><strong>가입 현황:</strong> 월별 신규 캠프 가입 추이</li>
+                <li><strong>승인 현황:</strong> 승인/거부/대기 상태 분포</li>
+                <li><strong>활동 통계:</strong> 관리자 활동 기록</li>
+                <li><strong>신고 통계:</strong> 신고 심각도별 분포</li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- 4. 시스템 설정 -->
+          <div class="manual-section">
+            <h2>4️⃣ 시스템 설정</h2>
+
+            <h3>기본 설정</h3>
+            <ul>
+              <li><strong>앱 이름:</strong> 시스템 이름 변경</li>
+              <li><strong>앱 설명:</strong> 시스템 설명 변경</li>
+              <li><strong>유지보수 모드:</strong> 긴급 정지 필요시 활성화</li>
+            </ul>
+
+            <h3>관리자 계정 관리</h3>
+            <div class="manual-step">
+              <strong>새 관리자 추가 (Super Admin만 가능):</strong><br>
+              1. [시스템 설정] → [관리자 계정] 탭<br>
+              2. [➕ 관리자 추가] 버튼 클릭<br>
+              3. 사용자명 입력<br>
+              4. 역할 선택 (Admin/Super Admin)<br>
+              5. [추가] 버튼으로 생성
+            </div>
+
+            <h3>활동 로그</h3>
+            <p>모든 관리자의 활동을 시간순으로 기록합니다.</p>
+            <ul>
+              <li>생성, 수정, 삭제 등 모든 작업 기록</li>
+              <li>언제, 누가, 무엇을 했는지 추적 가능</li>
+              <li>페이지네이션으로 과거 기록 조회</li>
+            </ul>
+          </div>
+
+          <!-- 5. 권장 사항 -->
+          <div class="manual-section">
+            <h2>5️⃣ 권장 사항 및 주의사항</h2>
+
+            <h3>✅ 관리 팁</h3>
+            <div class="key-feature">
+              <strong>정기 작업:</strong>
+              <ul>
+                <li>매일: 신고 사항 확인 및 처리</li>
+                <li>주 1회: 데이터 백업 수행</li>
+                <li>월 1회: 통계 분석 및 리포트 작성</li>
+              </ul>
+            </div>
+
+            <h3>⚠️ 보안 주의사항</h3>
+            <div class="manual-box manual-danger">
+              <ul>
+                <li><strong>계정 공유 금지:</strong> 절대로 다른 사람과 계정 공유 금지</li>
+                <li><strong>비밀번호:</strong> 정기적으로 변경하기 (3개월마다)</li>
+                <li><strong>공용 기기:</strong> 공용 기기에서는 항상 로그아웃</li>
+                <li><strong>피싱:</strong> 의심 이메일 클릭 주의</li>
+              </ul>
+            </div>
+
+            <h3>🔧 문제 해결</h3>
+            <div class="table-responsive">
+              <table class="manual-table">
+                <thead>
+                  <tr>
+                    <th style="width: 30%;">증상</th>
+                    <th style="width: 70%;">해결 방법</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><strong>로그인 실패</strong></td>
+                    <td>• 대소문자 확인<br>• Caps Lock 해제<br>• 비밀번호 재입력 (특수문자 주의)</td>
+                  </tr>
+                  <tr>
+                    <td><strong>데이터 로드 안 됨</strong></td>
+                    <td>• 브라우저 새로고침 (F5)<br>• 캐시 삭제<br>• 브라우저 개발자 도구 네트워크 확인</td>
+                  </tr>
+                  <tr>
+                    <td><strong>메시지 발송 실패</strong></td>
+                    <td>• 네트워크 연결 확인<br>• 캠프 선택 재확인<br>• 필수 입력항목 확인</td>
+                  </tr>
+                  <tr>
+                    <td><strong>백업 파일 손상</strong></td>
+                    <td>• 이전 백업 파일 사용<br>• 파일 형식 확인 (JSON)<br>• 파일 크기 확인</td>
+                  </tr>
+                  <tr>
+                    <td><strong>세션 만료 (로그아웃됨)</strong></td>
+                    <td>• 다시 로그인<br>• 12시간 이상 미사용 확인<br>• 브라우저 쿠키 확인</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div class="manual-box manual-tip">
+              <div class="manual-box-title">💡 문제 해결 팁</div>
+              <p>문제 발생시 브라우저 개발자 도구 (F12) → Console 탭을 열어 에러 메시지를 확인하면 도움이 됩니다.</p>
+            </div>
+          </div>
+
+          <!-- 6. 자주 묻는 질문 -->
+          <div class="manual-section">
+            <h2>6️⃣ 자주 묻는 질문 (FAQ)</h2>
+
+            <div class="manual-box" style="margin: 15px 0;">
+              <div class="manual-box-title">Q. 신규 캠프 승인은 어떻게 하나요?</div>
+              <p><strong>A.</strong> [회원 관리] 메뉴에서 "대기" 상태의 캠프를 확인하고, 캠프명을 클릭한 후 [✅ 승인] 버튼을 클릭하면 됩니다.</p>
+            </div>
+
+            <div class="manual-box" style="margin: 15px 0;">
+              <div class="manual-box-title">Q. 전체 캠프에 일괄 메시지를 보낼 수 있나요?</div>
+              <p><strong>A.</strong> 네. [메시지] 메뉴에서 수신자 선택 시 "전체 캠프에 발송"을 선택하면 됩니다.</p>
+            </div>
+
+            <div class="manual-box" style="margin: 15px 0;">
+              <div class="manual-box-title">Q. 백업 파일은 어디에 보관하나요?</div>
+              <p><strong>A.</strong> 다운로드 폴더에 저장되며, Google Drive, OneDrive 등 클라우드에 백업 권장합니다.</p>
+            </div>
+
+            <div class="manual-box" style="margin: 15px 0;">
+              <div class="manual-box-title">Q. 관리자를 추가하려면?</div>
+              <p><strong>A.</strong> Super Admin 권한이 필요합니다. [시스템 설정] → [관리자 계정] → [➕ 관리자 추가]에서 진행하세요.</p>
+            </div>
+
+            <div class="manual-box" style="margin: 15px 0;">
+              <div class="manual-box-title">Q. 실수로 데이터를 삭제했어요. 복구 가능한가요?</div>
+              <p><strong>A.</strong> 백업 파일이 있으면 [백업/복구] 메뉴에서 복구할 수 있습니다. 정기 백업이 중요합니다.</p>
+            </div>
+
+            <div class="manual-box" style="margin: 15px 0;">
+              <div class="manual-box-title">Q. 로그인이 안 돼요.</div>
+              <p><strong>A.</strong> 기본 계정 (admin/admin)으로 시도하세요. 그래도 안 되면 브라우저 캐시를 삭제하고 재시도하세요.</p>
+            </div>
+          </div>
+
+          <!-- 7. 연락처 -->
+          <div class="manual-section">
+            <h2>7️⃣ 기술 지원</h2>
+            <div class="manual-box">
+              <p style="margin: 0;">문제가 발생하거나 추가 기능이 필요한 경우, 다음 정보와 함께 연락주세요:</p>
+              <ul style="margin-top: 10px;">
+                <li>문제 설명 및 스크린샷</li>
+                <li>발생 시간 및 관리자명</li>
+                <li>브라우저 정보 (Chrome, Firefox 등)</li>
+                <li>에러 메시지 (F12 개발자 도구 확인)</li>
+              </ul>
+            </div>
+          </div>
+
+          <div style="text-align: center; margin-top: 50px; padding-top: 20px; border-top: 1px solid var(--border-color); color: var(--text-secondary); font-size: 12px;">
+            <p>📖 선거 워룸 관리자 대시보드 사용설명서</p>
+            <p>최종 업데이트: 2026년 3월 21일</p>
           </div>
         </div>
       </div>
@@ -2128,7 +2502,8 @@
         else if (section === 'backup') { this.loadBackup(); this.loadAutoBackupSetting(); }
         else if (section === 'sites') this.loadSites();
         else if (section === 'settings') this.loadSettings();
-        this.toast('새로고침 완료', 'success');
+        else if (section === 'manual') {} // 메뉴얼은 정적 콘텐츠
+        if (section !== 'manual') this.toast('새로고침 완료', 'success');
       }
     };
 
