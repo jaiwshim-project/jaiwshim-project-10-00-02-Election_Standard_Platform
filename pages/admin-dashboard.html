@@ -1269,18 +1269,12 @@
 
         this.bindNavigation();
         this.bindLogout();
-        this.bindSearch();
-        this.showSection('overview');
+        this.loadOverview();
       },
 
       bindNavigation() {
-        document.querySelectorAll('.sidebar-nav a').forEach(link => {
-          link.addEventListener('click', (e) => {
-            e.preventDefault();
-            const section = link.getAttribute('data-section');
-            this.showSection(section);
-          });
-        });
+        // 현재 페이지 메뉴 active 처리
+        this.setActiveNav();
       },
 
       bindLogout() {
@@ -1290,58 +1284,16 @@
         });
       },
 
-      bindSearch() {
-        document.getElementById('memberSearchInput').addEventListener('input', () => this.loadMembers());
-        document.getElementById('memberStatusFilter').addEventListener('change', () => this.loadMembers());
-        document.getElementById('memberPartyFilter').addEventListener('change', () => this.loadMembers());
-        document.getElementById('filesFilter').addEventListener('change', () => this.loadFiles());
-        document.getElementById('messageSearchInput').addEventListener('input', () => this.loadMessages());
-        document.getElementById('messageStatusFilter').addEventListener('change', () => this.loadMessages());
-        document.getElementById('reportSearchInput').addEventListener('input', () => this.loadReports());
-        document.getElementById('reportStatusFilter').addEventListener('change', () => this.loadReports());
-        document.getElementById('reportTypeFilter').addEventListener('change', () => this.loadReports());
-        document.getElementById('userRoleSearchInput').addEventListener('input', () => this.loadUserRoles());
-      },
 
-      showSection(id) {
-        document.querySelectorAll('.admin-section').forEach(s => s.classList.remove('active'));
-        document.getElementById(`section-${id}`).classList.add('active');
-
-        document.querySelectorAll('.sidebar-nav a').forEach(a => a.classList.remove('active'));
-        document.querySelector(`[data-section="${id}"]`).classList.add('active');
-
-        const titles = {
-          overview: '📊 대시보드',
-          statistics: '📈 통계 분석',
-          members: '👥 회원 관리',
-          files: '📁 자료 관리',
-          messages: '💬 메시지',
-          reports: '🚨 신고 관리',
-          permissions: '🔐 권한 관리',
-          email: '📧 이메일 설정',
-          backup: '💾 백업/복구',
-          sites: '🌐 사이트 접속',
-          settings: '⚙️ 시스템 설정',
-          manual: '📖 메뉴얼',
-          architecture: '📊 구조도'
-        };
-        document.getElementById('topbarTitle').textContent = titles[id] || id;
-        this.currentSection = id;
-
-        if (id === 'overview') this.loadOverview();
-        if (id === 'statistics') this.loadStatistics();
-        if (id === 'members') this.loadMembers();
-        if (id === 'files') this.loadFiles();
-        if (id === 'messages') this.loadMessages();
-        if (id === 'reports') this.loadReports();
-        if (id === 'permissions') {
-          this.loadRoles();
-          this.loadUserRoles();
-        }
-        if (id === 'email') this.loadEmailTemplate();
-        if (id === 'backup') { this.loadBackup(); this.loadAutoBackupSetting(); }
-        if (id === 'sites') this.loadSites();
-        if (id === 'settings') this.loadSettings();
+      // 현재 페이지 active 표시
+      setActiveNav() {
+        const currentPath = window.location.pathname;
+        document.querySelectorAll('.sidebar-nav a').forEach(a => {
+          a.classList.remove('active');
+          if (a.getAttribute('href') && currentPath.includes(a.getAttribute('href'))) {
+            a.classList.add('active');
+          }
+        });
       },
 
       async loadOverview() {
