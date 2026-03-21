@@ -24,11 +24,11 @@
     .header { padding: var(--space-lg); background: linear-gradient(135deg, var(--primary-color), var(--primary-light)); color: white; }
     .header h1 { margin: 0; }
     .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: var(--space-lg); margin-top: var(--space-lg); }
-    footer { background-color: var(--bg-secondary); border-top: 2px solid #ddd; padding: 24px 0; margin-top: 32px; width: 100%; }
-    footer .container { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 24px; }
-    .footer-text { color: var(--text-secondary); font-size: 14px; }
-    .footer-btn { display: inline-block; background-color: var(--primary-color); color: white; padding: 8px 24px; border-radius: 8px; text-decoration: none; font-weight: 600; transition: opacity 0.3s; }
-    .footer-btn:hover { opacity: 0.9; }
+    footer { background-color: #f0f0f0; border-top: 3px solid var(--primary-color); padding: 30px 20px; margin-top: 60px; width: 100%; display: flex; justify-content: center; }
+    footer .container { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 30px; width: 100%; max-width: 1200px; padding: 0 20px; }
+    .footer-text { color: #666; font-size: 14px; font-weight: 500; }
+    .footer-btn { display: inline-block; background-color: var(--primary-color); color: white; padding: 10px 30px; border-radius: 6px; text-decoration: none; font-weight: 600; transition: all 0.3s; border: none; cursor: pointer; }
+    .footer-btn:hover { opacity: 0.85; transform: scale(1.02); }
     @media (max-width: 768px) {
       .navbar ul { flex-wrap: wrap; gap: var(--space-sm); }
       .navbar a { font-size: var(--font-size-sm); padding: var(--space-xs) var(--space-sm); }
