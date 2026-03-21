@@ -1273,7 +1273,7 @@
         const passwordHash = await AuthManager.hashPassword(password);
 
         // candidates 테이블에 신규 캠프 등록
-        const { data, error } = await window.supabase
+        const { data, error } = await SupabaseDB.client
           .from('candidates')
           .insert([{
             name: campName,
