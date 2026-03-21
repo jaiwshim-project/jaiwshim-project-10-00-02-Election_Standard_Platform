@@ -176,5 +176,119 @@ const AdminAuth = {
     } catch (err) {
       console.error('활동 기록 실패:', err);
     }
+  },
+
+  /**
+   * Supabase admin_roles 테이블에서 현재 관리자의 권한 목록 조회
+   * @returns {Promise<{success: boolean, permissions: string[], roles: object[]}>}
+   */
+  async getAdminPermissions() {
+    const admin = this.getCurrentAdmin();
+    if (!admin) {
+      return { success: false, permissions: [], roles: [] };
+    }
+
+    try {
+      await SupabaseDB.init();
+      if (!SupabaseDB.client) {
+        return { success: false, permissions: [], roles: [] };
+      }
+
+      const { data, error } = await SupabaseDB.client
+        .from('admin_roles')
+        .select('role_name, permissions, is_active, expires_at')
+        .eq('admin_id', admin.adminId)
+        .eq('is_active', true);
+
+      if (error) {
+        console.error('권한 조회 오류:', error);
+        return { success: false, permissions: [], roles: [] };
+      }
+
+      const now = new Date();
+      const activeRoles = (data || []).filter(r => {
+        if (!r.expires_at) return true;
+        return new Date(r.expires_at) > now;
+      });
+
+      // 모든 활성 역할의 permissions를 합산 (중복 제거)
+      const allPermissions = [...new Set(
+        activeRoles.flatMap(r => r.permissions || [])
+      )];
+
+      return {
+        success: true,
+        permissions: allPermissions,
+        roles: activeRoles
+      };
+    } catch (err) {
+      console.error('getAdminPermissions 오류:', err);
+      return { success: false, permissions: [], roles: [] };
+    }
+  },
+
+  /**
+   * 현재 관리자가 특정 액션 권한을 보유하는지 확인
+   * admin_roles.permissions 배열과 role 계층 모두 검사
+   * @param {string} action - 확인할 액션 (예: 'approve_campaign', 'delete_user')
+   * @returns {Promise<boolean>}
+   */
+  async checkActionPermission(action) {
+    if (!action) return false;
+
+    const admin = this.getCurrentAdmin();
+    if (!admin) return false;
+
+    // super_admin은 모든 권한 보유
+    if (admin.role === 'super_admin') return true;
+
+    try {
+      const { success, permissions } = await this.getAdminPermissions();
+      if (!success) return false;
+
+      return permissions.includes(action);
+    } catch (err) {
+      console.error('checkActionPermission 오류:', err);
+      return false;
+    }
+  },
+
+  /**
+   * 관리 활동을 admin_activity_logs 테이블에 기록
+   * logActivity()의 간소화 래퍼 — 현재 세션 관리자 정보를 자동 주입
+   * @param {string} action - 수행한 액션 (예: 'approve_campaign', 'delete_user')
+   * @param {string} target - 대상 식별자 (예: 'campaign:uuid', 'user:uuid')
+   * @returns {Promise<{success: boolean}>}
+   */
+  async logAdminAction(action, target) {
+    const admin = this.getCurrentAdmin();
+    if (!admin) {
+      console.warn('logAdminAction: 세션 없음, 기록 생략');
+      return { success: false };
+    }
+
+    // target 파싱: 'type:id' 또는 단순 문자열
+    let targetType = 'unknown';
+    let targetId = target || null;
+
+    if (target && target.includes(':')) {
+      const colonIdx = target.indexOf(':');
+      targetType = target.substring(0, colonIdx);
+      targetId = target.substring(colonIdx + 1);
+    }
+
+    try {
+      await this.logActivity(
+        admin.adminId,
+        action,
+        targetType,
+        targetId,
+        { timestamp: new Date().toISOString(), admin_role: admin.role }
+      );
+      return { success: true };
+    } catch (err) {
+      console.error('logAdminAction 오류:', err);
+      return { success: false };
+    }
   }
 };

@@ -357,13 +357,32 @@
 
       <!-- Messages 섹션 -->
       <div id="section-messages" class="admin-section">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+          <div class="stats-grid" style="margin-bottom: 0; flex: 1; margin-right: 15px;">
+            <div class="stat-card" style="padding: 12px 15px;">
+              <div class="stat-label" style="font-size: 12px;">전체 메시지</div>
+              <div class="stat-value" style="font-size: 24px;" id="msgStatTotal">0</div>
+            </div>
+            <div class="stat-card" style="padding: 12px 15px;">
+              <div class="stat-label" style="font-size: 12px;">미읽음</div>
+              <div class="stat-value" style="font-size: 24px; color: #ffc107;" id="msgStatUnread">0</div>
+            </div>
+            <div class="stat-card" style="padding: 12px 15px;">
+              <div class="stat-label" style="font-size: 12px;">읽음</div>
+              <div class="stat-value" style="font-size: 24px; color: #4caf50;" id="msgStatRead">0</div>
+            </div>
+          </div>
+          <button class="btn btn-primary" onclick="AdminDashboard.showSendMessageModal()" style="white-space: nowrap; padding: 10px 16px;">
+            ✉️ 메시지 발송
+          </button>
+        </div>
+
         <div class="search-bar">
-          <input type="text" id="messageSearchInput" placeholder="메시지 검색...">
+          <input type="text" id="messageSearchInput" placeholder="제목/내용 검색...">
           <select id="messageStatusFilter">
             <option value="">상태: 전체</option>
-            <option value="unread">미읽음</option>
-            <option value="read">읽음</option>
-            <option value="archived">보관됨</option>
+            <option value="false">미읽음</option>
+            <option value="true">읽음</option>
           </select>
         </div>
 
@@ -371,10 +390,10 @@
           <table>
             <thead>
               <tr>
-                <th>발신자</th>
                 <th>제목</th>
                 <th>내용 미리보기</th>
-                <th>날짜</th>
+                <th>수신자 ID</th>
+                <th>발송일</th>
                 <th>상태</th>
                 <th>액션</th>
               </tr>
@@ -386,8 +405,27 @@
 
       <!-- Reports 섹션 -->
       <div id="section-reports" class="admin-section">
+        <div class="stats-grid" style="margin-bottom: 20px;">
+          <div class="stat-card" style="padding: 12px 15px;">
+            <div class="stat-label" style="font-size: 12px;">전체 신고</div>
+            <div class="stat-value" style="font-size: 24px;" id="rptStatTotal">0</div>
+          </div>
+          <div class="stat-card" style="padding: 12px 15px;">
+            <div class="stat-label" style="font-size: 12px;">검토 중</div>
+            <div class="stat-value" style="font-size: 24px; color: #ffc107;" id="rptStatPending">0</div>
+          </div>
+          <div class="stat-card" style="padding: 12px 15px;">
+            <div class="stat-label" style="font-size: 12px;">승인됨</div>
+            <div class="stat-value" style="font-size: 24px; color: #4caf50;" id="rptStatApproved">0</div>
+          </div>
+          <div class="stat-card" style="padding: 12px 15px;">
+            <div class="stat-label" style="font-size: 12px;">해결됨</div>
+            <div class="stat-value" style="font-size: 24px; color: #2196f3;" id="rptStatResolved">0</div>
+          </div>
+        </div>
+
         <div class="search-bar">
-          <input type="text" id="reportSearchInput" placeholder="신고 검색...">
+          <input type="text" id="reportSearchInput" placeholder="신고 내용/사유 검색...">
           <select id="reportStatusFilter">
             <option value="">상태: 전체</option>
             <option value="pending">검토 중</option>
@@ -409,8 +447,8 @@
           <table>
             <thead>
               <tr>
-                <th>신고자</th>
-                <th>신고 대상</th>
+                <th>신고자 ID</th>
+                <th>신고 대상 ID</th>
                 <th>유형</th>
                 <th>사유</th>
                 <th>신고일</th>
@@ -425,11 +463,42 @@
 
       <!-- Backup 섹션 -->
       <div id="section-backup" class="admin-section">
-        <h3 style="margin-bottom: 20px;">💾 데이터 백업</h3>
-        <div style="display: flex; gap: 10px; margin-bottom: 30px;">
-          <button class="btn btn-primary" onclick="AdminDashboard.createBackup()">📥 백업 생성</button>
-          <button class="btn btn-primary" onclick="AdminDashboard.restoreBackup()">📤 백업 복구</button>
+        <h3 style="margin-bottom:20px;">💾 데이터 백업/복구</h3>
+
+        <!-- 백업 액션 카드 -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:25px;">
+          <div class="card">
+            <div class="card-title">📥 백업 생성</div>
+            <div class="card-meta">candidates, shared_files, blog_articles, admins 테이블을 JSON으로 저장합니다.</div>
+            <button class="btn btn-primary" onclick="AdminDashboard.createBackup()">백업 생성 및 다운로드</button>
+          </div>
+          <div class="card">
+            <div class="card-title">📤 백업 복구</div>
+            <div class="card-meta">이전에 생성한 백업 JSON 파일을 업로드해 데이터를 복원합니다 (upsert 방식).</div>
+            <button class="btn btn-primary" onclick="AdminDashboard.restoreBackup()">백업 파일 선택 및 복구</button>
+          </div>
         </div>
+
+        <!-- 자동 백업 설정 안내 -->
+        <div class="card" style="margin-bottom:20px;">
+          <div class="card-title">⏰ 자동 백업 설정</div>
+          <div style="display:flex;gap:15px;align-items:center;flex-wrap:wrap;">
+            <div class="form-group" style="margin:0;flex:1;min-width:200px;">
+              <label class="form-label">자동 백업 주기</label>
+              <select id="autoBackupInterval" class="form-control" onchange="AdminDashboard.saveAutoBackupSetting()">
+                <option value="off">비활성화</option>
+                <option value="daily">매일</option>
+                <option value="weekly">매주</option>
+              </select>
+            </div>
+            <div style="font-size:12px;color:var(--text-secondary);flex:2;">
+              ⚠️ 자동 백업은 Supabase pg_cron 또는 서버 스케줄러 연동이 필요합니다. 현재는 설정값만 저장됩니다.
+            </div>
+          </div>
+        </div>
+
+        <!-- 백업 히스토리 -->
+        <h4 style="margin-bottom:15px;color:var(--text-primary);">📋 백업 히스토리</h4>
         <div id="backupList"></div>
       </div>
 
@@ -484,16 +553,34 @@
 
       <!-- Email 섹션 -->
       <div id="section-email" class="admin-section">
-        <h3>📧 이메일 설정</h3>
-        <div class="form-group">
-          <label>공지 메일 템플릿</label>
-          <textarea id="emailTemplate" class="form-control" rows="6"></textarea>
+        <h3 style="margin-bottom:20px;">📧 이메일 설정</h3>
+
+        <!-- 공지 메일 템플릿 -->
+        <div class="card" style="margin-bottom:20px;">
+          <div class="card-title">📝 공지 메일 템플릿</div>
+          <div class="form-group">
+            <label class="form-label">템플릿 내용</label>
+            <textarea id="emailTemplate" class="form-control" rows="10" placeholder="이메일 내용을 작성하세요. {{캠프명}}, {{날짜}} 등 변수를 사용할 수 있습니다."></textarea>
+          </div>
+          <div style="display:flex;gap:10px;align-items:center;">
+            <button class="btn btn-primary" onclick="AdminDashboard.saveEmailTemplate()">💾 템플릿 저장</button>
+            <button class="btn" style="background:var(--bg-primary);border:1px solid var(--border-color);" onclick="AdminDashboard.loadEmailTemplate()">🔄 초기화</button>
+          </div>
         </div>
-        <button class="btn btn-primary" onclick="AdminDashboard.saveEmailTemplate()">저장</button>
-        <div class="form-group" style="margin-top: 20px;">
-          <label>테스트 메일</label>
-          <input type="email" id="testEmail" class="form-control" placeholder="test@example.com">
-          <button class="btn btn-primary" onclick="AdminDashboard.sendTestEmail()">전송</button>
+
+        <!-- 테스트 메일 발송 -->
+        <div class="card">
+          <div class="card-title">✉️ 테스트 메일 발송</div>
+          <div class="form-group">
+            <label class="form-label">수신 이메일 주소</label>
+            <div style="display:flex;gap:10px;">
+              <input type="email" id="testEmail" class="form-control" placeholder="test@example.com" style="flex:1;">
+              <button class="btn btn-primary" onclick="AdminDashboard.sendTestEmail()">📤 발송</button>
+            </div>
+          </div>
+          <div style="font-size:12px;color:var(--text-secondary);">
+            현재 실제 이메일 API 없이 시뮬레이션 모드로 동작합니다. 실제 발송은 SendGrid / Supabase Edge Function 연동이 필요합니다.
+          </div>
         </div>
       </div>
     </div>
@@ -527,6 +614,60 @@
     </div>
   </div>
 
+  <!-- 메시지 작성 모달 -->
+  <div id="sendMessageModal" class="modal">
+    <div class="modal-content" style="max-width: 550px;">
+      <button class="modal-close" onclick="AdminDashboard.closeModal()">&times;</button>
+      <div class="modal-header">✉️ 메시지 발송</div>
+      <div class="form-group">
+        <label class="form-label">수신자 캠프</label>
+        <select id="msgRecipient" class="form-control">
+          <option value="">전체 캠프에 발송</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">제목 <span style="color:#f44336;">*</span></label>
+        <input type="text" id="msgTitle" class="form-control" placeholder="메시지 제목을 입력하세요">
+      </div>
+      <div class="form-group">
+        <label class="form-label">내용 <span style="color:#f44336;">*</span></label>
+        <textarea id="msgContent" class="form-control" rows="5" placeholder="메시지 내용을 입력하세요"></textarea>
+      </div>
+      <div style="display: flex; gap: 10px;">
+        <button class="btn btn-primary" onclick="AdminDashboard.sendMessage()">📤 발송</button>
+        <button class="btn" style="background: var(--bg-primary); border: 1px solid var(--border-color);" onclick="AdminDashboard.closeModal()">취소</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 메시지 상세보기 모달 -->
+  <div id="viewMessageModal" class="modal">
+    <div class="modal-content" style="max-width: 550px;">
+      <button class="modal-close" onclick="AdminDashboard.closeModal()">&times;</button>
+      <div class="modal-header">💬 메시지 상세</div>
+      <div id="viewMessageBody"></div>
+    </div>
+  </div>
+
+  <!-- 신고 상세보기 모달 -->
+  <div id="viewReportModal" class="modal">
+    <div class="modal-content" style="max-width: 600px;">
+      <button class="modal-close" onclick="AdminDashboard.closeModal()">&times;</button>
+      <div class="modal-header">🚨 신고 상세</div>
+      <div id="viewReportBody"></div>
+      <div style="margin-top: 20px; border-top: 1px solid var(--border-color); padding-top: 20px;">
+        <label class="form-label">관리자 응답</label>
+        <textarea id="reportAdminResponse" class="form-control" rows="3" placeholder="신고에 대한 응답을 입력하세요..."></textarea>
+        <div style="display: flex; gap: 8px; margin-top: 12px;">
+          <button class="btn btn-success" id="reportApproveBtn" onclick="AdminDashboard.updateReportStatus('approved')">✅ 승인</button>
+          <button class="btn btn-danger" id="reportRejectBtn" onclick="AdminDashboard.updateReportStatus('rejected')">❌ 거부</button>
+          <button class="btn" style="background: #2196f3; color: white;" id="reportResolveBtn" onclick="AdminDashboard.updateReportStatus('resolved')">🔵 해결</button>
+          <button class="btn" style="background: var(--bg-primary); border: 1px solid var(--border-color);" onclick="AdminDashboard.closeModal()">닫기</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Toast 컨테이너 -->
   <div class="toast-container" id="toastContainer"></div>
 
@@ -536,6 +677,7 @@
     const AdminDashboard = {
       currentSection: 'overview',
       currentLogsPage: 1,
+      _charts: {},  // Chart.js 인스턴스 캐시 (재진입 시 파괴 후 재생성)
 
       async init() {
         if (!AdminAuth.isAuthenticated()) {
@@ -619,14 +761,9 @@
           this.loadUserRoles();
         }
         if (id === 'email') this.loadEmailTemplate();
-        if (id === 'backup') this.loadBackup();
+        if (id === 'backup') { this.loadBackup(); this.loadAutoBackupSetting(); }
         if (id === 'sites') this.loadSites();
         if (id === 'settings') this.loadSettings();
-      },
-
-      refreshCurrentSection() {
-        this.showSection(this.currentSection);
-        this.toast('새로고침 완료', 'success');
       },
 
       async loadOverview() {
@@ -663,64 +800,146 @@
 
       async loadStatistics() {
         try {
+          // ── 1. candidates 테이블 ────────────────────────────────────
           const { data: candidates } = await SupabaseDB.client
             .from('candidates')
             .select('created_at, approval_status, party')
             .order('created_at');
 
+          // ── 2. admin_activity_logs — 월별 활동량 ───────────────────
+          const { data: activityLogs } = await SupabaseDB.client
+            .from('admin_activity_logs')
+            .select('created_at, action')
+            .order('created_at', { ascending: false })
+            .limit(500);
+
+          // ── 3. shared_files — 파일 업로드 통계 ────────────────────
+          const { data: sharedFiles } = await SupabaseDB.client
+            .from('shared_files')
+            .select('created_at, file_size')
+            .order('created_at', { ascending: false })
+            .limit(500);
+
+          // ── 4. 요약 카드 동적 삽입/업데이트 ───────────────────────
+          const totalCandidates = (candidates || []).length;
+          const totalFiles = (sharedFiles || []).length;
+          const totalLogs = (activityLogs || []).length;
+          const approvedCount = (candidates || []).filter(c => c.approval_status === 'approved').length;
+          const approvalRate = totalCandidates ? Math.round((approvedCount / totalCandidates) * 100) : 0;
+
+          const statsSection = document.getElementById('section-statistics');
+          let summaryDiv = document.getElementById('statsExtraSummary');
+          if (!summaryDiv) {
+            summaryDiv = document.createElement('div');
+            summaryDiv.id = 'statsExtraSummary';
+            summaryDiv.className = 'stats-grid';
+            summaryDiv.style.marginBottom = '20px';
+            statsSection.insertBefore(summaryDiv, statsSection.firstChild);
+          }
+          summaryDiv.innerHTML = `
+            <div class="stat-card"><div class="stat-label">👤 총 캠프</div><div class="stat-value">${totalCandidates}</div></div>
+            <div class="stat-card"><div class="stat-label">📁 업로드 파일</div><div class="stat-value">${totalFiles}</div></div>
+            <div class="stat-card"><div class="stat-label">📋 활동 로그</div><div class="stat-value">${totalLogs}</div></div>
+            <div class="stat-card"><div class="stat-label">✅ 승인률</div><div class="stat-value">${approvalRate}%</div></div>
+          `;
+
+          // ── 5. 데이터 없을 때 fallback ─────────────────────────────
           if (!candidates || candidates.length === 0) {
-            this.toast('통계 데이터가 없습니다.', 'error');
+            ['signupChart','approvalChart','partyChart','activityChart'].forEach(id => {
+              const canvas = document.getElementById(id);
+              if (!canvas) return;
+              canvas.style.display = 'none';
+              const parent = canvas.parentElement;
+              if (!parent.querySelector('.chart-empty')) {
+                const msg = document.createElement('div');
+                msg.className = 'chart-empty';
+                msg.style.cssText = 'padding:40px;text-align:center;color:var(--text-secondary);font-size:14px;';
+                msg.textContent = '데이터가 없습니다';
+                parent.appendChild(msg);
+              }
+            });
             return;
           }
 
-          // 월별 가입 데이터
+          // ── 6. 월별 가입 데이터 ────────────────────────────────────
           const monthlySignups = {};
           candidates.forEach(c => {
-            const month = c.created_at ? new Date(c.created_at).toLocaleString('ko-KR', { year: 'numeric', month: '2-digit' }) : '미정';
+            const month = c.created_at
+              ? new Date(c.created_at).toLocaleString('ko-KR', { year: 'numeric', month: '2-digit' })
+              : '미정';
             monthlySignups[month] = (monthlySignups[month] || 0) + 1;
           });
 
-          // 승인 상태 분류
+          // ── 7. 승인 상태 분류 ─────────────────────────────────────
           const approvalData = {
-            pending: candidates.filter(c => !c.approval_status || c.approval_status === 'pending').length,
-            approved: candidates.filter(c => c.approval_status === 'approved').length,
-            rejected: candidates.filter(c => c.approval_status === 'rejected').length
+            pending:  (candidates || []).filter(c => !c.approval_status || c.approval_status === 'pending').length,
+            approved: approvedCount,
+            rejected: (candidates || []).filter(c => c.approval_status === 'rejected').length
           };
 
-          // 정당별 분포
+          // ── 8. 정당별 분포 ────────────────────────────────────────
           const partyData = {};
           candidates.forEach(c => {
             const party = c.party || '미지정';
             partyData[party] = (partyData[party] || 0) + 1;
           });
 
-          // 활동 현황 (일별 가입)
-          const dailyActivity = {};
-          candidates.forEach(c => {
-            if (c.created_at) {
-              const date = new Date(c.created_at).toISOString().split('T')[0];
-              dailyActivity[date] = (dailyActivity[date] || 0) + 1;
+          // ── 9. 활동 차트 데이터 (월별 로그 > 일별 가입 fallback) ──
+          const monthlyActivity = {};
+          (activityLogs || []).forEach(log => {
+            if (log.created_at) {
+              const month = new Date(log.created_at).toLocaleString('ko-KR', { year: 'numeric', month: '2-digit' });
+              monthlyActivity[month] = (monthlyActivity[month] || 0) + 1;
             }
           });
 
-          // Chart.js 차트 생성
-          this.createCharts(monthlySignups, approvalData, partyData, dailyActivity);
+          let activityChartData = monthlyActivity;
+          let activityLabel = '월별 관리 활동';
+          if (Object.keys(monthlyActivity).length === 0) {
+            const dailyActivity = {};
+            candidates.forEach(c => {
+              if (c.created_at) {
+                const date = new Date(c.created_at).toISOString().split('T')[0];
+                dailyActivity[date] = (dailyActivity[date] || 0) + 1;
+              }
+            });
+            activityChartData = dailyActivity;
+            activityLabel = '일별 캠프 가입';
+          }
+
+          // ── 10. Chart.js 차트 생성 ────────────────────────────────
+          this.createCharts(monthlySignups, approvalData, partyData, activityChartData, activityLabel);
+
         } catch (err) {
           console.error('통계 로드 실패:', err);
-          this.toast('통계 로드 실패', 'error');
+          this.toast('통계 로드 실패: ' + err.message, 'error');
         }
       },
 
-      createCharts(monthlySignups, approvalData, partyData, dailyActivity) {
-        const ctx1 = document.getElementById('signupChart').getContext('2d');
-        new Chart(ctx1, {
+      // Chart.js 인스턴스를 _charts에 저장해 재진입 시 기존 인스턴스 파괴
+      _makeChart(id, config) {
+        if (this._charts[id]) {
+          this._charts[id].destroy();
+          delete this._charts[id];
+        }
+        const canvas = document.getElementById(id);
+        if (!canvas) return;
+        canvas.style.display = '';
+        const emptyMsg = canvas.parentElement.querySelector('.chart-empty');
+        if (emptyMsg) emptyMsg.remove();
+        this._charts[id] = new Chart(canvas.getContext('2d'), config);
+      },
+
+      createCharts(monthlySignups, approvalData, partyData, activityData, activityLabel = '활동') {
+        // 차트 1: 월별 가입 (line)
+        this._makeChart('signupChart', {
           type: 'line',
           data: {
             labels: Object.keys(monthlySignups),
             datasets: [{
               label: '월별 가입자',
               data: Object.values(monthlySignups),
-              borderColor: 'var(--primary-color)',
+              borderColor: '#007bff',
               backgroundColor: 'rgba(0, 123, 255, 0.1)',
               tension: 0.4,
               fill: true,
@@ -730,69 +949,58 @@
           },
           options: {
             responsive: true,
-            plugins: {
-              legend: { display: true, position: 'top' }
-            },
-            scales: {
-              y: { beginAtZero: true }
-            }
+            plugins: { legend: { display: true, position: 'top' } },
+            scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
           }
         });
 
-        const ctx2 = document.getElementById('approvalChart').getContext('2d');
-        new Chart(ctx2, {
+        // 차트 2: 승인 현황 (doughnut)
+        this._makeChart('approvalChart', {
           type: 'doughnut',
           data: {
             labels: ['대기 중', '승인됨', '거부됨'],
             datasets: [{
               data: [approvalData.pending, approvalData.approved, approvalData.rejected],
               backgroundColor: ['#ffc107', '#4caf50', '#f44336'],
-              borderColor: 'var(--bg-secondary)',
               borderWidth: 2
             }]
           },
           options: {
             responsive: true,
-            plugins: {
-              legend: { display: true, position: 'right' }
-            }
+            plugins: { legend: { display: true, position: 'right' } }
           }
         });
 
-        const ctx3 = document.getElementById('partyChart').getContext('2d');
-        new Chart(ctx3, {
+        // 차트 3: 정당별 분포 (bar — horizontal)
+        this._makeChart('partyChart', {
           type: 'bar',
           data: {
             labels: Object.keys(partyData),
             datasets: [{
               label: '정당별 후보자 수',
               data: Object.values(partyData),
-              backgroundColor: 'var(--primary-color)',
-              borderColor: 'var(--primary-color)',
+              backgroundColor: 'rgba(0, 123, 255, 0.7)',
+              borderColor: '#007bff',
               borderWidth: 1
             }]
           },
           options: {
             responsive: true,
             indexAxis: 'y',
-            plugins: {
-              legend: { display: false }
-            },
-            scales: {
-              x: { beginAtZero: true }
-            }
+            plugins: { legend: { display: false } },
+            scales: { x: { beginAtZero: true, ticks: { stepSize: 1 } } }
           }
         });
 
-        const ctx4 = document.getElementById('activityChart').getContext('2d');
-        const sortedDates = Object.keys(dailyActivity).sort().slice(-30);
-        new Chart(ctx4, {
+        // 차트 4: 월별/일별 활동 (bar)
+        const sortedKeys = Object.keys(activityData).sort().slice(-30);
+        this._makeChart('activityChart', {
           type: 'bar',
           data: {
-            labels: sortedDates,
+            labels: sortedKeys,
             datasets: [{
-              label: '일별 활동',
-              data: sortedDates.map(d => dailyActivity[d] || 0),
+              label: activityLabel,
+              data: sortedKeys.map(k => activityData[k] || 0),
               backgroundColor: 'rgba(76, 175, 80, 0.7)',
               borderColor: '#4caf50',
               borderWidth: 1
@@ -800,12 +1008,8 @@
           },
           options: {
             responsive: true,
-            plugins: {
-              legend: { display: true }
-            },
-            scales: {
-              y: { beginAtZero: true }
-            }
+            plugins: { legend: { display: true } },
+            scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
           }
         });
       },
@@ -1168,104 +1372,289 @@
       },
 
       // ===================== 메시지 섹션 함수 =====================
+      _currentViewReportId: null,
+
+      escapeHtml(str) {
+        if (!str) return '';
+        return String(str)
+          .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+      },
+
       async loadMessages() {
-        // TODO: 메시지 로드 함수 구현
-        // 1. 검색 필터링 적용
-        // 2. DB에서 메시지 데이터 조회
-        // 3. messagesTable에 렌더링
         try {
-          const searchTerm = document.getElementById('messageSearchInput').value;
+          const searchTerm = document.getElementById('messageSearchInput').value.trim();
           const statusFilter = document.getElementById('messageStatusFilter').value;
 
-          // 스켈레톤: DB 조회 로직
-          const messages = [];
+          let query = SupabaseDB.client
+            .from('notifications')
+            .select('*')
+            .order('created_at', { ascending: false });
 
-          document.getElementById('messagesTable').innerHTML = messages.map(msg => `
-            <tr>
-              <td>${msg.sender}</td>
-              <td>${msg.subject}</td>
-              <td>${msg.preview}</td>
-              <td>${this.formatDate(msg.created_at)}</td>
-              <td>${msg.status}</td>
-              <td>
-                <button class="btn btn-sm btn-primary" onclick="AdminDashboard.viewMessage('${msg.id}')">보기</button>
-                <button class="btn btn-sm btn-danger" onclick="AdminDashboard.deleteMessage('${msg.id}')">삭제</button>
-              </td>
-            </tr>
-          `).join('');
+          if (searchTerm) {
+            query = query.or(`title.ilike.%${searchTerm}%,content.ilike.%${searchTerm}%`);
+          }
+          if (statusFilter !== '') {
+            query = query.eq('is_read', statusFilter === 'true');
+          }
+
+          const { data, error } = await query;
+          if (error) throw error;
+
+          const messages = data || [];
+
+          document.getElementById('msgStatTotal').textContent = messages.length;
+          document.getElementById('msgStatUnread').textContent = messages.filter(m => !m.is_read).length;
+          document.getElementById('msgStatRead').textContent = messages.filter(m => m.is_read).length;
+
+          if (messages.length === 0) {
+            document.getElementById('messagesTable').innerHTML =
+              '<tr><td colspan="6" style="text-align:center;color:var(--text-secondary);padding:30px;">메시지가 없습니다.</td></tr>';
+            return;
+          }
+
+          document.getElementById('messagesTable').innerHTML = messages.map(msg => {
+            const isRead = msg.is_read;
+            const readBadge = isRead
+              ? '<span class="badge" style="background:rgba(76,175,80,0.2);color:#4caf50;">읽음</span>'
+              : '<span class="badge" style="background:rgba(255,193,7,0.2);color:#ffc107;">미읽음</span>';
+            const preview = (msg.content || '').substring(0, 40) + ((msg.content || '').length > 40 ? '...' : '');
+            const recipientDisplay = msg.recipient_id
+              ? `<span style="font-size:11px;background:var(--bg-primary);padding:2px 6px;border-radius:4px;">${msg.recipient_id.substring(0, 8)}...</span>`
+              : '<span style="color:var(--text-secondary);font-size:12px;">전체 발송</span>';
+            return `<tr style="${!isRead ? 'background:rgba(255,193,7,0.04);' : ''}">
+                <td style="font-weight:${!isRead ? '600' : '400'};">${this.escapeHtml(msg.title || '(제목 없음)')}</td>
+                <td style="color:var(--text-secondary);">${this.escapeHtml(preview)}</td>
+                <td>${recipientDisplay}</td>
+                <td>${this.formatDate(msg.created_at)}</td>
+                <td>${readBadge}</td>
+                <td>
+                  <button class="btn btn-sm btn-primary" onclick="AdminDashboard.viewMessage('${msg.id}')">보기</button>
+                  <button class="btn btn-sm btn-danger" onclick="AdminDashboard.deleteMessage('${msg.id}')">삭제</button>
+                </td>
+              </tr>`;
+          }).join('');
         } catch (err) {
           console.error('메시지 로드 실패:', err);
+          this.toast('메시지 로드 실패: ' + err.message, 'error');
+          document.getElementById('messagesTable').innerHTML =
+            `<tr><td colspan="6" style="text-align:center;color:#f44336;padding:20px;">로드 실패: ${this.escapeHtml(err.message)}</td></tr>`;
+        }
+      },
+
+      async showSendMessageModal() {
+        try {
+          const { data: candidates } = await SupabaseDB.client.from('candidates').select('id, name').order('name');
+          const select = document.getElementById('msgRecipient');
+          select.innerHTML = '<option value="">전체 캠프에 발송</option>' +
+            (candidates || []).map(c => `<option value="${c.id}">${this.escapeHtml(c.name)}</option>`).join('');
+        } catch (err) { console.warn('캠프 목록 로드 실패:', err); }
+        document.getElementById('msgTitle').value = '';
+        document.getElementById('msgContent').value = '';
+        document.getElementById('sendMessageModal').classList.add('show');
+      },
+
+      async sendMessage() {
+        const title = document.getElementById('msgTitle').value.trim();
+        const content = document.getElementById('msgContent').value.trim();
+        const recipientId = document.getElementById('msgRecipient').value;
+        if (!title) { this.toast('제목을 입력해주세요', 'error'); return; }
+        if (!content) { this.toast('내용을 입력해주세요', 'error'); return; }
+        try {
+          const admin = AdminAuth.getCurrentAdmin();
+          const insertRows = [];
+          if (recipientId) {
+            insertRows.push({ title, content, recipient_id: recipientId, sender_id: admin.adminId || null, is_read: false, created_at: new Date().toISOString() });
+          } else {
+            const { data: candidates } = await SupabaseDB.client.from('candidates').select('id');
+            if (candidates && candidates.length > 0) {
+              candidates.forEach(c => insertRows.push({ title, content, recipient_id: c.id, sender_id: admin.adminId || null, is_read: false, created_at: new Date().toISOString() }));
+            } else {
+              insertRows.push({ title, content, recipient_id: null, sender_id: admin.adminId || null, is_read: false, created_at: new Date().toISOString() });
+            }
+          }
+          const { error } = await SupabaseDB.client.from('notifications').insert(insertRows);
+          if (error) throw error;
+          AdminAuth.logActivity(`메시지 발송 - "${title}" (${insertRows.length}건)`);
+          this.closeModal();
+          this.loadMessages();
+          this.toast(`메시지가 발송되었습니다 (${insertRows.length}건)`, 'success');
+        } catch (err) {
+          console.error('메시지 발송 실패:', err);
+          this.toast('발송 실패: ' + err.message, 'error');
         }
       },
 
       async viewMessage(messageId) {
-        // TODO: 메시지 상세 보기 함수 구현
-        console.log('메시지 보기:', messageId);
+        try {
+          const { data: msg, error } = await SupabaseDB.client.from('notifications').select('*').eq('id', messageId).single();
+          if (error) throw error;
+          if (!msg.is_read) {
+            await SupabaseDB.client.from('notifications').update({ is_read: true }).eq('id', messageId);
+          }
+          document.getElementById('viewMessageBody').innerHTML = `
+            <div class="form-group">
+              <label class="form-label">제목</label>
+              <div style="padding:8px 12px;background:var(--bg-primary);border-radius:6px;border:1px solid var(--border-color);">${this.escapeHtml(msg.title || '(제목 없음)')}</div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">수신자 ID</label>
+              <div style="padding:8px 12px;background:var(--bg-primary);border-radius:6px;border:1px solid var(--border-color);font-size:12px;color:var(--text-secondary);">${msg.recipient_id || '전체 발송'}</div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">발송일</label>
+              <div style="padding:8px 12px;background:var(--bg-primary);border-radius:6px;border:1px solid var(--border-color);color:var(--text-secondary);">${this.formatDate(msg.created_at)}</div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">내용</label>
+              <div style="padding:12px;background:var(--bg-primary);border-radius:6px;border:1px solid var(--border-color);white-space:pre-wrap;line-height:1.6;min-height:80px;">${this.escapeHtml(msg.content || '')}</div>
+            </div>
+            <div style="display:flex;gap:10px;margin-top:15px;">
+              <button class="btn btn-danger" onclick="AdminDashboard.deleteMessage('${msg.id}')">🗑️ 삭제</button>
+              <button class="btn" style="background:var(--bg-primary);border:1px solid var(--border-color);" onclick="AdminDashboard.closeModal()">닫기</button>
+            </div>`;
+          document.getElementById('viewMessageModal').classList.add('show');
+          this.loadMessages();
+        } catch (err) { this.toast('메시지 로드 실패: ' + err.message, 'error'); }
       },
 
       async deleteMessage(messageId) {
-        // TODO: 메시지 삭제 함수 구현
-        if (confirm('이 메시지를 삭제하시겠습니까?')) {
-          console.log('메시지 삭제:', messageId);
+        if (!confirm('이 메시지를 삭제하시겠습니까?')) return;
+        try {
+          const { error } = await SupabaseDB.client.from('notifications').delete().eq('id', messageId);
+          if (error) throw error;
+          AdminAuth.logActivity(`메시지 삭제 - ${messageId}`);
+          this.closeModal();
           this.loadMessages();
-        }
+          this.toast('삭제되었습니다', 'success');
+        } catch (err) { this.toast('삭제 실패: ' + err.message, 'error'); }
       },
 
       // ===================== 신고 관리 섹션 함수 =====================
       async loadReports() {
-        // TODO: 신고 로드 함수 구현
-        // 1. 검색/필터 조건 적용
-        // 2. DB에서 신고 데이터 조회
-        // 3. reportsTable에 렌더링
         try {
-          const searchTerm = document.getElementById('reportSearchInput').value;
+          const searchTerm = document.getElementById('reportSearchInput').value.trim();
           const statusFilter = document.getElementById('reportStatusFilter').value;
           const typeFilter = document.getElementById('reportTypeFilter').value;
 
-          // 스켈레톤: DB 조회 로직
-          const reports = [];
+          // 전체 통계 (필터 무관)
+          const { data: allReports } = await SupabaseDB.client.from('reports').select('status');
+          const ar = allReports || [];
+          document.getElementById('rptStatTotal').textContent = ar.length;
+          document.getElementById('rptStatPending').textContent = ar.filter(r => !r.status || r.status === 'pending').length;
+          document.getElementById('rptStatApproved').textContent = ar.filter(r => r.status === 'approved').length;
+          document.getElementById('rptStatResolved').textContent = ar.filter(r => r.status === 'resolved').length;
 
-          document.getElementById('reportsTable').innerHTML = reports.map(report => `
-            <tr>
-              <td>${report.reporter}</td>
-              <td>${report.target}</td>
-              <td>${report.type}</td>
-              <td>${report.reason}</td>
-              <td>${this.formatDate(report.created_at)}</td>
-              <td><span class="report-status-badge report-status-${report.status}">${report.status}</span></td>
-              <td>
-                <button class="btn btn-sm btn-primary" onclick="AdminDashboard.viewReport('${report.id}')">보기</button>
-                <button class="btn btn-sm btn-success" onclick="AdminDashboard.approveReport('${report.id}')">승인</button>
-                <button class="btn btn-sm btn-danger" onclick="AdminDashboard.rejectReport('${report.id}')">거부</button>
-              </td>
-            </tr>
-          `).join('');
+          let query = SupabaseDB.client.from('reports').select('*').order('created_at', { ascending: false });
+          if (statusFilter) query = query.eq('status', statusFilter);
+          if (typeFilter) query = query.eq('type', typeFilter);
+          if (searchTerm) query = query.or(`reason.ilike.%${searchTerm}%,target_id.ilike.%${searchTerm}%`);
+
+          const { data, error } = await query;
+          if (error) throw error;
+
+          const reports = data || [];
+
+          if (reports.length === 0) {
+            document.getElementById('reportsTable').innerHTML =
+              '<tr><td colspan="7" style="text-align:center;color:var(--text-secondary);padding:30px;">신고가 없습니다.</td></tr>';
+            return;
+          }
+
+          const typeLabels = { spam: '스팸', inappropriate: '부적절', fake: '거짓정보', abuse: '욕설/폭력', other: '기타' };
+          const statusLabels = { pending: '검토 중', approved: '승인됨', rejected: '거부됨', resolved: '해결됨' };
+
+          document.getElementById('reportsTable').innerHTML = reports.map(report => {
+            const st = report.status || 'pending';
+            const typeText = typeLabels[report.type] || report.type || '-';
+            const reporterDisplay = report.reporter_id
+              ? `<span style="font-size:11px;">${report.reporter_id.substring(0, 8)}...</span>`
+              : '<span style="color:var(--text-secondary);">익명</span>';
+            const targetDisplay = report.target_id
+              ? `<span style="font-size:11px;">${report.target_id.substring(0, 8)}...</span>`
+              : '-';
+            return `<tr>
+                <td>${reporterDisplay}</td>
+                <td>${targetDisplay}</td>
+                <td><span style="background:rgba(0,123,255,0.15);color:#007bff;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600;">${typeText}</span></td>
+                <td style="max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${this.escapeHtml(report.reason || '')}">${this.escapeHtml((report.reason || '').substring(0, 30))}${(report.reason || '').length > 30 ? '...' : ''}</td>
+                <td>${this.formatDate(report.created_at)}</td>
+                <td><span class="report-status-badge report-status-${st}">${statusLabels[st] || st}</span></td>
+                <td><button class="btn btn-sm btn-primary" onclick="AdminDashboard.viewReport('${report.id}')">상세</button></td>
+              </tr>`;
+          }).join('');
         } catch (err) {
           console.error('신고 로드 실패:', err);
+          this.toast('신고 로드 실패: ' + err.message, 'error');
+          document.getElementById('reportsTable').innerHTML =
+            `<tr><td colspan="7" style="text-align:center;color:#f44336;padding:20px;">로드 실패: ${this.escapeHtml(err.message)}</td></tr>`;
         }
       },
 
       async viewReport(reportId) {
-        // TODO: 신고 상세 보기 함수 구현
-        console.log('신고 보기:', reportId);
+        try {
+          const { data: report, error } = await SupabaseDB.client.from('reports').select('*').eq('id', reportId).single();
+          if (error) throw error;
+          this._currentViewReportId = reportId;
+
+          const typeLabels = { spam: '스팸', inappropriate: '부적절한 콘텐츠', fake: '거짓 정보', abuse: '욕설/폭력', other: '기타' };
+          const statusLabels = { pending: '검토 중', approved: '승인됨', rejected: '거부됨', resolved: '해결됨' };
+          const st = report.status || 'pending';
+
+          document.getElementById('viewReportBody').innerHTML = `
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:15px;">
+              <div class="form-group" style="margin-bottom:0;">
+                <label class="form-label">신고자 ID</label>
+                <div style="padding:8px 12px;background:var(--bg-primary);border-radius:6px;border:1px solid var(--border-color);font-size:12px;word-break:break-all;">${report.reporter_id || '익명'}</div>
+              </div>
+              <div class="form-group" style="margin-bottom:0;">
+                <label class="form-label">신고 대상 ID</label>
+                <div style="padding:8px 12px;background:var(--bg-primary);border-radius:6px;border:1px solid var(--border-color);font-size:12px;word-break:break-all;">${report.target_id || '-'}</div>
+              </div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:15px;">
+              <div class="form-group" style="margin-bottom:0;">
+                <label class="form-label">신고 유형</label>
+                <div style="padding:8px 12px;background:var(--bg-primary);border-radius:6px;border:1px solid var(--border-color);">${typeLabels[report.type] || report.type || '-'}</div>
+              </div>
+              <div class="form-group" style="margin-bottom:0;">
+                <label class="form-label">현재 상태</label>
+                <div style="padding:8px 12px;background:var(--bg-primary);border-radius:6px;border:1px solid var(--border-color);">
+                  <span class="report-status-badge report-status-${st}">${statusLabels[st] || st}</span>
+                </div>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">신고 사유</label>
+              <div style="padding:12px;background:var(--bg-primary);border-radius:6px;border:1px solid var(--border-color);white-space:pre-wrap;line-height:1.6;min-height:60px;">${this.escapeHtml(report.reason || '사유 없음')}</div>
+            </div>
+            ${report.admin_response ? `
+            <div class="form-group">
+              <label class="form-label">이전 관리자 응답</label>
+              <div style="padding:12px;background:rgba(33,150,243,0.05);border-radius:6px;border:1px solid rgba(33,150,243,0.3);white-space:pre-wrap;line-height:1.6;font-size:13px;color:var(--text-secondary);">${this.escapeHtml(report.admin_response)}</div>
+            </div>` : ''}
+            <div style="font-size:12px;color:var(--text-secondary);margin-top:5px;">신고일: ${this.formatDate(report.created_at)}</div>`;
+          document.getElementById('reportAdminResponse').value = report.admin_response || '';
+          document.getElementById('viewReportModal').classList.add('show');
+        } catch (err) { this.toast('신고 상세 로드 실패: ' + err.message, 'error'); }
       },
 
-      async approveReport(reportId) {
-        // TODO: 신고 승인 함수 구현
-        if (confirm('이 신고를 승인하시겠습니까?')) {
-          console.log('신고 승인:', reportId);
+      async updateReportStatus(newStatus) {
+        const reportId = this._currentViewReportId;
+        if (!reportId) { this.toast('신고 ID가 없습니다', 'error'); return; }
+        const adminResponse = document.getElementById('reportAdminResponse').value.trim();
+        const statusLabels = { pending: '검토 중', approved: '승인됨', rejected: '거부됨', resolved: '해결됨' };
+        try {
+          const updateData = { status: newStatus, updated_at: new Date().toISOString() };
+          if (adminResponse) updateData.admin_response = adminResponse;
+          const { error } = await SupabaseDB.client.from('reports').update(updateData).eq('id', reportId);
+          if (error) throw error;
+          AdminAuth.logActivity(`신고 상태 변경 - ${reportId} → ${newStatus}`);
+          this._currentViewReportId = null;
+          this.closeModal();
           this.loadReports();
-          this.toast('신고가 승인되었습니다', 'success');
-        }
-      },
-
-      async rejectReport(reportId) {
-        // TODO: 신고 거부 함수 구현
-        if (confirm('이 신고를 거부하시겠습니까?')) {
-          console.log('신고 거부:', reportId);
-          this.loadReports();
-          this.toast('신고가 거부되었습니다', 'success');
-        }
+          this.toast(`신고가 "${statusLabels[newStatus]}" 처리되었습니다`, 'success');
+        } catch (err) { this.toast('상태 변경 실패: ' + err.message, 'error'); }
       },
 
       // ===================== 권한 관리 섹션 함수 =====================
@@ -1346,11 +1735,45 @@
       },
 
       // ===================== 이메일 설정 섹션 함수 =====================
+
+      // 지원 변수 목록
+      _emailVariables: ['{{캠프명}}', '{{후보자명}}', '{{날짜}}', '{{시간}}', '{{지역}}', '{{정당}}', '{{관리자}}'],
+
       async loadEmailTemplate() {
         try {
           const template = await SupabaseDB.getSetting('email_template');
+          const el = document.getElementById('emailTemplate');
           if (template) {
-            document.getElementById('emailTemplate').value = template;
+            el.value = template;
+          } else {
+            // 기본 템플릿 설정
+            el.value = [
+              '안녕하세요, {{캠프명}} 담당자님.',
+              '',
+              '선거 워룸 플랫폼에서 {{날짜}} {{시간}}에 중요한 알림이 있습니다.',
+              '',
+              '▶ 후보자: {{후보자명}} ({{정당}} / {{지역}})',
+              '',
+              '문의사항이 있으시면 관리자 {{관리자}}에게 연락해주세요.',
+              '',
+              '감사합니다.',
+              '선거 워룸 시스템 드림'
+            ].join('\n');
+          }
+
+          // 변수 안내 박스 동적 삽입
+          const emailSection = document.getElementById('section-email');
+          if (!document.getElementById('emailVarGuide')) {
+            const guide = document.createElement('div');
+            guide.id = 'emailVarGuide';
+            guide.style.cssText = 'margin: 15px 0; padding: 12px 15px; background: rgba(0,123,255,0.05); border: 1px solid rgba(0,123,255,0.2); border-radius: 8px; font-size: 12px; color: var(--text-secondary);';
+            guide.innerHTML = `
+              <strong style="color:var(--text-primary);">사용 가능한 변수:</strong><br>
+              ${this._emailVariables.map(v => `<code style="background:var(--bg-primary);padding:2px 5px;border-radius:3px;margin:2px;display:inline-block;">${v}</code>`).join(' ')}
+            `;
+            // 이메일 템플릿 textarea 앞에 삽입
+            const formGroup = document.getElementById('emailTemplate').closest('.form-group');
+            formGroup.parentElement.insertBefore(guide, formGroup);
           }
         } catch (err) {
           console.error('이메일 템플릿 로드 실패:', err);
@@ -1358,9 +1781,24 @@
       },
 
       async saveEmailTemplate() {
-        const template = document.getElementById('emailTemplate').value;
+        const template = document.getElementById('emailTemplate').value.trim();
+
+        // ── 변수 검증 ──────────────────────────────────────────────
+        const usedVars = (template.match(/\{\{[^}]+\}\}/g) || []);
+        const unknownVars = usedVars.filter(v => !this._emailVariables.includes(v));
+        if (unknownVars.length > 0) {
+          this.toast(`알 수 없는 변수: ${unknownVars.join(', ')}`, 'error');
+          return;
+        }
+
+        if (!template) {
+          this.toast('템플릿 내용을 입력해주세요', 'error');
+          return;
+        }
+
         try {
           await SupabaseDB.setSetting('email_template', template);
+          AdminAuth.logAdminAction('email_template_saved', 'settings:email_template');
           this.toast('이메일 템플릿 저장됨', 'success');
         } catch (err) {
           console.error('이메일 템플릿 저장 실패:', err);
@@ -1369,58 +1807,122 @@
       },
 
       async loadBackup() {
-        // TODO: 백업 리스트 로드 함수 구현
         try {
-          // 백업 데이터 로드
-          const backups = [];
-          document.getElementById('backupList').innerHTML = backups.length > 0
-            ? backups.map(b => `<div class="activity-item">${b.name} - ${this.formatDate(b.created_at)}</div>`).join('')
-            : '<div style="color: var(--text-secondary);">백업이 없습니다.</div>';
+          // backup_history 테이블에서 히스토리 조회 (테이블 없으면 graceful 처리)
+          const { data: backups, error } = await SupabaseDB.client
+            .from('backup_history')
+            .select('*')
+            .order('created_at', { ascending: false })
+            .limit(20);
+
+          const admin = AdminAuth.getCurrentAdmin();
+          const listEl = document.getElementById('backupList');
+
+          if (error) {
+            // backup_history 테이블이 없는 경우 안내 표시
+            listEl.innerHTML = `
+              <div style="margin-bottom: 20px; padding: 15px; background: rgba(255,193,7,0.1); border: 1px solid rgba(255,193,7,0.3); border-radius: 8px; font-size: 13px; color: var(--text-secondary);">
+                💡 백업 히스토리를 저장하려면 Supabase에 <strong>backup_history</strong> 테이블이 필요합니다.<br>
+                현재는 백업 생성 시 JSON 파일로 다운로드됩니다.
+              </div>
+              <div style="color: var(--text-secondary);">백업 히스토리가 없습니다.</div>
+            `;
+            return;
+          }
+
+          if (!backups || backups.length === 0) {
+            listEl.innerHTML = '<div style="color: var(--text-secondary);">백업이 없습니다. "백업 생성" 버튼으로 첫 백업을 만드세요.</div>';
+            return;
+          }
+
+          listEl.innerHTML = `
+            <div class="table-container">
+              <table>
+                <thead><tr><th>백업명</th><th>생성자</th><th>버전</th><th>테이블 수</th><th>생성일</th><th>메모</th></tr></thead>
+                <tbody>
+                  ${backups.map(b => `
+                    <tr>
+                      <td style="font-weight:600;">${b.backup_name || '백업 파일'}</td>
+                      <td>${b.created_by || '-'}</td>
+                      <td>${b.version || '1.0'}</td>
+                      <td>${b.table_count || '-'}</td>
+                      <td>${this.formatDate(b.created_at)}</td>
+                      <td style="color:var(--text-secondary);font-size:12px;">${b.description || '-'}</td>
+                    </tr>
+                  `).join('')}
+                </tbody>
+              </table>
+            </div>
+          `;
         } catch (err) {
           console.error('백업 로드 실패:', err);
+          document.getElementById('backupList').innerHTML = '<div style="color: var(--text-secondary);">백업 히스토리를 불러올 수 없습니다.</div>';
         }
       },
 
       async createBackup() {
         try {
           this.toast('백업 생성 중...', 'info');
+          const admin = AdminAuth.getCurrentAdmin();
+          const timestamp = new Date().toISOString();
 
-          // candidates 데이터 조회
-          const { data: candidatesData, error: candidatesError } = await SupabaseDB.client
-            .from('candidates')
-            .select('*');
+          // ── 테이블별 데이터 수집 ─────────────────────────────────
+          const tables = ['candidates', 'shared_files', 'blog_articles', 'admins'];
+          const backupPayload = {};
+          const tableResults = {};
 
-          if (candidatesError) throw candidatesError;
+          for (const table of tables) {
+            const { data, error } = await SupabaseDB.client.from(table).select('*');
+            if (!error && data) {
+              backupPayload[table] = data;
+              tableResults[table] = data.length;
+            } else {
+              backupPayload[table] = [];
+              tableResults[table] = 0;
+            }
+          }
 
-          // members 데이터 조회
-          const { data: membersData, error: membersError } = await SupabaseDB.client
-            .from('members')
-            .select('*');
-
-          if (membersError) throw membersError;
-
-          // 백업 데이터 통합
+          // ── 메타데이터 추가 ───────────────────────────────────────
           const backupData = {
-            timestamp: new Date().toISOString(),
-            version: '1.0',
-            candidates: candidatesData || [],
-            members: membersData || []
+            meta: {
+              version: '2.0',
+              created_at: timestamp,
+              created_by: admin?.username || 'unknown',
+              description: `전체 백업 — ${Object.entries(tableResults).map(([t,c]) => `${t}:${c}건`).join(', ')}`,
+              table_count: tables.length,
+              row_counts: tableResults
+            },
+            ...backupPayload
           };
 
-          // JSON 파일로 변환
-          const backup = JSON.stringify(backupData, null, 2);
-          const blob = new Blob([backup], { type: 'application/json' });
+          // ── JSON 파일 다운로드 ────────────────────────────────────
+          const fileName = `backup_v2_${timestamp.slice(0, 19).replace(/[:.]/g, '-')}.json`;
+          const blob = new Blob([JSON.stringify(backupData, null, 2)], { type: 'application/json' });
           const url = URL.createObjectURL(blob);
-
-          // 다운로드 링크 생성
           const a = document.createElement('a');
-          a.href = url;
-          a.download = `backup_${new Date().toISOString().slice(0, 19).replace(/:/g, '-')}.json`;
-          a.click();
-
+          a.href = url; a.download = fileName; a.click();
           URL.revokeObjectURL(url);
+
+          // ── backup_history 테이블에 히스토리 저장 (없으면 skip) ──
+          try {
+            await SupabaseDB.client.from('backup_history').insert([{
+              backup_name: fileName,
+              version: '2.0',
+              created_by: admin?.username || 'unknown',
+              table_count: tables.length,
+              description: backupData.meta.description,
+              created_at: timestamp
+            }]);
+          } catch (histErr) {
+            console.debug('backup_history 저장 생략 (테이블 없음):', histErr.message);
+          }
+
+          // ── 활동 로그 기록 ────────────────────────────────────────
+          AdminAuth.logAdminAction('backup_created', `backup:${fileName}`);
+
           this.loadBackup();
-          this.toast('백업이 완료되었습니다', 'success');
+          this.toast(`백업 완료 — ${fileName}`, 'success');
+
         } catch (err) {
           console.error('백업 생성 실패:', err);
           this.toast('백업 생성 실패: ' + err.message, 'error');
@@ -1429,7 +1931,6 @@
 
       async restoreBackup() {
         try {
-          // 파일 입력 요소 생성
           const input = document.createElement('input');
           input.type = 'file';
           input.accept = '.json';
@@ -1438,48 +1939,59 @@
             const file = e.target.files[0];
             if (!file) return;
 
-            try {
-              this.toast('백업 복구 중...', 'info');
-
-              const reader = new FileReader();
-              reader.onload = async (event) => {
+            const reader = new FileReader();
+            reader.onload = async (event) => {
+              try {
                 const backupData = JSON.parse(event.target.result);
 
-                // 데이터 유효성 검사
-                if (!backupData.candidates || !Array.isArray(backupData.candidates)) {
-                  throw new Error('잘못된 백업 파일 형식입니다');
+                // ── 유효성 검사 ────────────────────────────────────
+                const knownTables = ['candidates', 'shared_files', 'blog_articles', 'admins'];
+                const foundTables = knownTables.filter(t => Array.isArray(backupData[t]));
+
+                if (foundTables.length === 0) {
+                  this.toast('잘못된 백업 파일 형식입니다 (candidates 필드 필요)', 'error');
+                  return;
                 }
 
-                // 복구 확인
-                if (confirm('기존 데이터를 모두 삭제하고 복구하시겠습니까?')) {
-                  // candidates 복구
-                  for (const candidate of backupData.candidates) {
-                    const { id, ...dataWithoutId } = candidate;
-                    await SupabaseDB.client
-                      .from('candidates')
-                      .upsert({ ...dataWithoutId, id: id }, { onConflict: 'id' });
-                  }
+                const meta = backupData.meta || {};
+                const metaInfo = meta.created_at
+                  ? `\n\n생성일: ${this.formatDate(meta.created_at)}\n생성자: ${meta.created_by || '?'}\n버전: ${meta.version || '?'}\n${meta.description || ''}`
+                  : '';
 
-                  // members 복구 (있으면)
-                  if (backupData.members && Array.isArray(backupData.members)) {
-                    for (const member of backupData.members) {
-                      const { id, ...dataWithoutId } = member;
-                      await SupabaseDB.client
-                        .from('members')
-                        .upsert({ ...dataWithoutId, id: id }, { onConflict: 'id' });
-                    }
-                  }
+                // ── 선택적 복구 확인 ───────────────────────────────
+                const tableList = foundTables.join(', ');
+                if (!confirm(`다음 테이블을 복구하시겠습니까?\n${tableList}${metaInfo}\n\n⚠️ 기존 데이터와 병합(upsert)됩니다.`)) return;
 
-                  this.loadBackup();
-                  this.toast('백업 복구가 완료되었습니다', 'success');
-                  setTimeout(() => location.reload(), 1500);
+                this.toast('복구 중...', 'info');
+                const results = [];
+
+                for (const table of foundTables) {
+                  const rows = backupData[table];
+                  if (!rows || rows.length === 0) continue;
+
+                  let successCount = 0;
+                  for (const row of rows) {
+                    const { error } = await SupabaseDB.client
+                      .from(table)
+                      .upsert(row, { onConflict: 'id' });
+                    if (!error) successCount++;
+                  }
+                  results.push(`${table}: ${successCount}/${rows.length}건`);
                 }
-              };
-              reader.readAsText(file);
-            } catch (err) {
-              console.error('백업 복구 실패:', err);
-              this.toast('백업 복구 실패: ' + err.message, 'error');
-            }
+
+                // ── 활동 로그 기록 ─────────────────────────────────
+                AdminAuth.logAdminAction('backup_restored', `backup:${file.name}`);
+
+                this.loadBackup();
+                this.toast(`복구 완료 — ${results.join(', ')}`, 'success');
+                setTimeout(() => location.reload(), 2000);
+
+              } catch (parseErr) {
+                console.error('복구 파싱 실패:', parseErr);
+                this.toast('백업 파일 파싱 실패: ' + parseErr.message, 'error');
+              }
+            };
+            reader.readAsText(file);
           };
 
           input.click();
@@ -1490,23 +2002,118 @@
       },
 
       async sendTestEmail() {
-        const testEmail = document.getElementById('testEmail').value;
+        const testEmail = document.getElementById('testEmail').value.trim();
         if (!testEmail) {
-          this.toast('테스트 메일 주소를 입력해주세요', 'warning');
+          this.toast('테스트 메일 주소를 입력해주세요', 'error');
           return;
         }
+
+        // 간단한 이메일 형식 검증
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(testEmail)) {
+          this.toast('올바른 이메일 주소를 입력해주세요', 'error');
+          return;
+        }
+
         try {
-          // TODO: 테스트 이메일 발송 로직 구현
-          console.log('테스트 메일 발송:', testEmail);
-          this.toast('테스트 메일이 발송되었습니다', 'success');
+          const admin = AdminAuth.getCurrentAdmin();
+          const now = new Date();
+
+          // ── 템플릿 로드 및 변수 치환 ──────────────────────────────
+          const rawTemplate = document.getElementById('emailTemplate').value;
+
+          // candidate 정보 조회 (변수 치환용)
+          let candidateInfo = { name: '후보자', party: '-', region: '-' };
+          try {
+            const { data: cand } = await SupabaseDB.client
+              .from('candidates').select('name, party, region').limit(1).single();
+            if (cand) candidateInfo = cand;
+          } catch (_) {}
+
+          const previewBody = rawTemplate
+            .replace(/\{\{캠프명\}\}/g,   candidateInfo.name || '테스트캠프')
+            .replace(/\{\{후보자명\}\}/g, candidateInfo.name || '테스트후보')
+            .replace(/\{\{날짜\}\}/g,     now.toLocaleDateString('ko-KR'))
+            .replace(/\{\{시간\}\}/g,     now.toLocaleTimeString('ko-KR'))
+            .replace(/\{\{지역\}\}/g,     candidateInfo.region || '-')
+            .replace(/\{\{정당\}\}/g,     candidateInfo.party || '-')
+            .replace(/\{\{관리자\}\}/g,   admin?.username || 'admin');
+
+          // ── 이메일 발송 로그 기록 ─────────────────────────────────
+          try {
+            await SupabaseDB.client.from('admin_activity_logs').insert([{
+              admin_id: admin?.adminId || null,
+              action: `테스트 이메일 발송 → ${testEmail}`,
+              target_type: 'email',
+              target_id: testEmail,
+              details: {
+                recipient: testEmail,
+                template_length: rawTemplate.length,
+                sent_at: now.toISOString()
+              }
+            }]);
+          } catch (logErr) {
+            console.debug('이메일 로그 기록 실패 (무시):', logErr.message);
+          }
+
+          // ── 콘솔 시뮬레이션 (실제 API 없는 경우) ─────────────────
+          console.group('[이메일 발송 시뮬레이션]');
+          console.log('수신자:', testEmail);
+          console.log('제목: 선거 워룸 — 테스트 메일');
+          console.log('내용:\n' + previewBody);
+          console.groupEnd();
+
+          // ── 미리보기 팝업 ─────────────────────────────────────────
+          const previewEl = document.getElementById('emailPreviewBox');
+          if (previewEl) previewEl.remove();
+
+          const box = document.createElement('div');
+          box.id = 'emailPreviewBox';
+          box.style.cssText = 'margin-top:20px;padding:20px;background:var(--bg-primary);border:1px solid var(--border-color);border-radius:8px;font-size:13px;';
+          box.innerHTML = `
+            <div style="font-weight:700;margin-bottom:10px;color:var(--text-primary);">
+              📧 발송 시뮬레이션 미리보기
+              <span style="font-size:11px;color:var(--text-secondary);font-weight:400;margin-left:10px;">→ ${testEmail}</span>
+            </div>
+            <div style="color:var(--text-secondary);font-size:12px;margin-bottom:8px;">제목: 선거 워룸 — 테스트 메일 (${now.toLocaleString('ko-KR')})</div>
+            <pre style="white-space:pre-wrap;word-break:break-word;color:var(--text-primary);line-height:1.6;">${previewBody.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</pre>
+            <div style="margin-top:10px;padding:8px;background:rgba(255,193,7,0.1);border-radius:4px;font-size:12px;color:#b8860b;">
+              ⚠️ 현재 이메일 API가 연동되지 않았습니다. 실제 발송을 위해 Supabase Edge Function 또는 SendGrid를 연동하세요.
+            </div>
+          `;
+          document.getElementById('section-email').appendChild(box);
+
+          AdminAuth.logAdminAction('test_email_simulated', `email:${testEmail}`);
+          this.toast(`테스트 메일 시뮬레이션 완료 → ${testEmail}`, 'success');
+
         } catch (err) {
           console.error('테스트 메일 발송 실패:', err);
-          this.toast('테스트 메일 발송 실패', 'error');
+          this.toast('테스트 메일 발송 실패: ' + err.message, 'error');
         }
       },
 
+      // 자동 백업 설정 저장 (app_settings에 key=auto_backup_interval로 저장)
+      async saveAutoBackupSetting() {
+        const interval = document.getElementById('autoBackupInterval').value;
+        try {
+          await SupabaseDB.setSetting('auto_backup_interval', interval);
+          AdminAuth.logAdminAction('auto_backup_setting_changed', `settings:auto_backup_interval=${interval}`);
+          this.toast(`자동 백업 설정 저장됨: ${interval === 'off' ? '비활성화' : interval === 'daily' ? '매일' : '매주'}`, 'success');
+        } catch (err) {
+          console.error('자동 백업 설정 저장 실패:', err);
+          this.toast('설정 저장 실패', 'error');
+        }
+      },
+
+      // 자동 백업 설정 로드 (loadBackup 호출 시 함께)
+      async loadAutoBackupSetting() {
+        try {
+          const val = await SupabaseDB.getSetting('auto_backup_interval');
+          const el = document.getElementById('autoBackupInterval');
+          if (el && val) el.value = val;
+        } catch (_) {}
+      },
+
       refreshCurrentSection() {
-        // TODO: 현재 섹션 새로고침 함수 구현
         const section = this.currentSection;
         if (section === 'overview') this.loadOverview();
         else if (section === 'statistics') this.loadStatistics();
@@ -1518,9 +2125,10 @@
           this.loadUserRoles();
         }
         else if (section === 'email') this.loadEmailTemplate();
-        else if (section === 'backup') this.loadBackup();
+        else if (section === 'backup') { this.loadBackup(); this.loadAutoBackupSetting(); }
         else if (section === 'sites') this.loadSites();
         else if (section === 'settings') this.loadSettings();
+        this.toast('새로고침 완료', 'success');
       }
     };
 
