@@ -216,5 +216,69 @@ const AuthManager = {
     } catch {
       return null;
     }
+  },
+
+  /**
+   * 비밀번호 변경
+   * @param {string} candidateId - 캠프 ID
+   * @param {string} role - 역할 ('staff' | 'admin')
+   * @param {string} currentPassword - 현재 비밀번호
+   * @param {string} newPassword - 새 비밀번호
+   * @returns {Promise<{success: boolean, message: string}>}
+   */
+  async changePassword(candidateId, role, currentPassword, newPassword) {
+    try {
+      if (!window.supabase) {
+        return { success: false, message: '시스템 초기화 중입니다. 잠시만 기다려주세요.' };
+      }
+
+      // 비밀번호 컬럼 결정
+      const passwordColumn = role === 'admin' ? 'admin_password' : 'staff_password';
+
+      // 현재 비밀번호 해싱
+      const currentHash = await this.hashPassword(currentPassword);
+
+      // 캠프 정보 조회 및 현재 비밀번호 검증
+      const { data: candidateData, error: fetchError } = await window.supabase
+        .from('candidates')
+        .select('id, name, ' + passwordColumn)
+        .eq('id', candidateId)
+        .single();
+
+      if (fetchError || !candidateData) {
+        return { success: false, message: '캠프 정보를 찾을 수 없습니다.' };
+      }
+
+      if (candidateData[passwordColumn] !== currentHash) {
+        return { success: false, message: '현재 비밀번호가 일치하지 않습니다.' };
+      }
+
+      // 새 비밀번호 검증
+      if (!newPassword || newPassword.length < 8) {
+        return { success: false, message: '새 비밀번호는 최소 8자 이상이어야 합니다.' };
+      }
+
+      // 새 비밀번호 해싱
+      const newHash = await this.hashPassword(newPassword);
+
+      // 비밀번호 업데이트
+      const updateData = {};
+      updateData[passwordColumn] = newHash;
+
+      const { error: updateError } = await window.supabase
+        .from('candidates')
+        .update(updateData)
+        .eq('id', candidateId);
+
+      if (updateError) {
+        console.error('비밀번호 변경 실패:', updateError);
+        return { success: false, message: '비밀번호 변경에 실패했습니다.' };
+      }
+
+      return { success: true, message: '비밀번호가 변경되었습니다.' };
+    } catch (error) {
+      console.error('❌ 비밀번호 변경 오류:', error);
+      return { success: false, message: '오류가 발생했습니다. 다시 시도해주세요.' };
+    }
   }
 };

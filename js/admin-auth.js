@@ -301,5 +301,75 @@ const AdminAuth = {
       console.error('logAdminAction 오류:', err);
       return { success: false };
     }
+  },
+
+  /**
+   * 관리자 비밀번호 변경
+   * @param {string} adminId - 변경할 관리자 ID
+   * @param {string} currentPassword - 현재 비밀번호 (검증용)
+   * @param {string} newPassword - 새 비밀번호
+   * @returns {Promise<{success: boolean, message: string}>}
+   */
+  async changePassword(adminId, currentPassword, newPassword) {
+    try {
+      await SupabaseDB.init();
+      if (!SupabaseDB.client) {
+        return { success: false, message: '시스템 초기화 중입니다. 잠시만 기다려주세요.' };
+      }
+
+      // 현재 비밀번호 해싱
+      const currentHash = await this.hashPassword(currentPassword);
+
+      // 관리자 정보 조회 및 현재 비밀번호 검증
+      const { data: adminData, error: fetchError } = await SupabaseDB.client
+        .from('admins')
+        .select('id, username, password_hash')
+        .eq('id', adminId)
+        .single();
+
+      if (fetchError || !adminData) {
+        return { success: false, message: '관리자를 찾을 수 없습니다.' };
+      }
+
+      if (adminData.password_hash !== currentHash) {
+        return { success: false, message: '현재 비밀번호가 일치하지 않습니다.' };
+      }
+
+      // 새 비밀번호 검증
+      if (!newPassword || newPassword.length < 8) {
+        return { success: false, message: '새 비밀번호는 최소 8자 이상이어야 합니다.' };
+      }
+
+      // 새 비밀번호 해싱
+      const newHash = await this.hashPassword(newPassword);
+
+      // 비밀번호 업데이트
+      const { error: updateError } = await SupabaseDB.client
+        .from('admins')
+        .update({ password_hash: newHash })
+        .eq('id', adminId);
+
+      if (updateError) {
+        console.error('비밀번호 변경 실패:', updateError);
+        return { success: false, message: '비밀번호 변경에 실패했습니다.' };
+      }
+
+      // 활동 기록
+      const currentAdmin = this.getCurrentAdmin();
+      if (currentAdmin) {
+        await this.logActivity(
+          currentAdmin.adminId,
+          'change_password',
+          'admin',
+          adminId,
+          { changed_admin: adminData.username }
+        );
+      }
+
+      return { success: true, message: '비밀번호가 변경되었습니다.' };
+    } catch (error) {
+      console.error('❌ 비밀번호 변경 오류:', error);
+      return { success: false, message: '오류가 발생했습니다. 다시 시도해주세요.' };
+    }
   }
 };

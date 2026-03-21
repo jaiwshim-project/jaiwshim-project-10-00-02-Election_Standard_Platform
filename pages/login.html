@@ -24,7 +24,7 @@
       border-radius: var(--radius-lg);
       box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
       padding: 60px 40px;
-      max-width: 420px;
+      max-width: 480px;
       width: 90%;
       text-align: center;
     }
@@ -44,8 +44,41 @@
     .subtitle {
       font-size: 14px;
       color: var(--text-secondary);
-      margin-bottom: 40px;
+      margin-bottom: 30px;
       line-height: 1.6;
+    }
+
+    /* 탭 스타일 */
+    .tab-switcher {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 30px;
+      background: var(--bg-secondary);
+      padding: 6px;
+      border-radius: var(--radius-md);
+    }
+
+    .tab-btn {
+      flex: 1;
+      padding: 10px 16px;
+      border: none;
+      background: transparent;
+      color: var(--text-secondary);
+      font-weight: 600;
+      font-size: 14px;
+      cursor: pointer;
+      border-radius: var(--radius-sm);
+      transition: all var(--transition-base);
+    }
+
+    .tab-btn.active {
+      background: white;
+      color: var(--primary-color);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    }
+
+    .tab-btn:hover {
+      color: var(--text-primary);
     }
 
     .form-group {
@@ -62,7 +95,8 @@
     }
 
     input[type="text"],
-    input[type="password"] {
+    input[type="password"],
+    input[type="email"] {
       width: 100%;
       padding: 12px 16px;
       border: 2px solid #e0e0e0;
@@ -73,7 +107,8 @@
     }
 
     input[type="text"]:focus,
-    input[type="password"]:focus {
+    input[type="password"]:focus,
+    input[type="email"]:focus {
       outline: none;
       border-color: var(--primary-color);
       background-color: rgba(59, 130, 246, 0.02);
@@ -149,9 +184,17 @@
       cursor: not-allowed;
     }
 
+    .form-container {
+      display: none;
+    }
+
+    .form-container.active {
+      display: block;
+    }
+
     .help-section {
-      margin-top: 32px;
-      padding-top: 32px;
+      margin-top: 24px;
+      padding-top: 24px;
       border-top: 1px solid #e0e0e0;
     }
 
@@ -214,6 +257,14 @@
       .logo {
         font-size: 48px;
       }
+
+      .tab-switcher {
+        margin-bottom: 20px;
+      }
+
+      .tab-btn {
+        font-size: 13px;
+      }
     }
   </style>
 </head>
@@ -224,41 +275,87 @@
     <h1>선거 워룸</h1>
     <p class="subtitle">AI 정치 전략 플랫폼</p>
 
+    <!-- 탭 전환 -->
+    <div class="tab-switcher">
+      <button type="button" class="tab-btn active" onclick="switchTab('camp')">🏕️ 캠프 로그인</button>
+      <button type="button" class="tab-btn" onclick="switchTab('admin')">👨‍💼 관리자 로그인</button>
+    </div>
+
     <div class="message" id="message"></div>
 
-    <form id="loginForm" onsubmit="handleLogin(event)">
-      <div class="form-group">
-        <label for="accountId">아이디</label>
-        <input
-          type="text"
-          id="accountId"
-          placeholder="예: kim2024 또는 admin_kim2024"
-          autocomplete="username"
-          required
-        />
+    <!-- 캠프 로그인 폼 -->
+    <div id="campForm" class="form-container active">
+      <form id="loginForm" onsubmit="handleCampLogin(event)">
+        <div class="form-group">
+          <label for="accountId">아이디</label>
+          <input
+            type="text"
+            id="accountId"
+            placeholder="예: kim2024"
+            autocomplete="username"
+            required
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="password">비밀번호</label>
+          <input
+            type="password"
+            id="password"
+            placeholder="비밀번호를 입력하세요"
+            autocomplete="current-password"
+            required
+          />
+        </div>
+
+        <button type="submit" class="login-button" id="campLoginBtn">로그인</button>
+      </form>
+
+      <div class="help-section">
+        <h3>❓ 로그인 정보가 없으신가요?</h3>
+        <p class="help-text">
+          캠프의 관리자(대표, 캠프리더)에게 아이디와 비밀번호를 요청하세요.
+        </p>
+        <div class="contact-info">
+          📞 캠프 관리자 연락처를 통해 계정 정보를 받을 수 있습니다.
+        </div>
       </div>
+    </div>
 
-      <div class="form-group">
-        <label for="password">비밀번호</label>
-        <input
-          type="password"
-          id="password"
-          placeholder="비밀번호를 입력하세요"
-          autocomplete="current-password"
-          required
-        />
-      </div>
+    <!-- 관리자 로그인 폼 -->
+    <div id="adminForm" class="form-container">
+      <form id="adminLoginForm" onsubmit="handleAdminLogin(event)">
+        <div class="form-group">
+          <label for="adminUsername">사용자명 또는 이메일</label>
+          <input
+            type="text"
+            id="adminUsername"
+            placeholder="admin_user 또는 admin@example.com"
+            required
+          />
+        </div>
 
-      <button type="submit" class="login-button" id="loginBtn">로그인</button>
-    </form>
+        <div class="form-group">
+          <label for="adminPassword">비밀번호</label>
+          <input
+            type="password"
+            id="adminPassword"
+            placeholder="비밀번호"
+            required
+          />
+        </div>
 
-    <div class="help-section">
-      <h3>❓ 로그인 정보가 없으신가요?</h3>
-      <p class="help-text">
-        캠프의 관리자(대표, 캠프리더)에게 아이디와 비밀번호를 요청하세요.
-      </p>
-      <div class="contact-info">
-        📞 캠프 관리자 연락처를 통해 계정 정보를 받을 수 있습니다.
+        <button type="submit" class="login-button" id="adminLoginBtn">로그인</button>
+      </form>
+
+      <div class="help-section">
+        <h3>❓ 시스템 관리자인가요?</h3>
+        <p class="help-text">
+          등록된 시스템 관리자만 로그인할 수 있습니다.
+        </p>
+        <div class="contact-info">
+          🔑 관리자 계정이 없으면 슈퍼 어드민에게 문의하세요.
+        </div>
       </div>
     </div>
 
@@ -273,37 +370,46 @@
 
   <!-- 인증 관리자 -->
   <script src="../js/auth-manager.js"></script>
+  <script src="../js/admin-auth.js"></script>
 
   <script>
-    const accountIdInput = document.getElementById('accountId');
-    const passwordInput = document.getElementById('password');
     const messageDiv = document.getElementById('message');
-    const loginBtn = document.getElementById('loginBtn');
-
-    // Enter 키로 로그인
-    [accountIdInput, passwordInput].forEach(input => {
-      input.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') {
-          handleLogin(e);
-        }
-      });
-    });
-
-    // 이미 로그인된 경우 dashboard로 리다이렉트
-    window.addEventListener('DOMContentLoaded', () => {
-      if (AuthManager.isAuthenticated()) {
-        window.location.href = 'dashboard.html';
-      }
-    });
 
     /**
-     * 로그인 처리
+     * 탭 전환
      */
-    async function handleLogin(e) {
+    function switchTab(tab) {
+      const campForm = document.getElementById('campForm');
+      const adminForm = document.getElementById('adminForm');
+      const tabBtns = document.querySelectorAll('.tab-btn');
+
+      // 모든 탭 비활성화
+      tabBtns.forEach(btn => btn.classList.remove('active'));
+      campForm.classList.remove('active');
+      adminForm.classList.remove('active');
+      messageDiv.innerHTML = '';
+
+      // 선택된 탭 활성화
+      if (tab === 'camp') {
+        campForm.classList.add('active');
+        tabBtns[0].classList.add('active');
+        document.getElementById('accountId').focus();
+      } else if (tab === 'admin') {
+        adminForm.classList.add('active');
+        tabBtns[1].classList.add('active');
+        document.getElementById('adminUsername').focus();
+      }
+    }
+
+    /**
+     * 캠프 로그인 처리
+     */
+    async function handleCampLogin(e) {
       e.preventDefault();
 
-      const accountId = accountIdInput.value.trim();
-      const password = passwordInput.value.trim();
+      const accountId = document.getElementById('accountId').value.trim();
+      const password = document.getElementById('password').value.trim();
+      const loginBtn = document.getElementById('campLoginBtn');
 
       if (!accountId || !password) {
         showMessage('❌ 아이디와 비밀번호를 입력해주세요.', 'error');
@@ -311,8 +417,8 @@
       }
 
       loginBtn.disabled = true;
+      const originalText = loginBtn.textContent;
       loginBtn.textContent = '로그인 중...';
-      messageDiv.innerHTML = '';
 
       try {
         const result = await AuthManager.login(accountId, password);
@@ -324,13 +430,54 @@
           }, 1000);
         } else {
           showMessage(`❌ ${result.message}`, 'error');
+          loginBtn.disabled = false;
+          loginBtn.textContent = originalText;
         }
       } catch (error) {
         console.error('❌ 로그인 오류:', error);
         showMessage('❌ 시스템 오류가 발생했습니다. 다시 시도해주세요.', 'error');
-      } finally {
         loginBtn.disabled = false;
-        loginBtn.textContent = '로그인';
+        loginBtn.textContent = originalText;
+      }
+    }
+
+    /**
+     * 관리자 로그인 처리
+     */
+    async function handleAdminLogin(e) {
+      e.preventDefault();
+
+      const username = document.getElementById('adminUsername').value.trim();
+      const password = document.getElementById('adminPassword').value;
+      const loginBtn = document.getElementById('adminLoginBtn');
+
+      if (!username || !password) {
+        showMessage('❌ 사용자명과 비밀번호를 입력해주세요.', 'error');
+        return;
+      }
+
+      loginBtn.disabled = true;
+      const originalText = loginBtn.textContent;
+      loginBtn.textContent = '로그인 중...';
+
+      try {
+        const result = await AdminAuth.login(username, password);
+
+        if (result.success) {
+          showMessage(`✅ ${result.message}`, 'success');
+          setTimeout(() => {
+            window.location.href = '/pages/admin-dashboard.html';
+          }, 500);
+        } else {
+          showMessage(`❌ ${result.message}`, 'error');
+          loginBtn.disabled = false;
+          loginBtn.textContent = originalText;
+        }
+      } catch (error) {
+        console.error('❌ 관리자 로그인 오류:', error);
+        showMessage('❌ 시스템 오류가 발생했습니다. 다시 시도해주세요.', 'error');
+        loginBtn.disabled = false;
+        loginBtn.textContent = originalText;
       }
     }
 
@@ -343,8 +490,38 @@
       messageDiv.style.display = 'block';
     }
 
-    // 초기 포커스
-    accountIdInput.focus();
+    /**
+     * 페이지 로드 시 처리
+     */
+    window.addEventListener('DOMContentLoaded', () => {
+      // URL 파라미터 확인 (?tab=admin)
+      const urlParams = new URLSearchParams(window.location.search);
+      const tab = urlParams.get('tab');
+
+      if (tab === 'admin') {
+        switchTab('admin');
+      } else if (AuthManager.isAuthenticated()) {
+        // 캠프 로그인 상태
+        window.location.href = 'dashboard.html';
+      } else if (AdminAuth.isAuthenticated()) {
+        // 관리자 로그인 상태
+        window.location.href = '/pages/admin-dashboard.html';
+      }
+
+      // Enter 키로 로그인
+      document.getElementById('accountId').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') handleCampLogin(e);
+      });
+      document.getElementById('password').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') handleCampLogin(e);
+      });
+      document.getElementById('adminUsername').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') handleAdminLogin(e);
+      });
+      document.getElementById('adminPassword').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') handleAdminLogin(e);
+      });
+    });
   </script>
 </body>
 </html>
