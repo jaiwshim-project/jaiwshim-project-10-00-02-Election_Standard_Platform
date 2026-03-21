@@ -166,6 +166,15 @@
       return badges[status] || badges.pending;
     }
 
+    function getStatusBadgeText(status) {
+      const texts = {
+        pending: '⏳ 대기 중',
+        approved: '✅ 승인됨',
+        rejected: '❌ 거부됨'
+      };
+      return texts[status] || '⏳ 대기 중';
+    }
+
     function closeModal() {
       document.querySelectorAll('.modal').forEach(m => m.classList.remove('show'));
     }
@@ -234,15 +243,8 @@
         </div>
         <div class="form-group">
           <label class="form-label">상태</label>
-          <select id="modalStatus" class="form-control">
-            <option value="pending" ${!member.approval_status || member.approval_status === 'pending' ? 'selected' : ''}>대기 중</option>
-            <option value="approved" ${member.approval_status === 'approved' ? 'selected' : ''}>승인</option>
-            <option value="rejected" ${member.approval_status === 'rejected' ? 'selected' : ''}>거부</option>
-          </select>
-        </div>
-        <div class="form-group" id="reasonGroup" style="display: ${member.approval_status === 'rejected' ? 'block' : 'none'};">
-          <label class="form-label">거부 사유</label>
-          <textarea id="modalReason" class="form-control">${member.approval_reason || ''}</textarea>
+          <input type="text" value="${getStatusBadgeText(member.approval_status)}" readonly class="form-control" style="background: var(--bg-primary);">
+          <small style="color: var(--text-secondary); margin-top: 5px; display: block;">상태 변경은 관리 패널에서 별도 관리</small>
         </div>
         <div style="display: flex; gap: 10px;">
           <button class="btn btn-success" onclick="saveMemberStatus('${id}')">저장</button>
@@ -250,9 +252,6 @@
         </div>
       `;
       document.getElementById('memberModalBody').innerHTML = html;
-      document.getElementById('modalStatus').addEventListener('change', (e) => {
-        document.getElementById('reasonGroup').style.display = e.target.value === 'rejected' ? 'block' : 'none';
-      });
       document.getElementById('memberModal').classList.add('show');
     }
 
@@ -263,12 +262,7 @@
 
       try {
         const admin = AdminAuth.getCurrentAdmin();
-        const updateData = {
-          approval_status: status,
-          approval_reason: reason,
-          approved_by: admin.adminId,
-          approved_at: new Date().toISOString()
-        };
+        const updateData = {};
 
         // 관리자 비밀번호가 입력된 경우 해싱하여 저장
         if (newAdminPassword.trim()) {
@@ -278,6 +272,12 @@
           }
           const adminPasswordHash = await AdminAuth.hashPassword(newAdminPassword);
           updateData.admin_password = adminPasswordHash;
+        }
+
+        // 업데이트할 데이터가 있는 경우에만 업데이트
+        if (Object.keys(updateData).length === 0) {
+          toast('변경 사항이 없습니다', 'error');
+          return;
         }
 
         const { error } = await SupabaseDB.client.from('candidates').update(updateData).eq('id', id);
