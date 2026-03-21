@@ -500,12 +500,8 @@
             <input type="text" id="signupCampName" placeholder="예: 김철수" autocomplete="off" />
           </div>
           <div class="auth-field">
-            <label for="signupStaffId">👤 스탭 아이디 (영문+숫자, 예: kim2024)</label>
-            <input type="text" id="signupStaffId" placeholder="staff 로그인 시 사용할 아이디" autocomplete="off" />
-          </div>
-          <div class="auth-field">
-            <label for="signupAdminId">🛡️ 관리자 아이디 (예: admin_kim2024)</label>
-            <input type="text" id="signupAdminId" placeholder="admin_ 으로 시작해야 합니다" autocomplete="off" />
+            <label for="signupStaffId">👤 캠프 아이디 (영문+숫자, 예: kim2024)</label>
+            <input type="text" id="signupStaffId" placeholder="로그인과 관리자 기능에 사용할 아이디" autocomplete="off" />
           </div>
           <div class="auth-field">
             <label for="signupPassword">🔒 비밀번호</label>
@@ -1232,23 +1228,17 @@
 
       const campName   = document.getElementById('signupCampName').value.trim();
       const staffId    = document.getElementById('signupStaffId').value.trim();
-      const adminId    = document.getElementById('signupAdminId').value.trim();
       const password   = document.getElementById('signupPassword').value;
       const passwordCf = document.getElementById('signupPasswordConfirm').value;
 
       // ── 폼 검증 ──
-      if (!campName || !staffId || !adminId || !password || !passwordCf) {
+      if (!campName || !staffId || !password || !passwordCf) {
         showAuthMessage('모든 항목을 입력해주세요.', 'error');
         return;
       }
 
       if (!/^[a-zA-Z0-9_]+$/.test(staffId)) {
-        showAuthMessage('스탭 아이디는 영문, 숫자, 밑줄(_)만 사용 가능합니다.', 'error');
-        return;
-      }
-
-      if (!adminId.startsWith('admin_')) {
-        showAuthMessage('관리자 아이디는 admin_ 으로 시작해야 합니다. (예: admin_kim2024)', 'error');
+        showAuthMessage('캠프 아이디는 영문, 숫자, 밑줄(_)만 사용 가능합니다.', 'error');
         return;
       }
 
@@ -1288,9 +1278,9 @@
           .insert([{
             name: campName,
             staff_account_id: staffId,
-            admin_account_id: adminId,
+            admin_account_id: 'admin_' + staffId,
             staff_password: passwordHash,
-            admin_password: passwordHash,
+            admin_password: null,
             is_active: true
           }])
           .select()
