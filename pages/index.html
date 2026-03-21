@@ -24,9 +24,15 @@
     .header { padding: var(--space-lg); background: linear-gradient(135deg, var(--primary-color), var(--primary-light)); color: white; }
     .header h1 { margin: 0; }
     .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: var(--space-lg); margin-top: var(--space-lg); }
+    footer { background-color: var(--bg-secondary); border-top: 1px solid var(--border-color); padding: var(--space-lg) 0; margin-top: var(--space-xl); }
+    footer .container { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: var(--space-lg); }
+    .footer-text { color: var(--text-secondary); font-size: var(--font-size-sm); }
+    .footer-btn { display: inline-block; background-color: var(--primary-color); color: white; padding: var(--space-sm) var(--space-lg); border-radius: var(--radius-md); text-decoration: none; font-weight: 600; transition: opacity var(--transition-base); }
+    .footer-btn:hover { opacity: 0.9; }
     @media (max-width: 768px) {
       .navbar ul { flex-wrap: wrap; gap: var(--space-sm); }
       .navbar a { font-size: var(--font-size-sm); padding: var(--space-xs) var(--space-sm); }
+      footer .container { flex-direction: column; align-items: flex-start; }
     }
   </style>
 </head>
@@ -91,5 +97,12 @@
       <div id="response" style="margin-top: var(--space-lg);"></div>
     </div>
   </div>
+
+  <footer>
+    <div class="container">
+      <div class="footer-text">© 2024 선거 워룸 — AI 정치 전략 플랫폼</div>
+      <a href="admin-dashboard.html" class="footer-btn">🔧 관리자 대시보드</a>
+    </div>
+  </footer>
 </body>
 </html>
