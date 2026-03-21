@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>메뉴 구조도 — 시스템 관리</title>
+  <link rel="stylesheet" href="../css/theme.css">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg-primary); color: var(--text-primary); }
+    body { display: flex; min-height: 100vh; }
+    .admin-sidebar { width: 260px; position: fixed; left: 0; top: 0; height: 100vh; background: var(--primary-color); color: white; overflow-y: auto; padding: 20px 0; z-index: 100; }
+    .admin-main { margin-left: 260px; flex: 1; display: flex; flex-direction: column; }
+    .admin-topbar { background: var(--bg-secondary); border-bottom: 1px solid var(--border-color); padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; }
+    .admin-content { flex: 1; overflow-y: auto; padding: 30px; }
+
+    .sidebar-header { padding: 0 20px 20px; border-bottom: 1px solid rgba(255,255,255,0.2); font-size: 16px; font-weight: 700; margin-bottom: 20px; }
+    .admin-profile { padding: 15px 20px; margin-bottom: 20px; font-size: 13px; border-top: 1px solid rgba(255,255,255,0.1); }
+    .admin-profile-name { font-weight: 700; margin-bottom: 4px; }
+    .admin-profile-role { opacity: 0.8; font-size: 12px; }
+    .sidebar-nav { list-style: none; }
+    .sidebar-nav a { display: block; padding: 12px 20px; color: rgba(255,255,255,0.8); text-decoration: none; cursor: pointer; transition: all 0.2s; border-left: 3px solid transparent; margin-bottom: 2px; }
+    .sidebar-nav a:hover { color: white; background: rgba(255,255,255,0.1); }
+    .sidebar-nav a.active { background: rgba(0,0,0,0.3); color: white; border-left-color: white; font-weight: 600; }
+    .sidebar-footer { position: absolute; bottom: 20px; left: 0; right: 0; padding: 0 20px; }
+    .btn-logout { width: 100%; padding: 10px; background: rgba(0,0,0,0.3); color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; transition: background 0.2s; }
+    .btn-logout:hover { background: rgba(0,0,0,0.5); }
+
+    .topbar-title { font-size: 20px; font-weight: 700; color: var(--text-primary); }
+    .btn-refresh { padding: 8px 16px; background: var(--primary-color); color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; }
+
+    /* 가이드 패널 */
+    .guide-panel {
+      background: var(--bg-secondary);
+      border-left: 4px solid var(--primary-color);
+      padding: 20px;
+      border-radius: 8px;
+      font-size: 14px;
+      color: var(--text-primary);
+      margin-bottom: 30px;
+      line-height: 1.6;
+    }
+
+    /* SVG 컨테이너 */
+    .svg-container {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 30px;
+      overflow-x: auto;
+      margin-bottom: 30px;
+    }
+
+    svg {
+      width: 100%;
+      min-width: 800px;
+      height: auto;
+    }
+
+    /* 범례 */
+    .legend {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 20px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 15px;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 13px;
+    }
+
+    .legend-color {
+      width: 24px;
+      height: 24px;
+      border-radius: 4px;
+      flex-shrink: 0;
+    }
+
+    @media (max-width: 768px) {
+      .admin-sidebar { width: 0; }
+      .admin-main { margin-left: 0; }
+      .svg-container { overflow-x: auto; }
+    }
+  </style>
+</head>
+<body>
+  <!-- 사이드바 -->
+  <aside class="admin-sidebar">
+    <div class="sidebar-header">🔧 시스템 관리</div>
+    <div class="admin-profile">
+      <div class="admin-profile-name" id="sidebarAdminName">로딩 중</div>
+      <div class="admin-profile-role" id="sidebarAdminRole"></div>
+    </div>
+    <nav class="sidebar-nav">
+      <a href="admin-overview.html">📊 대시보드</a>
+      <a href="admin-statistics.html">📈 통계 분석</a>
+      <a href="admin-members.html">👥 회원 관리</a>
+      <a href="admin-files.html">📁 자료 관리</a>
+      <a href="admin-messages.html">💬 메시지</a>
+      <a href="admin-reports.html">🚨 신고 관리</a>
+      <a href="admin-permissions.html">🔐 권한 관리</a>
+      <a href="admin-email.html">📧 이메일 설정</a>
+      <a href="admin-backup.html">💾 백업/복구</a>
+      <a href="admin-sites.html">🌐 사이트 접속</a>
+      <a href="admin-settings.html">⚙️ 시스템 설정</a>
+      <a href="admin-manual.html" style="margin-top: 20px; border-top: 1px solid rgba(255,255,255,0.2); padding-top: 12px;">📖 메뉴얼</a>
+      <a href="admin-architecture.html" style="margin-top: 0; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 12px;">📊 구조도</a>
+      <a href="admin-menu-structure.html" class="active" style="margin-top: 0;">🗂️ 메뉴 구조도</a>
+    </nav>
+    <div class="sidebar-footer">
+      <button class="btn-logout" id="logoutBtn">🚪 로그아웃</button>
+    </div>
+  </aside>
+
+  <main class="admin-main">
+    <div class="admin-topbar">
+      <div class="topbar-title">🗂️ 메뉴 구조도</div>
+      <button class="btn-refresh" onclick="location.reload()">🔄 새로고침</button>
+    </div>
+
+    <div class="admin-content">
+      <!-- 가이드 패널 -->
+      <div class="guide-panel">
+        본 시스템의 관리자 메뉴 구조를 시각적으로 표현한 페이지입니다. 전체 14개의 메뉴가 계층 구조로 정렬되어 있으며, 각 메뉴는 관리자의 다양한 업무를 지원합니다. 메인 메뉴 11개는 시스템의 핵심 관리 기능을 담당하고, 추가 메뉴 3개는 시스템 문서화 및 참고 자료를 제공합니다. 이 구조도를 통해 전체 관리 시스템의 조직과 기능을 한눈에 파악할 수 있습니다.
+      </div>
+
+      <!-- SVG 메뉴 구조도 -->
+      <div class="svg-container">
+        <svg viewBox="0 0 1000 900" xmlns="http://www.w3.org/2000/svg">
+          <!-- 배경 -->
+          <defs>
+            <style>
+              .root-box { fill: #1953a8; stroke: #1953a8; stroke-width: 2; }
+              .main-box { fill: #0066cc; stroke: #1953a8; stroke-width: 1.5; }
+              .special-box { fill: #d4a574; stroke: #1953a8; stroke-width: 1.5; }
+              .text { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; font-size: 12px; font-weight: 600; text-anchor: middle; fill: white; }
+              .line { stroke: #1953a8; stroke-width: 2; fill: none; }
+              .root-text { font-size: 14px; font-weight: 700; }
+            </style>
+          </defs>
+
+          <!-- 루트 노드 -->
+          <rect x="350" y="20" width="300" height="50" rx="8" class="root-box"/>
+          <text x="500" y="52" class="text root-text">🔧 시스템 관리 대시보드</text>
+
+          <!-- 메인 메뉴 라인 -->
+          <line x1="500" y1="70" x2="500" y2="100" class="line"/>
+
+          <!-- 메인 메뉴 (11개) -->
+          <!-- 상단 라인 -->
+          <line x1="100" y1="100" x2="900" y2="100" class="line"/>
+          <line x1="100" y1="100" x2="100" y2="130" class="line"/>
+          <line x1="235" y1="100" x2="235" y2="130" class="line"/>
+          <line x1="370" y1="100" x2="370" y2="130" class="line"/>
+          <line x1="505" y1="100" x2="505" y2="130" class="line"/>
+          <line x1="640" y1="100" x2="640" y2="130" class="line"/>
+          <line x1="775" y1="100" x2="775" y2="130" class="line"/>
+          <line x1="900" y1="100" x2="900" y2="130" class="line"/>
+
+          <!-- 메인 메뉴 박스 행 1 -->
+          <rect x="25" y="130" width="150" height="50" rx="6" class="main-box"/>
+          <text x="100" y="162" class="text">📊 대시보드</text>
+
+          <rect x="160" y="130" width="150" height="50" rx="6" class="main-box"/>
+          <text x="235" y="162" class="text">📈 통계 분석</text>
+
+          <rect x="295" y="130" width="150" height="50" rx="6" class="main-box"/>
+          <text x="370" y="162" class="text">👥 회원 관리</text>
+
+          <rect x="430" y="130" width="150" height="50" rx="6" class="main-box"/>
+          <text x="505" y="162" class="text">📁 자료 관리</text>
+
+          <rect x="565" y="130" width="150" height="50" rx="6" class="main-box"/>
+          <text x="640" y="162" class="text">💬 메시지</text>
+
+          <rect x="700" y="130" width="150" height="50" rx="6" class="main-box"/>
+          <text x="775" y="162" class="text">🚨 신고 관리</text>
+
+          <!-- 메인 메뉴 라인 2 -->
+          <line x1="50" y1="180" x2="50" y2="220" class="line"/>
+          <line x1="185" y1="180" x2="185" y2="220" class="line"/>
+          <line x1="320" y1="180" x2="320" y2="220" class="line"/>
+          <line x1="455" y1="180" x2="455" y2="220" class="line"/>
+          <line x1="590" y1="180" x2="590" y2="220" class="line"/>
+          <line x1="725" y1="180" x2="725" y2="220" class="line"/>
+
+          <!-- 메인 메뉴 박스 행 2 -->
+          <rect x="0" y="220" width="150" height="50" rx="6" class="main-box"/>
+          <text x="75" y="252" class="text">🔐 권한 관리</text>
+
+          <rect x="135" y="220" width="150" height="50" rx="6" class="main-box"/>
+          <text x="210" y="252" class="text">📧 이메일 설정</text>
+
+          <rect x="270" y="220" width="150" height="50" rx="6" class="main-box"/>
+          <text x="345" y="252" class="text">💾 백업/복구</text>
+
+          <rect x="405" y="220" width="150" height="50" rx="6" class="main-box"/>
+          <text x="480" y="252" class="text">🌐 사이트 접속</text>
+
+          <rect x="540" y="220" width="150" height="50" rx="6" class="main-box"/>
+          <text x="615" y="252" class="text">⚙️ 시스템 설정</text>
+
+          <!-- 상단 메뉴들과 연결 -->
+          <line x1="100" y1="100" x2="50" y2="180" class="line"/>
+          <line x1="235" y1="100" x2="185" y2="180" class="line"/>
+
+          <!-- 특수 메뉴 섹션 -->
+          <line x1="500" y1="320" x2="500" y2="350" class="line"/>
+          <line x1="200" y1="350" x2="800" y2="350" class="line"/>
+          <line x1="250" y1="350" x2="250" y2="380" class="line"/>
+          <line x1="500" y1="350" x2="500" y2="380" class="line"/>
+          <line x1="750" y1="350" x2="750" y2="380" class="line"/>
+
+          <!-- 특수 메뉴 박스 -->
+          <rect x="150" y="380" width="200" height="50" rx="6" class="special-box"/>
+          <text x="250" y="412" class="text">📖 메뉴얼</text>
+
+          <rect x="400" y="380" width="200" height="50" rx="6" class="special-box"/>
+          <text x="500" y="412" class="text">📊 시스템 구조도</text>
+
+          <rect x="650" y="380" width="200" height="50" rx="6" class="special-box"/>
+          <text x="750" y="412" class="text">🗂️ 메뉴 구조도</text>
+
+          <!-- 범위 강조 -->
+          <text x="50" y="290" class="text" style="font-size: 13px; font-weight: 700; fill: var(--primary-color); text-anchor: start;">메인 메뉴 (11개)</text>
+          <text x="50" y="370" class="text" style="font-size: 13px; font-weight: 700; fill: #b8860b; text-anchor: start;">참고 문서 (3개)</text>
+        </svg>
+      </div>
+
+      <!-- 범례 -->
+      <div style="margin-top: 30px;">
+        <h3 style="margin-bottom: 15px; color: var(--text-primary);">📋 메뉴 분류</h3>
+        <div class="legend">
+          <div class="legend-item">
+            <div class="legend-color" style="background: #0066cc;"></div>
+            <span><strong>메인 메뉴 (11개)</strong> - 시스템 핵심 관리 기능</span>
+          </div>
+          <div class="legend-item">
+            <div class="legend-color" style="background: #d4a574;"></div>
+            <span><strong>참고 문서 (3개)</strong> - 시스템 문서화 및 가이드</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 메뉴 상세 설명 -->
+      <div style="margin-top: 40px;">
+        <h3 style="margin-bottom: 20px; color: var(--text-primary);">📝 메뉴 상세 설명</h3>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px;">
+          <div style="background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 8px; padding: 15px;">
+            <div style="font-weight: 700; margin-bottom: 8px; color: var(--primary-color);">📊 대시보드</div>
+            <div style="font-size: 13px; color: var(--text-secondary);">시스템 전체 상태 모니터링 및 주요 통계 확인</div>
+          </div>
+          <div style="background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 8px; padding: 15px;">
+            <div style="font-weight: 700; margin-bottom: 8px; color: var(--primary-color);">📈 통계 분석</div>
+            <div style="font-size: 13px; color: var(--text-secondary);">캠프 가입, 승인 현황 등 상세 데이터 분석</div>
+          </div>
+          <div style="background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 8px; padding: 15px;">
+            <div style="font-weight: 700; margin-bottom: 8px; color: var(--primary-color);">👥 회원 관리</div>
+            <div style="font-size: 13px; color: var(--text-secondary);">캠프 정보 조회, 승인/거부, 상태 관리</div>
+          </div>
+          <div style="background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 8px; padding: 15px;">
+            <div style="font-weight: 700; margin-bottom: 8px; color: var(--primary-color);">📁 자료 관리</div>
+            <div style="font-size: 13px; color: var(--text-secondary);">업로드 파일 조회, 다운로드 및 삭제 관리</div>
+          </div>
+          <div style="background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 8px; padding: 15px;">
+            <div style="font-weight: 700; margin-bottom: 8px; color: var(--primary-color);">💬 메시지</div>
+            <div style="font-size: 13px; color: var(--text-secondary);">시스템 공지 및 캠프 대상 메시지 발송</div>
+          </div>
+          <div style="background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 8px; padding: 15px;">
+            <div style="font-weight: 700; margin-bottom: 8px; color: var(--primary-color);">🚨 신고 관리</div>
+            <div style="font-size: 13px; color: var(--text-secondary);">사용자 신고 및 이슈 처리 현황 관리</div>
+          </div>
+          <div style="background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 8px; padding: 15px;">
+            <div style="font-weight: 700; margin-bottom: 8px; color: var(--primary-color);">🔐 권한 관리</div>
+            <div style="font-size: 13px; color: var(--text-secondary);">관리자 역할 및 권한 설정</div>
+          </div>
+          <div style="background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 8px; padding: 15px;">
+            <div style="font-weight: 700; margin-bottom: 8px; color: var(--primary-color);">📧 이메일 설정</div>
+            <div style="font-size: 13px; color: var(--text-secondary);">이메일 템플릿 관리 및 발송 설정</div>
+          </div>
+          <div style="background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 8px; padding: 15px;">
+            <div style="font-weight: 700; margin-bottom: 8px; color: var(--primary-color);">💾 백업/복구</div>
+            <div style="font-size: 13px; color: var(--text-secondary);">시스템 데이터 백업 및 복구 관리</div>
+          </div>
+          <div style="background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 8px; padding: 15px;">
+            <div style="font-weight: 700; margin-bottom: 8px; color: var(--primary-color);">🌐 사이트 접속</div>
+            <div style="font-size: 13px; color: var(--text-secondary);">캠프 홈페이지 및 설정 페이지 빠른 접근</div>
+          </div>
+          <div style="background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 8px; padding: 15px;">
+            <div style="font-weight: 700; margin-bottom: 8px; color: var(--primary-color);">⚙️ 시스템 설정</div>
+            <div style="font-size: 13px; color: var(--text-secondary);">기본 설정, 관리자 계정 및 활동 로그 관리</div>
+          </div>
+          <div style="background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 8px; padding: 15px;">
+            <div style="font-weight: 700; margin-bottom: 8px; color: #b8860b;">📖 메뉴얼</div>
+            <div style="font-size: 13px; color: var(--text-secondary);">시스템 사용 설명서 및 기능 가이드</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script src="../js/supabase-client.js"></script>
+  <script src="../js/admin-auth.js"></script>
+  <script>
+    async function init() {
+      if (!AdminAuth.isAuthenticated()) {
+        window.location.href = '/pages/admin-login.html';
+        return;
+      }
+      const admin = AdminAuth.getCurrentAdmin();
+      document.getElementById('sidebarAdminName').textContent = admin.username;
+      document.getElementById('sidebarAdminRole').textContent = admin.role === 'super_admin' ? '🔴 Super Admin' : '🟠 Admin';
+
+      document.getElementById('logoutBtn').addEventListener('click', () => {
+        AdminAuth.logout();
+        window.location.href = '/pages/admin-login.html';
+      });
+    }
+
+    init();
+  </script>
+</body>
+</html>
