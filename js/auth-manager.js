@@ -16,15 +16,16 @@ const AuthManager = {
    * @returns {Promise<{success: boolean, message: string, role?: string}>}
    */
   async login(accountId, password) {
-    if (!window.supabase) {
-      return { success: false, message: '시스템 초기화 중입니다. 잠시만 기다려주세요.' };
-    }
-
     if (!accountId || !password) {
       return { success: false, message: '아이디와 비밀번호를 입력해주세요.' };
     }
 
     try {
+      await SupabaseDB.init();
+      if (!SupabaseDB.client) {
+        return { success: false, message: '시스템 초기화 중입니다. 잠시만 기다려주세요.' };
+      }
+
       // 비밀번호 SHA-256 해싱
       const passwordHash = await this.hashPassword(password);
 
@@ -34,7 +35,7 @@ const AuthManager = {
       const passwordColumn = isAdmin ? 'admin_password' : 'staff_password';
 
       // Supabase에서 캠프 조회
-      const { data, error } = await window.supabase
+      const { data, error } = await SupabaseDB.client
         .from('candidates')
         .select('id, name, ' + queryColumn + ', ' + passwordColumn)
         .eq(queryColumn, accountId)
@@ -228,7 +229,8 @@ const AuthManager = {
    */
   async changePassword(candidateId, role, currentPassword, newPassword) {
     try {
-      if (!window.supabase) {
+      await SupabaseDB.init();
+      if (!SupabaseDB.client) {
         return { success: false, message: '시스템 초기화 중입니다. 잠시만 기다려주세요.' };
       }
 
@@ -239,7 +241,7 @@ const AuthManager = {
       const currentHash = await this.hashPassword(currentPassword);
 
       // 캠프 정보 조회 및 현재 비밀번호 검증
-      const { data: candidateData, error: fetchError } = await window.supabase
+      const { data: candidateData, error: fetchError } = await SupabaseDB.client
         .from('candidates')
         .select('id, name, ' + passwordColumn)
         .eq('id', candidateId)
@@ -265,7 +267,7 @@ const AuthManager = {
       const updateData = {};
       updateData[passwordColumn] = newHash;
 
-      const { error: updateError } = await window.supabase
+      const { error: updateError } = await SupabaseDB.client
         .from('candidates')
         .update(updateData)
         .eq('id', candidateId);
