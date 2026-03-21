@@ -113,6 +113,27 @@
     .page-btn { padding: 6px 10px; border: 1px solid var(--border-color); background: var(--bg-secondary); border-radius: 4px; cursor: pointer; font-size: 12px; }
     .page-btn.active { background: var(--primary-color); color: white; border-color: var(--primary-color); }
 
+    /* 메시지 섹션 */
+    .message-item { background: var(--bg-primary); border-left: 3px solid var(--primary-color); padding: 12px 15px; margin-bottom: 10px; border-radius: 6px; }
+    .message-item.unread { border-left-color: #ffc107; background: rgba(255,193,7,0.05); }
+    .message-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+    .message-from { font-weight: 600; color: var(--text-primary); }
+    .message-date { font-size: 12px; color: var(--text-secondary); }
+    .message-subject { font-weight: 500; margin-bottom: 6px; color: var(--text-primary); }
+    .message-preview { font-size: 13px; color: var(--text-secondary); }
+
+    /* 신고 섹션 */
+    .report-status-badge { padding: 4px 8px; border-radius: 12px; font-size: 11px; font-weight: 600; }
+    .report-status-pending { background: rgba(255,193,7,0.2); color: #ffc107; }
+    .report-status-approved { background: rgba(76,175,80,0.2); color: #4caf50; }
+    .report-status-rejected { background: rgba(244,67,54,0.2); color: #f44336; }
+    .report-status-resolved { background: rgba(33,150,243,0.2); color: #2196f3; }
+
+    /* 권한 관리 섹션 */
+    .role-badge { display: inline-block; padding: 4px 8px; border-radius: 12px; font-size: 11px; font-weight: 600; background: rgba(0,123,255,0.2); color: #007bff; }
+    .permission-list { display: flex; flex-wrap: wrap; gap: 6px; }
+    .permission-item { display: inline-block; padding: 3px 6px; background: var(--bg-primary); border: 1px solid var(--border-color); border-radius: 4px; font-size: 11px; }
+
     /* 반응형 */
     @media (max-width: 768px) {
       .admin-sidebar { width: 0; }
@@ -136,6 +157,9 @@
       <a data-section="overview" class="active">📊 대시보드</a>
       <a data-section="members">👥 회원 관리</a>
       <a data-section="files">📁 자료 관리</a>
+      <a data-section="messages">💬 메시지</a>
+      <a data-section="reports">🚨 신고 관리</a>
+      <a data-section="permissions">🔐 권한 관리</a>
       <a data-section="sites">🌐 사이트 접속</a>
       <a data-section="settings">⚙️ 시스템 설정</a>
     </nav>
@@ -302,6 +326,123 @@
           <div class="pagination" id="logsPagination"></div>
         </div>
       </div>
+
+      <!-- Messages 섹션 -->
+      <div id="section-messages" class="admin-section">
+        <div class="search-bar">
+          <input type="text" id="messageSearchInput" placeholder="메시지 검색...">
+          <select id="messageStatusFilter">
+            <option value="">상태: 전체</option>
+            <option value="unread">미읽음</option>
+            <option value="read">읽음</option>
+            <option value="archived">보관됨</option>
+          </select>
+        </div>
+
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>발신자</th>
+                <th>제목</th>
+                <th>내용 미리보기</th>
+                <th>날짜</th>
+                <th>상태</th>
+                <th>액션</th>
+              </tr>
+            </thead>
+            <tbody id="messagesTable"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Reports 섹션 -->
+      <div id="section-reports" class="admin-section">
+        <div class="search-bar">
+          <input type="text" id="reportSearchInput" placeholder="신고 검색...">
+          <select id="reportStatusFilter">
+            <option value="">상태: 전체</option>
+            <option value="pending">검토 중</option>
+            <option value="approved">승인됨</option>
+            <option value="rejected">거부됨</option>
+            <option value="resolved">해결됨</option>
+          </select>
+          <select id="reportTypeFilter">
+            <option value="">유형: 전체</option>
+            <option value="spam">스팸</option>
+            <option value="inappropriate">부적절한 콘텐츠</option>
+            <option value="fake">거짓 정보</option>
+            <option value="abuse">욕설/폭력</option>
+            <option value="other">기타</option>
+          </select>
+        </div>
+
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>신고자</th>
+                <th>신고 대상</th>
+                <th>유형</th>
+                <th>사유</th>
+                <th>신고일</th>
+                <th>상태</th>
+                <th>액션</th>
+              </tr>
+            </thead>
+            <tbody id="reportsTable"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Permissions 섹션 -->
+      <div id="section-permissions" class="admin-section">
+        <button class="btn btn-primary" style="margin-bottom: 20px;" onclick="AdminDashboard.showAddRoleModal()">➕ 역할 추가</button>
+
+        <div class="tabs">
+          <button class="tab-btn active" onclick="AdminDashboard.switchTab(event, 'tab-roles')">역할 관리</button>
+          <button class="tab-btn" onclick="AdminDashboard.switchTab(event, 'tab-user-roles')">사용자 역할 할당</button>
+        </div>
+
+        <!-- 역할 관리 탭 -->
+        <div id="tab-roles" class="tab-content active">
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>역할명</th>
+                  <th>설명</th>
+                  <th>권한 수</th>
+                  <th>생성일</th>
+                  <th>액션</th>
+                </tr>
+              </thead>
+              <tbody id="rolesTable"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- 사용자 역할 할당 탭 -->
+        <div id="tab-user-roles" class="tab-content">
+          <div class="search-bar">
+            <input type="text" id="userRoleSearchInput" placeholder="사용자 검색...">
+          </div>
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>사용자명</th>
+                  <th>이메일</th>
+                  <th>할당된 역할</th>
+                  <th>생성일</th>
+                  <th>액션</th>
+                </tr>
+              </thead>
+              <tbody id="userRolesTable"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
     </div>
   </main>
 
@@ -383,6 +524,12 @@
         document.getElementById('memberStatusFilter').addEventListener('change', () => this.loadMembers());
         document.getElementById('memberPartyFilter').addEventListener('change', () => this.loadMembers());
         document.getElementById('filesFilter').addEventListener('change', () => this.loadFiles());
+        document.getElementById('messageSearchInput').addEventListener('input', () => this.loadMessages());
+        document.getElementById('messageStatusFilter').addEventListener('change', () => this.loadMessages());
+        document.getElementById('reportSearchInput').addEventListener('input', () => this.loadReports());
+        document.getElementById('reportStatusFilter').addEventListener('change', () => this.loadReports());
+        document.getElementById('reportTypeFilter').addEventListener('change', () => this.loadReports());
+        document.getElementById('userRoleSearchInput').addEventListener('input', () => this.loadUserRoles());
       },
 
       showSection(id) {
@@ -396,6 +543,9 @@
           overview: '📊 대시보드',
           members: '👥 회원 관리',
           files: '📁 자료 관리',
+          messages: '💬 메시지',
+          reports: '🚨 신고 관리',
+          permissions: '🔐 권한 관리',
           sites: '🌐 사이트 접속',
           settings: '⚙️ 시스템 설정'
         };
@@ -405,6 +555,12 @@
         if (id === 'overview') this.loadOverview();
         if (id === 'members') this.loadMembers();
         if (id === 'files') this.loadFiles();
+        if (id === 'messages') this.loadMessages();
+        if (id === 'reports') this.loadReports();
+        if (id === 'permissions') {
+          this.loadRoles();
+          this.loadUserRoles();
+        }
         if (id === 'sites') this.loadSites();
         if (id === 'settings') this.loadSettings();
       },
@@ -801,6 +957,195 @@
           rejected: '<span class="badge badge-rejected">❌ 거부됨</span>'
         };
         return badges[status] || badges.pending;
+      },
+
+      // ===================== 메시지 섹션 함수 =====================
+      async loadMessages() {
+        // TODO: 메시지 로드 함수 구현
+        // 1. 검색 필터링 적용
+        // 2. DB에서 메시지 데이터 조회
+        // 3. messagesTable에 렌더링
+        try {
+          const searchTerm = document.getElementById('messageSearchInput').value;
+          const statusFilter = document.getElementById('messageStatusFilter').value;
+
+          // 스켈레톤: DB 조회 로직
+          const messages = [];
+
+          document.getElementById('messagesTable').innerHTML = messages.map(msg => `
+            <tr>
+              <td>${msg.sender}</td>
+              <td>${msg.subject}</td>
+              <td>${msg.preview}</td>
+              <td>${this.formatDate(msg.created_at)}</td>
+              <td>${msg.status}</td>
+              <td>
+                <button class="btn btn-sm btn-primary" onclick="AdminDashboard.viewMessage('${msg.id}')">보기</button>
+                <button class="btn btn-sm btn-danger" onclick="AdminDashboard.deleteMessage('${msg.id}')">삭제</button>
+              </td>
+            </tr>
+          `).join('');
+        } catch (err) {
+          console.error('메시지 로드 실패:', err);
+        }
+      },
+
+      async viewMessage(messageId) {
+        // TODO: 메시지 상세 보기 함수 구현
+        console.log('메시지 보기:', messageId);
+      },
+
+      async deleteMessage(messageId) {
+        // TODO: 메시지 삭제 함수 구현
+        if (confirm('이 메시지를 삭제하시겠습니까?')) {
+          console.log('메시지 삭제:', messageId);
+          this.loadMessages();
+        }
+      },
+
+      // ===================== 신고 관리 섹션 함수 =====================
+      async loadReports() {
+        // TODO: 신고 로드 함수 구현
+        // 1. 검색/필터 조건 적용
+        // 2. DB에서 신고 데이터 조회
+        // 3. reportsTable에 렌더링
+        try {
+          const searchTerm = document.getElementById('reportSearchInput').value;
+          const statusFilter = document.getElementById('reportStatusFilter').value;
+          const typeFilter = document.getElementById('reportTypeFilter').value;
+
+          // 스켈레톤: DB 조회 로직
+          const reports = [];
+
+          document.getElementById('reportsTable').innerHTML = reports.map(report => `
+            <tr>
+              <td>${report.reporter}</td>
+              <td>${report.target}</td>
+              <td>${report.type}</td>
+              <td>${report.reason}</td>
+              <td>${this.formatDate(report.created_at)}</td>
+              <td><span class="report-status-badge report-status-${report.status}">${report.status}</span></td>
+              <td>
+                <button class="btn btn-sm btn-primary" onclick="AdminDashboard.viewReport('${report.id}')">보기</button>
+                <button class="btn btn-sm btn-success" onclick="AdminDashboard.approveReport('${report.id}')">승인</button>
+                <button class="btn btn-sm btn-danger" onclick="AdminDashboard.rejectReport('${report.id}')">거부</button>
+              </td>
+            </tr>
+          `).join('');
+        } catch (err) {
+          console.error('신고 로드 실패:', err);
+        }
+      },
+
+      async viewReport(reportId) {
+        // TODO: 신고 상세 보기 함수 구현
+        console.log('신고 보기:', reportId);
+      },
+
+      async approveReport(reportId) {
+        // TODO: 신고 승인 함수 구현
+        if (confirm('이 신고를 승인하시겠습니까?')) {
+          console.log('신고 승인:', reportId);
+          this.loadReports();
+          this.toast('신고가 승인되었습니다', 'success');
+        }
+      },
+
+      async rejectReport(reportId) {
+        // TODO: 신고 거부 함수 구현
+        if (confirm('이 신고를 거부하시겠습니까?')) {
+          console.log('신고 거부:', reportId);
+          this.loadReports();
+          this.toast('신고가 거부되었습니다', 'success');
+        }
+      },
+
+      // ===================== 권한 관리 섹션 함수 =====================
+      async loadRoles() {
+        // TODO: 역할 로드 함수 구현
+        // 1. DB에서 모든 역할 조회
+        // 2. rolesTable에 렌더링
+        try {
+          // 스켈레톤: DB 조회 로직
+          const roles = [];
+
+          document.getElementById('rolesTable').innerHTML = roles.map(role => `
+            <tr>
+              <td>${role.name}</td>
+              <td>${role.description}</td>
+              <td>${role.permissions.length}</td>
+              <td>${this.formatDate(role.created_at)}</td>
+              <td>
+                <button class="btn btn-sm btn-primary" onclick="AdminDashboard.editRole('${role.id}')">편집</button>
+                <button class="btn btn-sm btn-danger" onclick="AdminDashboard.deleteRole('${role.id}')">삭제</button>
+              </td>
+            </tr>
+          `).join('');
+        } catch (err) {
+          console.error('역할 로드 실패:', err);
+        }
+      },
+
+      async loadUserRoles() {
+        // TODO: 사용자 역할 할당 로드 함수 구현
+        // 1. 검색 필터링 적용
+        // 2. DB에서 사용자 및 역할 데이터 조회
+        // 3. userRolesTable에 렌더링
+        try {
+          const searchTerm = document.getElementById('userRoleSearchInput').value;
+
+          // 스켈레톤: DB 조회 로직
+          const users = [];
+
+          document.getElementById('userRolesTable').innerHTML = users.map(user => `
+            <tr>
+              <td>${user.username}</td>
+              <td>${user.email}</td>
+              <td>${user.role}</td>
+              <td>${this.formatDate(user.created_at)}</td>
+              <td>
+                <button class="btn btn-sm btn-primary" onclick="AdminDashboard.editUserRole('${user.id}')">역할 변경</button>
+              </td>
+            </tr>
+          `).join('');
+        } catch (err) {
+          console.error('사용자 역할 로드 실패:', err);
+        }
+      },
+
+      showAddRoleModal() {
+        // TODO: 역할 추가 모달 표시 함수 구현
+        console.log('역할 추가 모달 표시');
+      },
+
+      async editRole(roleId) {
+        // TODO: 역할 편집 함수 구현
+        console.log('역할 편집:', roleId);
+      },
+
+      async deleteRole(roleId) {
+        // TODO: 역할 삭제 함수 구현
+        if (confirm('이 역할을 삭제하시겠습니까?')) {
+          console.log('역할 삭제:', roleId);
+          this.loadRoles();
+          this.toast('역할이 삭제되었습니다', 'success');
+        }
+      },
+
+      async editUserRole(userId) {
+        // TODO: 사용자 역할 변경 함수 구현
+        console.log('사용자 역할 변경:', userId);
+      },
+
+      refreshCurrentSection() {
+        // TODO: 현재 섹션 새로고침 함수 구현
+        const section = this.currentSection;
+        if (section === 'messages') this.loadMessages();
+        else if (section === 'reports') this.loadReports();
+        else if (section === 'permissions') {
+          this.loadRoles();
+          this.loadUserRoles();
+        }
       }
     };
 
