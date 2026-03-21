@@ -280,8 +280,14 @@
           updateData.admin_password = adminPasswordHash;
         }
 
-        await SupabaseDB.client.from('candidates').update(updateData).eq('id', id);
-        AdminAuth.logActivity(`캠프 ${status} - ${id}`);
+        const { error } = await SupabaseDB.client.from('candidates').update(updateData).eq('id', id);
+        if (error) {
+          console.error('업데이트 오류:', error);
+          toast('저장 실패: ' + error.message, 'error');
+          return;
+        }
+
+        await AdminAuth.logActivity(admin.adminId, 'approve_campaign', 'candidate', id, { status });
         closeModal();
         loadMembers();
         toast('저장되었습니다', 'success');
