@@ -145,6 +145,7 @@
       th, td { padding: 8px; }
     }
   </style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
 <body>
   <!-- 사이드바 -->
@@ -611,7 +612,10 @@
         </style>
 
         <div class="manual-container">
-          <h1 style="font-size: 24px; font-weight: 700; color: var(--text-primary); margin-bottom: 30px;">📖 관리자 대시보드 사용설명서</h1>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+            <h1 style="font-size: 24px; font-weight: 700; color: var(--text-primary); margin: 0;">📖 관리자 대시보드 사용설명서</h1>
+            <button class="btn btn-primary" onclick="AdminDashboard.downloadManualPDF()" style="white-space: nowrap;">📥 PDF 다운로드</button>
+          </div>
 
           <!-- 1. 개요 -->
           <div class="manual-section">
@@ -2504,6 +2508,39 @@
         else if (section === 'settings') this.loadSettings();
         else if (section === 'manual') {} // 메뉴얼은 정적 콘텐츠
         if (section !== 'manual') this.toast('새로고침 완료', 'success');
+      },
+
+      // PDF 다운로드 함수
+      downloadManualPDF() {
+        try {
+          const element = document.getElementById('section-manual');
+          if (!element) {
+            this.toast('메뉴얼 콘텐츠를 찾을 수 없습니다.', 'error');
+            return;
+          }
+
+          // html2pdf 옵션 설정
+          const opt = {
+            margin: 10,
+            filename: '관리자_대시보드_사용설명서.pdf',
+            image: { type: 'jpeg', quality: 0.98 },
+            html2canvas: { scale: 2, useCORS: true },
+            jsPDF: { orientation: 'portrait', unit: 'mm', format: 'a4' },
+            pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
+          };
+
+          // PDF 생성 및 다운로드
+          html2pdf().set(opt).from(element).save().then(() => {
+            this.toast('📄 PDF 다운로드 완료!', 'success');
+            AdminAuth.logAdminAction('manual_pdf_downloaded', 'manual:pdf');
+          }).catch(err => {
+            console.error('PDF 생성 실패:', err);
+            this.toast('PDF 생성 실패: ' + err.message, 'error');
+          });
+        } catch (err) {
+          console.error('PDF 다운로드 오류:', err);
+          this.toast('PDF 다운로드 실패: ' + err.message, 'error');
+        }
       }
     };
 
