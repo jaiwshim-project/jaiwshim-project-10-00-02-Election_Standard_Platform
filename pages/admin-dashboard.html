@@ -3,353 +3,804 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>시스템 관리자 대시보드 — 선거 워룸</title>
-  <link rel="stylesheet" href="/css/theme.css">
-  <link rel="stylesheet" href="/css/responsive.css">
+  <title>관리자 대시보드 — 선거 워룸</title>
+  <link rel="stylesheet" href="../css/theme.css">
   <style>
-    body { margin: 0; background: var(--bg-primary); }
-    .admin-dashboard {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 20px;
-    }
-    .header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 30px;
-      padding-bottom: 20px;
-      border-bottom: 2px solid var(--border-color);
-    }
-    .header-title {
-      font-size: 28px;
-      font-weight: 700;
-      color: var(--primary-color);
-    }
-    .admin-info {
-      display: flex;
-      gap: 15px;
-      align-items: center;
-    }
-    .admin-profile {
-      background: var(--bg-secondary);
-      padding: 10px 15px;
-      border-radius: 8px;
-      font-size: 14px;
-    }
-    .btn-logout {
-      padding: 10px 20px;
-      background: #f44336;
-      color: white;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      font-weight: 600;
-    }
-    .stats-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 20px;
-      margin-bottom: 30px;
-    }
-    .stat-card {
-      background: linear-gradient(145deg, var(--bg-primary), var(--bg-secondary));
-      padding: 20px;
-      border-radius: 12px;
-      border: 1px solid var(--border-color);
-    }
-    .stat-label {
-      font-size: 12px;
-      color: var(--text-secondary);
-      font-weight: 600;
-      margin-bottom: 8px;
-    }
-    .stat-value {
-      font-size: 28px;
-      font-weight: 700;
-      color: var(--primary-color);
-    }
-    .campaigns-section {
-      background: linear-gradient(145deg, var(--bg-primary), var(--bg-secondary));
-      border: 1px solid var(--border-color);
-      border-radius: 12px;
-      padding: 20px;
-    }
-    .section-title {
-      font-size: 18px;
-      font-weight: 700;
-      color: var(--text-primary);
-      margin-bottom: 20px;
-    }
-    .campaign-item {
-      background: var(--bg-primary);
-      padding: 15px;
-      border-radius: 8px;
-      margin-bottom: 10px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      border: 1px solid var(--border-color);
-    }
-    .campaign-info {
-      flex: 1;
-    }
-    .campaign-name {
-      font-weight: 700;
-      color: var(--text-primary);
-      margin-bottom: 5px;
-    }
-    .campaign-meta {
-      font-size: 12px;
-      color: var(--text-secondary);
-    }
-    .status-badge {
-      display: inline-block;
-      padding: 6px 12px;
-      border-radius: 20px;
-      font-size: 12px;
-      font-weight: 600;
-      margin-right: 10px;
-    }
-    .status-pending {
-      background: rgba(255, 193, 7, 0.2);
-      color: #ffc107;
-    }
-    .status-approved {
-      background: rgba(76, 175, 80, 0.2);
-      color: #4caf50;
-    }
-    .status-rejected {
-      background: rgba(244, 67, 54, 0.2);
-      color: #f44336;
-    }
-    .action-buttons {
-      display: flex;
-      gap: 8px;
-    }
-    .btn-action {
-      padding: 6px 12px;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      font-size: 12px;
-      font-weight: 600;
-      transition: all 0.2s;
-    }
-    .btn-approve {
-      background: #4caf50;
-      color: white;
-    }
-    .btn-approve:hover {
-      background: #45a049;
-    }
-    .btn-reject {
-      background: #f44336;
-      color: white;
-    }
-    .btn-reject:hover {
-      background: #da190b;
-    }
-    .empty-state {
-      text-align: center;
-      padding: 40px 20px;
-      color: var(--text-secondary);
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg-primary); color: var(--text-primary); }
+
+    /* 레이아웃 */
+    body { display: flex; min-height: 100vh; }
+    .admin-sidebar { width: 260px; position: fixed; left: 0; top: 0; height: 100vh; background: var(--primary-color); color: white; overflow-y: auto; padding: 20px 0; z-index: 100; }
+    .admin-main { margin-left: 260px; flex: 1; display: flex; flex-direction: column; }
+    .admin-topbar { background: var(--bg-secondary); border-bottom: 1px solid var(--border-color); padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; }
+    .admin-content { flex: 1; overflow-y: auto; padding: 30px; }
+
+    /* 사이드바 */
+    .sidebar-header { padding: 0 20px 20px; border-bottom: 1px solid rgba(255,255,255,0.2); font-size: 16px; font-weight: 700; margin-bottom: 20px; }
+    .admin-profile { padding: 15px 20px; margin-bottom: 20px; font-size: 13px; border-top: 1px solid rgba(255,255,255,0.1); }
+    .admin-profile-name { font-weight: 700; margin-bottom: 4px; }
+    .admin-profile-role { opacity: 0.8; font-size: 12px; }
+    .sidebar-nav { list-style: none; }
+    .sidebar-nav a { display: block; padding: 12px 20px; color: rgba(255,255,255,0.8); text-decoration: none; cursor: pointer; transition: all 0.2s; border-left: 3px solid transparent; margin-bottom: 2px; }
+    .sidebar-nav a:hover { color: white; background: rgba(255,255,255,0.1); }
+    .sidebar-nav a.active { background: rgba(0,0,0,0.3); color: white; border-left-color: white; font-weight: 600; }
+    .sidebar-footer { position: absolute; bottom: 20px; left: 0; right: 0; padding: 0 20px; }
+    .btn-logout { width: 100%; padding: 10px; background: rgba(0,0,0,0.3); color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; transition: background 0.2s; }
+    .btn-logout:hover { background: rgba(0,0,0,0.5); }
+
+    /* 토바 */
+    .topbar-title { font-size: 20px; font-weight: 700; color: var(--text-primary); }
+    .btn-refresh { padding: 8px 16px; background: var(--primary-color); color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; }
+
+    /* 섹션 */
+    .admin-section { display: none; }
+    .admin-section.active { display: block; }
+
+    /* 그리드 통계 */
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 30px; }
+    .stat-card { background: linear-gradient(135deg, var(--bg-secondary), var(--bg-primary)); border: 1px solid var(--border-color); border-radius: 10px; padding: 20px; }
+    .stat-label { font-size: 13px; color: var(--text-secondary); margin-bottom: 8px; font-weight: 600; }
+    .stat-value { font-size: 32px; font-weight: 700; color: var(--primary-color); }
+
+    /* 테이블 */
+    .table-container { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; background: var(--bg-secondary); border-radius: 8px; overflow: hidden; }
+    th { background: var(--primary-color); color: white; padding: 12px; text-align: left; font-weight: 600; font-size: 13px; }
+    td { padding: 12px; border-bottom: 1px solid var(--border-color); font-size: 13px; }
+    tr:hover { background: rgba(0,0,0,0.02); }
+
+    /* 버튼 */
+    .btn { padding: 6px 12px; border: none; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 600; transition: all 0.2s; margin-right: 5px; }
+    .btn-primary { background: var(--primary-color); color: white; }
+    .btn-primary:hover { opacity: 0.9; }
+    .btn-success { background: #4caf50; color: white; }
+    .btn-danger { background: #f44336; color: white; }
+    .btn-sm { padding: 4px 8px; font-size: 11px; }
+
+    /* 배지 */
+    .badge { display: inline-block; padding: 4px 8px; border-radius: 12px; font-size: 11px; font-weight: 600; }
+    .badge-pending { background: rgba(255,193,7,0.2); color: #ffc107; }
+    .badge-approved { background: rgba(76,175,80,0.2); color: #4caf50; }
+    .badge-rejected { background: rgba(244,67,54,0.2); color: #f44336; }
+
+    /* 모달 */
+    .modal { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 200; justify-content: center; align-items: center; }
+    .modal.show { display: flex; }
+    .modal-content { background: var(--bg-secondary); border-radius: 10px; padding: 30px; max-width: 600px; width: 90%; max-height: 80vh; overflow-y: auto; }
+    .modal-header { font-size: 18px; font-weight: 700; margin-bottom: 20px; color: var(--text-primary); }
+    .modal-close { position: absolute; top: 10px; right: 10px; background: none; border: none; font-size: 24px; cursor: pointer; color: var(--text-secondary); }
+
+    /* 폼 */
+    .form-group { margin-bottom: 15px; }
+    .form-label { display: block; margin-bottom: 5px; font-weight: 600; font-size: 13px; }
+    .form-control { width: 100%; padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 13px; background: var(--bg-primary); color: var(--text-primary); }
+    .form-control:focus { outline: none; border-color: var(--primary-color); box-shadow: 0 0 0 2px rgba(0,123,255,0.1); }
+    select.form-control { cursor: pointer; }
+
+    /* 토스트 */
+    .toast-container { position: fixed; bottom: 20px; right: 20px; z-index: 300; }
+    .toast { background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 8px; padding: 15px 20px; margin-bottom: 10px; animation: slideIn 0.3s ease; display: flex; align-items: center; gap: 10px; }
+    .toast-success { border-left: 4px solid #4caf50; }
+    .toast-error { border-left: 4px solid #f44336; }
+    @keyframes slideIn { from { transform: translateX(400px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+    /* 최근 활동 카드 */
+    .activity-item { background: var(--bg-primary); border-left: 3px solid var(--primary-color); padding: 12px 15px; margin-bottom: 10px; border-radius: 6px; font-size: 13px; }
+    .activity-time { color: var(--text-secondary); font-size: 12px; }
+
+    /* 그리드 카드 */
+    .card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 15px; }
+    .card { background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 10px; padding: 20px; }
+    .card-title { font-weight: 700; margin-bottom: 10px; color: var(--text-primary); }
+    .card-meta { font-size: 13px; color: var(--text-secondary); margin-bottom: 15px; }
+    .card-buttons { display: flex; gap: 8px; }
+
+    /* 검색 & 필터 */
+    .search-bar { display: flex; gap: 10px; margin-bottom: 20px; }
+    .search-bar input { flex: 1; padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 13px; }
+    .search-bar select { padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 13px; }
+
+    /* 탭 */
+    .tabs { display: flex; border-bottom: 2px solid var(--border-color); margin-bottom: 20px; }
+    .tab-btn { flex: 1; padding: 12px; text-align: center; background: none; border: none; cursor: pointer; font-weight: 600; color: var(--text-secondary); border-bottom: 3px solid transparent; margin-bottom: -2px; transition: all 0.2s; }
+    .tab-btn.active { color: var(--primary-color); border-bottom-color: var(--primary-color); }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    /* 페이지네이션 */
+    .pagination { display: flex; justify-content: center; gap: 5px; margin-top: 20px; }
+    .page-btn { padding: 6px 10px; border: 1px solid var(--border-color); background: var(--bg-secondary); border-radius: 4px; cursor: pointer; font-size: 12px; }
+    .page-btn.active { background: var(--primary-color); color: white; border-color: var(--primary-color); }
+
+    /* 반응형 */
+    @media (max-width: 768px) {
+      .admin-sidebar { width: 0; }
+      .admin-main { margin-left: 0; }
+      .card-grid { grid-template-columns: 1fr; }
+      .stats-grid { grid-template-columns: 1fr; }
+      table { font-size: 12px; }
+      th, td { padding: 8px; }
     }
   </style>
 </head>
 <body>
-  <div class="admin-dashboard">
-    <!-- 헤더 -->
-    <div class="header">
-      <div class="header-title">👨‍💼 시스템 관리자 대시보드</div>
-      <div class="admin-info">
-        <div class="admin-profile">
-          <div id="adminUsername">로딩 중...</div>
-          <div style="font-size: 12px; color: var(--text-secondary);" id="adminRole"></div>
+  <!-- 사이드바 -->
+  <aside class="admin-sidebar">
+    <div class="sidebar-header">🔧 시스템 관리</div>
+    <div class="admin-profile">
+      <div class="admin-profile-name" id="sidebarAdminName">로딩 중</div>
+      <div class="admin-profile-role" id="sidebarAdminRole"></div>
+    </div>
+    <nav class="sidebar-nav">
+      <a data-section="overview" class="active">📊 대시보드</a>
+      <a data-section="members">👥 회원 관리</a>
+      <a data-section="files">📁 자료 관리</a>
+      <a data-section="sites">🌐 사이트 접속</a>
+      <a data-section="settings">⚙️ 시스템 설정</a>
+    </nav>
+    <div class="sidebar-footer">
+      <button class="btn-logout">🚪 로그아웃</button>
+    </div>
+  </aside>
+
+  <!-- 메인 -->
+  <main class="admin-main">
+    <div class="admin-topbar">
+      <div class="topbar-title" id="topbarTitle">📊 대시보드</div>
+      <button class="btn-refresh" onclick="AdminDashboard.refreshCurrentSection()">🔄 새로고침</button>
+    </div>
+
+    <div class="admin-content">
+      <!-- Overview 섹션 -->
+      <div id="section-overview" class="admin-section active">
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-label">📊 총 캠프</div>
+            <div class="stat-value" id="statTotal">0</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">⏳ 대기 중</div>
+            <div class="stat-value" id="statPending">0</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">✅ 승인됨</div>
+            <div class="stat-value" id="statApproved">0</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">❌ 거부됨</div>
+            <div class="stat-value" id="statRejected">0</div>
+          </div>
         </div>
-        <button class="btn-logout" onclick="AdminDashboard.logout()">🚪 로그아웃</button>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+          <div>
+            <h3 style="margin-bottom: 15px; color: var(--text-primary);">최근 가입 캠프</h3>
+            <div id="recentCampaigns"></div>
+          </div>
+          <div>
+            <h3 style="margin-bottom: 15px; color: var(--text-primary);">최근 활동</h3>
+            <div id="recentActivity"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Members 섹션 -->
+      <div id="section-members" class="admin-section">
+        <div class="search-bar">
+          <input type="text" id="memberSearchInput" placeholder="캠프명 검색...">
+          <select id="memberStatusFilter">
+            <option value="">상태: 전체</option>
+            <option value="pending">대기 중</option>
+            <option value="approved">승인됨</option>
+            <option value="rejected">거부됨</option>
+          </select>
+          <select id="memberPartyFilter">
+            <option value="">정당: 전체</option>
+            <option value="국민의힘">국민의힘</option>
+            <option value="더불어민주당">더불어민주당</option>
+            <option value="기타">기타</option>
+          </select>
+        </div>
+
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>이름</th>
+                <th>정당</th>
+                <th>지역</th>
+                <th>등록일</th>
+                <th>상태</th>
+                <th>액션</th>
+              </tr>
+            </thead>
+            <tbody id="membersTable"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Files 섹션 -->
+      <div id="section-files" class="admin-section">
+        <div class="search-bar">
+          <select id="filesFilter">
+            <option value="">캠프: 전체</option>
+          </select>
+        </div>
+
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>파일명</th>
+                <th>크기</th>
+                <th>업로드일</th>
+                <th>캠프</th>
+                <th>액션</th>
+              </tr>
+            </thead>
+            <tbody id="filesTable"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Sites 섹션 -->
+      <div id="section-sites" class="admin-section">
+        <div class="card-grid" id="sitesGrid"></div>
+      </div>
+
+      <!-- Settings 섹션 -->
+      <div id="section-settings" class="admin-section">
+        <div class="tabs">
+          <button class="tab-btn active" onclick="AdminDashboard.switchTab(event, 'tab-basic')">기본 설정</button>
+          <button class="tab-btn" onclick="AdminDashboard.switchTab(event, 'tab-admins')">관리자 계정</button>
+          <button class="tab-btn" onclick="AdminDashboard.switchTab(event, 'tab-logs')">활동 로그</button>
+        </div>
+
+        <!-- 기본 설정 탭 -->
+        <div id="tab-basic" class="tab-content active">
+          <div class="form-group">
+            <label class="form-label">앱 이름</label>
+            <input type="text" id="appName" class="form-control">
+          </div>
+          <div class="form-group">
+            <label class="form-label">앱 설명</label>
+            <textarea id="appDescription" class="form-control" rows="3"></textarea>
+          </div>
+          <div class="form-group">
+            <label class="form-label">유지보수 모드</label>
+            <select id="maintenanceMode" class="form-control">
+              <option value="false">비활성화</option>
+              <option value="true">활성화</option>
+            </select>
+          </div>
+          <button class="btn btn-primary" onclick="AdminDashboard.saveBasicSettings()">💾 저장</button>
+        </div>
+
+        <!-- 관리자 계정 탭 -->
+        <div id="tab-admins" class="tab-content">
+          <button class="btn btn-primary" style="margin-bottom: 20px;" onclick="AdminDashboard.showAddAdminModal()">➕ 관리자 추가</button>
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>사용자명</th>
+                  <th>역할</th>
+                  <th>가입일</th>
+                  <th>상태</th>
+                  <th>액션</th>
+                </tr>
+              </thead>
+              <tbody id="adminsTable"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- 활동 로그 탭 -->
+        <div id="tab-logs" class="tab-content">
+          <div id="logsContainer"></div>
+          <div class="pagination" id="logsPagination"></div>
+        </div>
       </div>
     </div>
+  </main>
 
-    <!-- 통계 -->
-    <div class="stats-grid">
-      <div class="stat-card">
-        <div class="stat-label">📊 총 캠프</div>
-        <div class="stat-value" id="totalCampaigns">0</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">⏳ 대기 중</div>
-        <div class="stat-value" id="pendingCampaigns">0</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">✅ 승인됨</div>
-        <div class="stat-value" id="approvedCampaigns">0</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">❌ 거부됨</div>
-        <div class="stat-value" id="rejectedCampaigns">0</div>
-      </div>
-    </div>
-
-    <!-- 캠프 관리 -->
-    <div class="campaigns-section">
-      <div class="section-title">🏛️ 캠프 관리</div>
-      <div id="campaignsList"></div>
+  <!-- 모달 -->
+  <div id="memberModal" class="modal">
+    <div class="modal-content">
+      <button class="modal-close" onclick="AdminDashboard.closeModal()">&times;</button>
+      <div class="modal-header">캠프 상세 정보</div>
+      <div id="memberModalBody"></div>
     </div>
   </div>
 
-  <script src="/js/supabase-client.js"></script>
-  <script src="/js/admin-auth.js"></script>
+  <div id="addAdminModal" class="modal">
+    <div class="modal-content">
+      <button class="modal-close" onclick="AdminDashboard.closeModal()">&times;</button>
+      <div class="modal-header">관리자 추가</div>
+      <div class="form-group">
+        <label class="form-label">사용자명</label>
+        <input type="text" id="newAdminUsername" class="form-control">
+      </div>
+      <div class="form-group">
+        <label class="form-label">역할</label>
+        <select id="newAdminRole" class="form-control">
+          <option value="admin">Admin</option>
+          <option value="super_admin">Super Admin</option>
+        </select>
+      </div>
+      <button class="btn btn-primary" onclick="AdminDashboard.addAdmin()">추가</button>
+    </div>
+  </div>
+
+  <!-- Toast 컨테이너 -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <script src="../js/supabase-client.js"></script>
+  <script src="../js/admin-auth.js"></script>
   <script>
     const AdminDashboard = {
+      currentSection: 'overview',
+      currentLogsPage: 1,
+
       async init() {
-        // 인증 확인
         if (!AdminAuth.isAuthenticated()) {
           window.location.href = '/pages/admin-login.html';
           return;
         }
 
-        // 관리자 정보 표시
         const admin = AdminAuth.getCurrentAdmin();
-        document.getElementById('adminUsername').textContent = admin.username;
-        document.getElementById('adminRole').textContent = admin.role === 'super_admin' ? '🔴 Super Admin' : '🟠 Admin';
+        document.getElementById('sidebarAdminName').textContent = admin.username;
+        document.getElementById('sidebarAdminRole').textContent = admin.role === 'super_admin' ? '🔴 Super Admin' : '🟠 Admin';
 
-        // Supabase 초기화
         await SupabaseDB.init();
 
-        // 데이터 로드
-        this.loadStatistics();
-        this.loadCampaigns();
-
-        // 실시간 업데이트 (옵션)
-        setInterval(() => this.loadCampaigns(), 5000);
+        this.bindNavigation();
+        this.bindLogout();
+        this.bindSearch();
+        this.showSection('overview');
       },
 
-      async loadStatistics() {
+      bindNavigation() {
+        document.querySelectorAll('.sidebar-nav a').forEach(link => {
+          link.addEventListener('click', (e) => {
+            e.preventDefault();
+            const section = link.getAttribute('data-section');
+            this.showSection(section);
+          });
+        });
+      },
+
+      bindLogout() {
+        document.querySelector('.btn-logout').addEventListener('click', () => {
+          AdminAuth.logout();
+          window.location.href = '/pages/admin-login.html';
+        });
+      },
+
+      bindSearch() {
+        document.getElementById('memberSearchInput').addEventListener('input', () => this.loadMembers());
+        document.getElementById('memberStatusFilter').addEventListener('change', () => this.loadMembers());
+        document.getElementById('memberPartyFilter').addEventListener('change', () => this.loadMembers());
+        document.getElementById('filesFilter').addEventListener('change', () => this.loadFiles());
+      },
+
+      showSection(id) {
+        document.querySelectorAll('.admin-section').forEach(s => s.classList.remove('active'));
+        document.getElementById(`section-${id}`).classList.add('active');
+
+        document.querySelectorAll('.sidebar-nav a').forEach(a => a.classList.remove('active'));
+        document.querySelector(`[data-section="${id}"]`).classList.add('active');
+
+        const titles = {
+          overview: '📊 대시보드',
+          members: '👥 회원 관리',
+          files: '📁 자료 관리',
+          sites: '🌐 사이트 접속',
+          settings: '⚙️ 시스템 설정'
+        };
+        document.getElementById('topbarTitle').textContent = titles[id];
+        this.currentSection = id;
+
+        if (id === 'overview') this.loadOverview();
+        if (id === 'members') this.loadMembers();
+        if (id === 'files') this.loadFiles();
+        if (id === 'sites') this.loadSites();
+        if (id === 'settings') this.loadSettings();
+      },
+
+      refreshCurrentSection() {
+        this.showSection(this.currentSection);
+        this.toast('새로고침 완료', 'success');
+      },
+
+      async loadOverview() {
         try {
-          const { data, error } = await SupabaseDB.client
-            .from('candidates')
-            .select('approval_status');
+          const { data: candidates } = await SupabaseDB.client.from('candidates').select('*').order('created_at', { ascending: false });
 
-          if (error) throw error;
+          const pending = candidates.filter(c => !c.approval_status || c.approval_status === 'pending').length;
+          const approved = candidates.filter(c => c.approval_status === 'approved').length;
+          const rejected = candidates.filter(c => c.approval_status === 'rejected').length;
 
-          const total = data.length;
-          const pending = data.filter(c => !c.approval_status || c.approval_status === 'pending').length;
-          const approved = data.filter(c => c.approval_status === 'approved').length;
-          const rejected = data.filter(c => c.approval_status === 'rejected').length;
+          document.getElementById('statTotal').textContent = candidates.length;
+          document.getElementById('statPending').textContent = pending;
+          document.getElementById('statApproved').textContent = approved;
+          document.getElementById('statRejected').textContent = rejected;
 
-          document.getElementById('totalCampaigns').textContent = total;
-          document.getElementById('pendingCampaigns').textContent = pending;
-          document.getElementById('approvedCampaigns').textContent = approved;
-          document.getElementById('rejectedCampaigns').textContent = rejected;
+          document.getElementById('recentCampaigns').innerHTML = candidates.slice(0, 5).map(c => `
+            <div class="activity-item">
+              <div style="font-weight: 600;">${c.name}</div>
+              <div class="activity-time">${this.formatDate(c.created_at)}</div>
+            </div>
+          `).join('') || '<div style="color: var(--text-secondary);">데이터가 없습니다.</div>';
+
+          const { data: logs } = await SupabaseDB.client.from('admin_activity_logs').select('*').order('created_at', { ascending: false }).limit(10);
+          document.getElementById('recentActivity').innerHTML = (logs || []).map(log => `
+            <div class="activity-item">
+              <div>${log.action}</div>
+              <div class="activity-time">${this.formatDate(log.created_at)}</div>
+            </div>
+          `).join('') || '<div style="color: var(--text-secondary);">활동이 없습니다.</div>';
         } catch (err) {
-          console.error('통계 로드 실패:', err);
+          console.error('Overview 로드 실패:', err);
         }
       },
 
-      async loadCampaigns() {
+      async loadMembers() {
         try {
-          const { data, error } = await SupabaseDB.client
-            .from('candidates')
-            .select('*')
-            .order('created_at', { ascending: false });
+          let query = SupabaseDB.client.from('candidates').select('*');
 
+          const search = document.getElementById('memberSearchInput').value;
+          if (search) query = query.ilike('name', `%${search}%`);
+
+          const status = document.getElementById('memberStatusFilter').value;
+          if (status) query = query.eq('approval_status', status);
+
+          const party = document.getElementById('memberPartyFilter').value;
+          if (party) query = query.eq('party', party);
+
+          const { data } = await query.order('created_at', { ascending: false });
+
+          const canEdit = AdminAuth.hasPermission('admin');
+          document.getElementById('membersTable').innerHTML = (data || []).map(m => `
+            <tr>
+              <td>${m.name}</td>
+              <td>${m.party || '-'}</td>
+              <td>${m.region || '-'}</td>
+              <td>${this.formatDate(m.created_at)}</td>
+              <td>${this.getStatusBadge(m.approval_status)}</td>
+              <td>
+                ${canEdit ? `<button class="btn btn-sm btn-primary" onclick="AdminDashboard.openMemberModal('${m.id}')">수정</button>` : ''}
+              </td>
+            </tr>
+          `).join('') || '<tr><td colspan="6" style="text-align: center; color: var(--text-secondary);">데이터가 없습니다.</td></tr>';
+        } catch (err) {
+          console.error('Members 로드 실패:', err);
+        }
+      },
+
+      async openMemberModal(id) {
+        const { data: member } = await SupabaseDB.client.from('candidates').select('*').eq('id', id).single();
+
+        const html = `
+          <div class="form-group">
+            <label class="form-label">이름</label>
+            <input type="text" value="${member.name}" readonly class="form-control" style="background: var(--bg-primary);">
+          </div>
+          <div class="form-group">
+            <label class="form-label">정당</label>
+            <input type="text" value="${member.party || ''}" readonly class="form-control" style="background: var(--bg-primary);">
+          </div>
+          <div class="form-group">
+            <label class="form-label">지역</label>
+            <input type="text" value="${member.region || ''}" readonly class="form-control" style="background: var(--bg-primary);">
+          </div>
+          <div class="form-group">
+            <label class="form-label">상태</label>
+            <select id="modalStatus" class="form-control">
+              <option value="pending" ${!member.approval_status || member.approval_status === 'pending' ? 'selected' : ''}>대기 중</option>
+              <option value="approved" ${member.approval_status === 'approved' ? 'selected' : ''}>승인</option>
+              <option value="rejected" ${member.approval_status === 'rejected' ? 'selected' : ''}>거부</option>
+            </select>
+          </div>
+          <div class="form-group" id="reasonGroup" style="display: ${member.approval_status === 'rejected' ? 'block' : 'none'};">
+            <label class="form-label">거부 사유</label>
+            <textarea id="modalReason" class="form-control">${member.approval_reason || ''}</textarea>
+          </div>
+          <div style="display: flex; gap: 10px;">
+            <button class="btn btn-success" onclick="AdminDashboard.saveMemberStatus('${id}')">저장</button>
+            <button class="btn" style="background: var(--bg-primary); border: 1px solid var(--border-color);" onclick="AdminDashboard.closeModal()">취소</button>
+          </div>
+        `;
+
+        document.getElementById('memberModalBody').innerHTML = html;
+        document.getElementById('modalStatus').addEventListener('change', (e) => {
+          document.getElementById('reasonGroup').style.display = e.target.value === 'rejected' ? 'block' : 'none';
+        });
+        document.getElementById('memberModal').classList.add('show');
+      },
+
+      async saveMemberStatus(id) {
+        const status = document.getElementById('modalStatus').value;
+        const reason = document.getElementById('modalReason')?.value || '';
+
+        try {
+          const admin = AdminAuth.getCurrentAdmin();
+          await SupabaseDB.client.from('candidates').update({
+            approval_status: status,
+            approval_reason: reason,
+            approved_by: admin.adminId,
+            approved_at: new Date().toISOString()
+          }).eq('id', id);
+
+          AdminAuth.logActivity(`캠프 ${status} - ${id}`);
+          this.closeModal();
+          this.loadMembers();
+          this.toast('저장되었습니다', 'success');
+        } catch (err) {
+          this.toast('저장 실패: ' + err.message, 'error');
+        }
+      },
+
+      async loadFiles() {
+        try {
+          const { data: candidates } = await SupabaseDB.client.from('candidates').select('id, name');
+          const filterSelect = document.getElementById('filesFilter');
+          filterSelect.innerHTML = '<option value="">캠프: 전체</option>' + (candidates || []).map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+
+          let query = SupabaseDB.client.from('shared_files').select('*');
+          const filter = filterSelect.value;
+          if (filter) query = query.eq('candidate_id', filter);
+
+          const { data: files } = await query.order('created_at', { ascending: false });
+
+          const canDelete = AdminAuth.hasPermission('super_admin');
+          document.getElementById('filesTable').innerHTML = (files || []).map(f => {
+            const candidate = candidates?.find(c => c.id === f.candidate_id);
+            return `
+              <tr>
+                <td>${f.file_name}</td>
+                <td>${this.formatFileSize(f.file_size || 0)}</td>
+                <td>${this.formatDate(f.created_at)}</td>
+                <td>${candidate?.name || '-'}</td>
+                <td>
+                  <button class="btn btn-sm btn-primary" onclick="AdminDashboard.downloadFile('${f.id}', '${f.file_name}')">다운로드</button>
+                  ${canDelete ? `<button class="btn btn-sm btn-danger" onclick="AdminDashboard.deleteFile('${f.id}')">삭제</button>` : ''}
+                </td>
+              </tr>
+            `;
+          }).join('') || '<tr><td colspan="5" style="text-align: center; color: var(--text-secondary);">파일이 없습니다.</td></tr>';
+        } catch (err) {
+          console.error('Files 로드 실패:', err);
+        }
+      },
+
+      async downloadFile(id, name) {
+        try {
+          const { data, error } = await SupabaseDB.client.storage.from('files').download(`shared/${id}`);
           if (error) throw error;
 
-          const container = document.getElementById('campaignsList');
+          const url = URL.createObjectURL(data);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = name;
+          a.click();
+          this.toast('다운로드 시작', 'success');
+        } catch (err) {
+          this.toast('다운로드 실패: ' + err.message, 'error');
+        }
+      },
 
-          if (!data || data.length === 0) {
-            container.innerHTML = '<div class="empty-state">등록된 캠프가 없습니다.</div>';
-            return;
+      async deleteFile(id) {
+        if (!confirm('정말 삭제하시겠습니까?')) return;
+        try {
+          await SupabaseDB.client.from('shared_files').delete().eq('id', id);
+          AdminAuth.logActivity(`파일 삭제 - ${id}`);
+          this.loadFiles();
+          this.toast('삭제되었습니다', 'success');
+        } catch (err) {
+          this.toast('삭제 실패: ' + err.message, 'error');
+        }
+      },
+
+      async loadSites() {
+        try {
+          const { data: candidates } = await SupabaseDB.client.from('candidates').select('*').order('created_at', { ascending: false });
+
+          document.getElementById('sitesGrid').innerHTML = (candidates || []).map(c => `
+            <div class="card">
+              <div class="card-title">${c.name}</div>
+              <div class="card-meta">${c.region || '-'} | ${c.party || '-'}</div>
+              <div style="margin-bottom: 15px;">
+                <span class="badge ${`badge-${c.approval_status || 'pending'}`}">${{pending: '대기', approved: '승인', rejected: '거부'}[c.approval_status || 'pending']}</span>
+              </div>
+              <div class="card-buttons">
+                <button class="btn btn-sm btn-primary" onclick="window.open('/pages/index.html?candidate=${c.id}', '_blank')">홈페이지</button>
+                <button class="btn btn-sm btn-primary" onclick="window.open('/pages/settings.html?candidate=${c.id}', '_blank')">설정</button>
+              </div>
+            </div>
+          `).join('') || '<div style="grid-column: 1/-1; text-align: center; color: var(--text-secondary);">캠프가 없습니다.</div>';
+        } catch (err) {
+          console.error('Sites 로드 실패:', err);
+        }
+      },
+
+      async loadSettings() {
+        try {
+          // 기본 설정 로드
+          const { data: settings } = await SupabaseDB.client.from('app_settings').select('*').limit(1).single();
+          if (settings) {
+            document.getElementById('appName').value = settings.app_name || '';
+            document.getElementById('appDescription').value = settings.app_description || '';
+            document.getElementById('maintenanceMode').value = settings.maintenance_mode ? 'true' : 'false';
           }
 
-          container.innerHTML = data.map(campaign => {
-            const status = campaign.approval_status || 'pending';
-            const statusClass = `status-${status}`;
-            const statusText = {
-              'pending': '⏳ 대기 중',
-              'approved': '✅ 승인됨',
-              'rejected': '❌ 거부됨'
-            }[status] || '⏳ 대기 중';
+          // 관리자 목록 로드
+          const canManageAdmins = AdminAuth.hasPermission('super_admin');
+          if (canManageAdmins) {
+            const { data: admins } = await SupabaseDB.client.from('admins').select('*').order('created_at', { ascending: false });
+            document.getElementById('adminsTable').innerHTML = (admins || []).map(a => `
+              <tr>
+                <td>${a.username}</td>
+                <td>${a.role === 'super_admin' ? '🔴 Super Admin' : '🟠 Admin'}</td>
+                <td>${this.formatDate(a.created_at)}</td>
+                <td>${a.is_active ? '✅ 활성' : '❌ 비활성'}</td>
+                <td><button class="btn btn-sm" onclick="AdminDashboard.toggleAdminStatus('${a.id}', ${!a.is_active})">${a.is_active ? '비활성화' : '활성화'}</button></td>
+              </tr>
+            `).join('');
+          }
 
-            return `
-              <div class="campaign-item">
-                <div class="campaign-info">
-                  <div class="campaign-name">${campaign.name}</div>
-                  <div class="campaign-meta">
-                    등록: ${new Date(campaign.created_at).toLocaleDateString('ko-KR')} |
-                    지역: ${campaign.region || '미지정'} |
-                    정당: ${campaign.party || '미지정'}
-                  </div>
-                </div>
-                <div>
-                  <span class="status-badge ${statusClass}">${statusText}</span>
-                  ${status === 'pending' ? `
-                    <div class="action-buttons">
-                      <button class="btn-action btn-approve" onclick="AdminDashboard.approveCampaign('${campaign.id}')">✅ 승인</button>
-                      <button class="btn-action btn-reject" onclick="AdminDashboard.rejectCampaign('${campaign.id}')">❌ 거부</button>
-                    </div>
-                  ` : ''}
-                </div>
-              </div>
-            `;
-          }).join('');
+          // 로그 로드
+          this.loadActivityLogs();
         } catch (err) {
-          console.error('캠프 로드 실패:', err);
+          console.error('Settings 로드 실패:', err);
         }
       },
 
-      async approveCampaign(campaignId) {
-        const admin = AdminAuth.getCurrentAdmin();
+      async saveBasicSettings() {
         try {
-          const { error } = await SupabaseDB.client
-            .from('candidates')
-            .update({
-              approval_status: 'approved',
-              approved_by: admin.adminId,
-              approved_at: new Date().toISOString()
-            })
-            .eq('id', campaignId);
+          const data = {
+            app_name: document.getElementById('appName').value,
+            app_description: document.getElementById('appDescription').value,
+            maintenance_mode: document.getElementById('maintenanceMode').value === 'true'
+          };
 
-          if (error) throw error;
+          const { data: existing } = await SupabaseDB.client.from('app_settings').select('id').limit(1);
 
-          alert('✅ 캠프가 승인되었습니다.');
-          this.loadCampaigns();
-          this.loadStatistics();
+          if (existing && existing.length > 0) {
+            await SupabaseDB.client.from('app_settings').update(data).eq('id', existing[0].id);
+          } else {
+            await SupabaseDB.client.from('app_settings').insert([data]);
+          }
+
+          AdminAuth.logActivity('기본 설정 저장');
+          this.toast('저장되었습니다', 'success');
         } catch (err) {
-          alert('❌ 오류: ' + err.message);
+          this.toast('저장 실패: ' + err.message, 'error');
         }
       },
 
-      async rejectCampaign(campaignId) {
-        const reason = prompt('거부 사유를 입력해주세요:');
-        if (!reason) return;
+      showAddAdminModal() {
+        if (!AdminAuth.hasPermission('super_admin')) {
+          this.toast('권한이 없습니다', 'error');
+          return;
+        }
+        document.getElementById('addAdminModal').classList.add('show');
+      },
 
-        const admin = AdminAuth.getCurrentAdmin();
+      async addAdmin() {
+        const username = document.getElementById('newAdminUsername').value;
+        const role = document.getElementById('newAdminRole').value;
+
+        if (!username) {
+          this.toast('사용자명을 입력해주세요', 'error');
+          return;
+        }
+
         try {
-          const { error } = await SupabaseDB.client
-            .from('candidates')
-            .update({
-              approval_status: 'rejected',
-              approved_by: admin.adminId,
-              approval_reason: reason,
-              approved_at: new Date().toISOString()
-            })
-            .eq('id', campaignId);
+          const defaultPassword = 'admin123';
+          await SupabaseDB.client.from('admins').insert([{
+            username,
+            role,
+            is_active: true,
+            password_hash: defaultPassword
+          }]);
 
-          if (error) throw error;
-
-          alert('❌ 캠프가 거부되었습니다.');
-          this.loadCampaigns();
-          this.loadStatistics();
+          AdminAuth.logActivity(`관리자 추가 - ${username}`);
+          this.closeModal();
+          this.loadSettings();
+          this.toast('추가되었습니다', 'success');
         } catch (err) {
-          alert('❌ 오류: ' + err.message);
+          this.toast('추가 실패: ' + err.message, 'error');
         }
       },
 
-      logout() {
-        AdminAuth.logout();
-        window.location.href = '/pages/admin-login.html';
+      async toggleAdminStatus(adminId, active) {
+        try {
+          await SupabaseDB.client.from('admins').update({ is_active: active }).eq('id', adminId);
+          AdminAuth.logActivity(`관리자 상태 변경 - ${active ? '활성화' : '비활성화'}`);
+          this.loadSettings();
+          this.toast('변경되었습니다', 'success');
+        } catch (err) {
+          this.toast('변경 실패: ' + err.message, 'error');
+        }
+      },
+
+      async loadActivityLogs(page = 1) {
+        try {
+          const pageSize = 20;
+          const { data: logs, count } = await SupabaseDB.client
+            .from('admin_activity_logs')
+            .select('*', { count: 'exact' })
+            .order('created_at', { ascending: false })
+            .range((page - 1) * pageSize, page * pageSize - 1);
+
+          const totalPages = Math.ceil((count || 0) / pageSize);
+
+          document.getElementById('logsContainer').innerHTML = (logs || []).map(log => `
+            <div class="activity-item">
+              <div>${log.action}</div>
+              <div class="activity-time">${this.formatDate(log.created_at)}</div>
+            </div>
+          `).join('');
+
+          let paginationHTML = '';
+          for (let i = 1; i <= totalPages; i++) {
+            paginationHTML += `<button class="page-btn ${i === page ? 'active' : ''}" onclick="AdminDashboard.loadActivityLogs(${i})">${i}</button>`;
+          }
+          document.getElementById('logsPagination').innerHTML = paginationHTML;
+
+          this.currentLogsPage = page;
+        } catch (err) {
+          console.error('Logs 로드 실패:', err);
+        }
+      },
+
+      switchTab(e, tabId) {
+        e.target.parentElement.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+        e.target.classList.add('active');
+
+        document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+        document.getElementById(tabId).classList.add('active');
+      },
+
+      showModal(id) {
+        document.getElementById(id).classList.add('show');
+      },
+
+      closeModal() {
+        document.querySelectorAll('.modal').forEach(m => m.classList.remove('show'));
+      },
+
+      toast(message, type = 'info') {
+        const container = document.getElementById('toastContainer');
+        const toast = document.createElement('div');
+        toast.className = `toast toast-${type}`;
+        toast.textContent = message;
+        container.appendChild(toast);
+
+        setTimeout(() => toast.remove(), 3000);
+      },
+
+      formatDate(date) {
+        return new Date(date).toLocaleDateString('ko-KR');
+      },
+
+      formatFileSize(bytes) {
+        if (bytes === 0) return '0 B';
+        const k = 1024;
+        const sizes = ['B', 'KB', 'MB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+      },
+
+      getStatusBadge(status) {
+        const badges = {
+          pending: '<span class="badge badge-pending">⏳ 대기 중</span>',
+          approved: '<span class="badge badge-approved">✅ 승인됨</span>',
+          rejected: '<span class="badge badge-rejected">❌ 거부됨</span>'
+        };
+        return badges[status] || badges.pending;
       }
     };
 
