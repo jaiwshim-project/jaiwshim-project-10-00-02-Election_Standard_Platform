@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>구조도 — 시스템 관리</title>
+  <link rel="stylesheet" href="../css/theme.css">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg-primary); color: var(--text-primary); }
+    body { display: flex; min-height: 100vh; }
+    .admin-sidebar { width: 260px; position: fixed; left: 0; top: 0; height: 100vh; background: var(--primary-color); color: white; overflow-y: auto; padding: 20px 0; z-index: 100; }
+    .admin-main { margin-left: 260px; flex: 1; display: flex; flex-direction: column; }
+    .admin-topbar { background: var(--bg-secondary); border-bottom: 1px solid var(--border-color); padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; }
+    .admin-content { flex: 1; overflow-y: auto; padding: 30px; }
+    .sidebar-header { padding: 0 20px 20px; border-bottom: 1px solid rgba(255,255,255,0.2); font-size: 16px; font-weight: 700; margin-bottom: 20px; }
+    .admin-profile { padding: 15px 20px; margin-bottom: 20px; font-size: 13px; border-top: 1px solid rgba(255,255,255,0.1); }
+    .admin-profile-name { font-weight: 700; margin-bottom: 4px; }
+    .admin-profile-role { opacity: 0.8; font-size: 12px; }
+    .sidebar-nav { list-style: none; }
+    .sidebar-nav a { display: block; padding: 12px 20px; color: rgba(255,255,255,0.8); text-decoration: none; cursor: pointer; transition: all 0.2s; border-left: 3px solid transparent; margin-bottom: 2px; }
+    .sidebar-nav a:hover { color: white; background: rgba(255,255,255,0.1); }
+    .sidebar-nav a.active { background: rgba(0,0,0,0.3); color: white; border-left-color: white; font-weight: 600; }
+    .sidebar-footer { position: absolute; bottom: 20px; left: 0; right: 0; padding: 0 20px; }
+    .btn-logout { width: 100%; padding: 10px; background: rgba(0,0,0,0.3); color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; transition: background 0.2s; }
+    .btn-logout:hover { background: rgba(0,0,0,0.5); }
+    .topbar-title { font-size: 20px; font-weight: 700; color: var(--text-primary); }
+
+    /* Architecture page styles */
+    .arch-container { max-width: 1050px; }
+    .arch-guidance {
+      background: var(--bg-secondary);
+      border-left: 4px solid var(--primary-color);
+      padding: 20px 24px;
+      border-radius: 8px;
+      margin-bottom: 30px;
+      font-size: 14px;
+      line-height: 1.8;
+      color: var(--text-primary);
+    }
+    .arch-guidance h2 {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 14px;
+    }
+    .arch-diagram {
+      display: flex;
+      justify-content: center;
+      overflow-x: auto;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 20px;
+    }
+    .arch-legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 18px;
+      margin-top: 24px;
+      justify-content: center;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 16px 24px;
+    }
+    .arch-legend-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      color: var(--text-primary);
+      font-weight: 600;
+    }
+    .arch-legend-dot {
+      width: 16px;
+      height: 16px;
+      border-radius: 4px;
+      flex-shrink: 0;
+    }
+
+    /* Toast */
+    .toast-container { position: fixed; bottom: 20px; right: 20px; z-index: 300; }
+    .toast { background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 8px; padding: 15px 20px; margin-bottom: 10px; animation: slideIn 0.3s ease; }
+    .toast-success { border-left: 4px solid #4caf50; }
+    .toast-error { border-left: 4px solid #f44336; }
+    @keyframes slideIn { from { transform: translateX(400px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+    @media (max-width: 768px) {
+      .admin-sidebar { width: 0; }
+      .admin-main { margin-left: 0; }
+    }
+  </style>
+</head>
+<body>
+  <!-- 사이드바 -->
+  <aside class="admin-sidebar">
+    <div class="sidebar-header">🔧 시스템 관리</div>
+    <div class="admin-profile">
+      <div class="admin-profile-name" id="sidebarAdminName">로딩 중</div>
+      <div class="admin-profile-role" id="sidebarAdminRole"></div>
+    </div>
+    <nav class="sidebar-nav">
+      <a href="admin-overview.html">📊 대시보드</a>
+      <a href="admin-statistics.html">📈 통계 분석</a>
+      <a href="admin-members.html">👥 회원 관리</a>
+      <a href="admin-files.html">📁 자료 관리</a>
+      <a href="admin-messages.html">💬 메시지</a>
+      <a href="admin-reports.html">🚨 신고 관리</a>
+      <a href="admin-permissions.html">🔐 권한 관리</a>
+      <a href="admin-email.html">📧 이메일 설정</a>
+      <a href="admin-backup.html">💾 백업/복구</a>
+      <a href="admin-sites.html">🌐 사이트 접속</a>
+      <a href="admin-settings.html">⚙️ 시스템 설정</a>
+      <a href="admin-manual.html" style="margin-top: 20px; border-top: 1px solid rgba(255,255,255,0.2); padding-top: 12px;">📖 메뉴얼</a>
+      <a href="admin-architecture.html" class="active" style="border-top: 1px solid rgba(255,255,255,0.1); padding-top: 12px;">📊 구조도</a>
+    </nav>
+    <div class="sidebar-footer">
+      <button class="btn-logout" id="logoutBtn">🚪 로그아웃</button>
+    </div>
+  </aside>
+
+  <!-- 메인 -->
+  <main class="admin-main">
+    <div class="admin-topbar">
+      <div class="topbar-title">📊 시스템 구조도</div>
+    </div>
+
+    <div class="admin-content">
+      <div class="arch-container">
+
+        <!-- 안내 패널 -->
+        <div class="arch-guidance">
+          <h2>📊 시스템 구조도</h2>
+          <p>
+            선거 워룸 관리자 대시보드는 사용자(관리자·캠프) → HTML 페이지(12개) → Supabase 백엔드 → 데이터베이스로 이어지는
+            4계층 아키텍처로 구성됩니다. 사용자는 브라우저에서 HTML 페이지에 접근하고, 각 페이지는 Supabase JavaScript SDK를 통해
+            백엔드 API를 호출합니다. 백엔드는 candidates, notifications, reports, roles, files 등
+            핵심 테이블을 관리하며, CSS/JS 프론트엔드 자산이 모든 페이지에 공통 스타일과 인증 로직을 제공합니다.
+            이 구조도를 통해 각 컴포넌트 간 데이터 흐름과 의존 관계를 한눈에 파악할 수 있습니다.
+          </p>
+        </div>
+
+        <!-- SVG 구조도 -->
+        <div class="arch-diagram">
+          <svg viewBox="0 0 1000 820" width="100%" style="max-width:1000px; height:auto; display:block;"
+               xmlns="http://www.w3.org/2000/svg"
+               font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif">
+
+            <defs>
+              <!-- Arrow markers -->
+              <marker id="arrowBlue" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                <polygon points="0 0,10 3.5,0 7" fill="#2563eb"/>
+              </marker>
+              <marker id="arrowGreen" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                <polygon points="0 0,10 3.5,0 7" fill="#16a34a"/>
+              </marker>
+              <marker id="arrowPurple" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                <polygon points="0 0,10 3.5,0 7" fill="#7c3aed"/>
+              </marker>
+              <marker id="arrowRed" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                <polygon points="0 0,10 3.5,0 7" fill="#dc2626"/>
+              </marker>
+              <marker id="arrowAmber" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                <polygon points="0 0,10 3.5,0 7" fill="#ca8a04"/>
+              </marker>
+              <!-- Drop shadow filter -->
+              <filter id="shadow" x="-5%" y="-5%" width="115%" height="125%">
+                <feDropShadow dx="2" dy="3" stdDeviation="4" flood-color="rgba(0,0,0,0.13)"/>
+              </filter>
+            </defs>
+
+            <!-- ══════════════════════════════════════════
+                 LAYER 1 — USERS
+            ══════════════════════════════════════════ -->
+
+            <!-- 시스템 관리자 -->
+            <rect x="160" y="30" width="160" height="74" rx="12"
+                  fill="#dbeafe" stroke="#2563eb" stroke-width="2" filter="url(#shadow)"/>
+            <text x="240" y="57" text-anchor="middle" font-size="22">👤</text>
+            <text x="240" y="77" text-anchor="middle" font-size="13" font-weight="700" fill="#1e3a5f">시스템 관리자</text>
+            <text x="240" y="95" text-anchor="middle" font-size="11" fill="#2563eb">Super Admin</text>
+
+            <!-- 선거캠프 -->
+            <rect x="680" y="30" width="160" height="74" rx="12"
+                  fill="#dbeafe" stroke="#2563eb" stroke-width="2" filter="url(#shadow)"/>
+            <text x="760" y="57" text-anchor="middle" font-size="22">👤</text>
+            <text x="760" y="77" text-anchor="middle" font-size="13" font-weight="700" fill="#1e3a5f">선거캠프</text>
+            <text x="760" y="95" text-anchor="middle" font-size="11" fill="#2563eb">Camp User</text>
+
+            <!-- Layer 1 label -->
+            <text x="30" y="72" text-anchor="middle" font-size="11" fill="#94a3b8"
+                  transform="rotate(-90,30,72)">Layer 1 · Users</text>
+
+            <!-- ─── Arrows: Users → Pages ─── -->
+            <line x1="240" y1="104" x2="272" y2="172"
+                  stroke="#2563eb" stroke-width="1.8" stroke-dasharray="6,3" marker-end="url(#arrowBlue)"/>
+            <line x1="760" y1="104" x2="728" y2="172"
+                  stroke="#2563eb" stroke-width="1.8" stroke-dasharray="6,3" marker-end="url(#arrowBlue)"/>
+
+            <!-- ══════════════════════════════════════════
+                 CSS / JS FRONTEND (left panel)
+            ══════════════════════════════════════════ -->
+            <rect x="22" y="172" width="130" height="208" rx="10"
+                  fill="#fef9c3" stroke="#ca8a04" stroke-width="2" filter="url(#shadow)"/>
+            <text x="87" y="198" text-anchor="middle" font-size="17">🎨</text>
+            <text x="87" y="217" text-anchor="middle" font-size="12" font-weight="700" fill="#713f12">Frontend</text>
+            <text x="87" y="234" text-anchor="middle" font-size="11" fill="#854d0e">CSS / JS Assets</text>
+            <line x1="50" y1="244" x2="124" y2="244" stroke="#ca8a04" stroke-width="1" stroke-dasharray="3,2"/>
+            <text x="87" y="260" text-anchor="middle" font-size="11" fill="#713f12">theme.css</text>
+            <text x="87" y="276" text-anchor="middle" font-size="11" fill="#713f12">admin-auth.js</text>
+            <text x="87" y="292" text-anchor="middle" font-size="11" fill="#713f12">supabase-client.js</text>
+            <text x="87" y="308" text-anchor="middle" font-size="11" fill="#713f12">utils.js</text>
+            <text x="87" y="324" text-anchor="middle" font-size="11" fill="#713f12">chart.js (CDN)</text>
+            <text x="87" y="340" text-anchor="middle" font-size="11" fill="#713f12">html2pdf.js (CDN)</text>
+            <text x="87" y="357" text-anchor="middle" font-size="11" fill="#713f12">supabase-sdk (CDN)</text>
+
+            <!-- Arrow: Frontend → Pages -->
+            <line x1="152" y1="276" x2="192" y2="276"
+                  stroke="#ca8a04" stroke-width="1.6" stroke-dasharray="4,3" marker-end="url(#arrowAmber)"/>
+
+            <!-- ══════════════════════════════════════════
+                 LAYER 2 — HTML PAGES
+            ══════════════════════════════════════════ -->
+            <rect x="192" y="172" width="616" height="208" rx="14"
+                  fill="#dcfce7" stroke="#16a34a" stroke-width="2.5" filter="url(#shadow)"/>
+            <text x="500" y="198" text-anchor="middle" font-size="14" font-weight="700" fill="#14532d">
+              📄 HTML Pages — 12 Admin Pages
+            </text>
+
+            <!-- Row 1 page boxes -->
+            <rect x="210" y="210" width="130" height="42" rx="7" fill="#bbf7d0" stroke="#16a34a" stroke-width="1.3"/>
+            <text x="275" y="228" text-anchor="middle" font-size="11" font-weight="600" fill="#14532d">admin-dashboard</text>
+            <text x="275" y="243" text-anchor="middle" font-size="10" fill="#166534">.html (통합 허브)</text>
+
+            <rect x="356" y="210" width="130" height="42" rx="7" fill="#bbf7d0" stroke="#16a34a" stroke-width="1.3"/>
+            <text x="421" y="228" text-anchor="middle" font-size="11" font-weight="600" fill="#14532d">admin-login</text>
+            <text x="421" y="243" text-anchor="middle" font-size="10" fill="#166534">.html (인증)</text>
+
+            <rect x="502" y="210" width="130" height="42" rx="7" fill="#bbf7d0" stroke="#16a34a" stroke-width="1.3"/>
+            <text x="567" y="228" text-anchor="middle" font-size="11" font-weight="600" fill="#14532d">admin-architecture</text>
+            <text x="567" y="243" text-anchor="middle" font-size="10" fill="#166534">.html (구조도)</text>
+
+            <rect x="648" y="210" width="130" height="42" rx="7" fill="#bbf7d0" stroke="#16a34a" stroke-width="1.3"/>
+            <text x="713" y="228" text-anchor="middle" font-size="11" font-weight="600" fill="#14532d">admin-manual</text>
+            <text x="713" y="243" text-anchor="middle" font-size="10" fill="#166534">.html (메뉴얼)</text>
+
+            <!-- Row 2 page boxes -->
+            <rect x="210" y="264" width="130" height="42" rx="7" fill="#bbf7d0" stroke="#16a34a" stroke-width="1.3"/>
+            <text x="275" y="282" text-anchor="middle" font-size="11" font-weight="600" fill="#14532d">admin-members</text>
+            <text x="275" y="297" text-anchor="middle" font-size="10" fill="#166534">/ statistics</text>
+
+            <rect x="356" y="264" width="130" height="42" rx="7" fill="#bbf7d0" stroke="#16a34a" stroke-width="1.3"/>
+            <text x="421" y="282" text-anchor="middle" font-size="11" font-weight="600" fill="#14532d">admin-reports</text>
+            <text x="421" y="297" text-anchor="middle" font-size="10" fill="#166534">/ messages</text>
+
+            <rect x="502" y="264" width="130" height="42" rx="7" fill="#bbf7d0" stroke="#16a34a" stroke-width="1.3"/>
+            <text x="567" y="282" text-anchor="middle" font-size="11" font-weight="600" fill="#14532d">admin-settings</text>
+            <text x="567" y="297" text-anchor="middle" font-size="10" fill="#166534">/ email / backup</text>
+
+            <rect x="648" y="264" width="130" height="42" rx="7" fill="#bbf7d0" stroke="#16a34a" stroke-width="1.3"/>
+            <text x="713" y="282" text-anchor="middle" font-size="11" font-weight="600" fill="#14532d">admin-files</text>
+            <text x="713" y="297" text-anchor="middle" font-size="10" fill="#166534">/ sites / permissions</text>
+
+            <!-- Layer 2 label -->
+            <text x="30" y="276" text-anchor="middle" font-size="11" fill="#94a3b8"
+                  transform="rotate(-90,30,276)">Layer 2 · Pages</text>
+
+            <!-- ─── Arrow: Pages → Backend ─── -->
+            <line x1="500" y1="382" x2="500" y2="440"
+                  stroke="#16a34a" stroke-width="2.2" marker-end="url(#arrowPurple)"/>
+            <text x="516" y="416" font-size="11" fill="#16a34a">Supabase SDK</text>
+            <text x="516" y="430" font-size="11" fill="#16a34a">API calls</text>
+
+            <!-- ══════════════════════════════════════════
+                 LAYER 3 — BACKEND (SUPABASE)
+            ══════════════════════════════════════════ -->
+            <rect x="192" y="442" width="616" height="138" rx="14"
+                  fill="#ede9fe" stroke="#7c3aed" stroke-width="2.5" filter="url(#shadow)"/>
+            <text x="500" y="468" text-anchor="middle" font-size="14" font-weight="700" fill="#3b0764">
+              🗄️ Backend — Supabase (BaaS)
+            </text>
+
+            <!-- Backend sub-boxes -->
+            <rect x="218" y="480" width="148" height="44" rx="7" fill="#ddd6fe" stroke="#7c3aed" stroke-width="1.3"/>
+            <text x="292" y="498" text-anchor="middle" font-size="11" font-weight="600" fill="#3b0764">REST API</text>
+            <text x="292" y="514" text-anchor="middle" font-size="10" fill="#5b21b6">PostgREST 자동 생성</text>
+
+            <rect x="382" y="480" width="148" height="44" rx="7" fill="#ddd6fe" stroke="#7c3aed" stroke-width="1.3"/>
+            <text x="456" y="498" text-anchor="middle" font-size="11" font-weight="600" fill="#3b0764">Auth</text>
+            <text x="456" y="514" text-anchor="middle" font-size="10" fill="#5b21b6">JWT / Row-Level Security</text>
+
+            <rect x="546" y="480" width="148" height="44" rx="7" fill="#ddd6fe" stroke="#7c3aed" stroke-width="1.3"/>
+            <text x="620" y="498" text-anchor="middle" font-size="11" font-weight="600" fill="#3b0764">Storage</text>
+            <text x="620" y="514" text-anchor="middle" font-size="10" fill="#5b21b6">파일 업로드/다운로드</text>
+
+            <text x="500" y="556" text-anchor="middle" font-size="11" fill="#5b21b6">
+              Realtime Subscriptions · Edge Functions · RLS Policies
+            </text>
+
+            <!-- Layer 3 label -->
+            <text x="30" y="511" text-anchor="middle" font-size="11" fill="#94a3b8"
+                  transform="rotate(-90,30,511)">Layer 3 · Backend</text>
+
+            <!-- ─── Arrow: Backend → DB ─── -->
+            <line x1="500" y1="582" x2="500" y2="634"
+                  stroke="#7c3aed" stroke-width="2.2" marker-end="url(#arrowRed)"/>
+            <text x="516" y="610" font-size="11" fill="#7c3aed">SQL queries</text>
+            <text x="516" y="624" font-size="11" fill="#7c3aed">+ CDC events</text>
+
+            <!-- ══════════════════════════════════════════
+                 LAYER 4 — DATABASE
+            ══════════════════════════════════════════ -->
+            <rect x="192" y="636" width="616" height="170" rx="14"
+                  fill="#fee2e2" stroke="#dc2626" stroke-width="2.5" filter="url(#shadow)"/>
+            <text x="500" y="660" text-anchor="middle" font-size="14" font-weight="700" fill="#7f1d1d">
+              💾 Database — PostgreSQL Tables
+            </text>
+
+            <!-- DB table boxes row 1 -->
+            <rect x="218" y="672" width="116" height="40" rx="7" fill="#fecaca" stroke="#dc2626" stroke-width="1.3"/>
+            <text x="276" y="688" text-anchor="middle" font-size="11" font-weight="600" fill="#7f1d1d">candidates</text>
+            <text x="276" y="703" text-anchor="middle" font-size="10" fill="#991b1b">캠프 정보</text>
+
+            <rect x="348" y="672" width="116" height="40" rx="7" fill="#fecaca" stroke="#dc2626" stroke-width="1.3"/>
+            <text x="406" y="688" text-anchor="middle" font-size="11" font-weight="600" fill="#7f1d1d">notifications</text>
+            <text x="406" y="703" text-anchor="middle" font-size="10" fill="#991b1b">알림 메시지</text>
+
+            <rect x="478" y="672" width="116" height="40" rx="7" fill="#fecaca" stroke="#dc2626" stroke-width="1.3"/>
+            <text x="536" y="688" text-anchor="middle" font-size="11" font-weight="600" fill="#7f1d1d">reports</text>
+            <text x="536" y="703" text-anchor="middle" font-size="10" fill="#991b1b">신고 내역</text>
+
+            <rect x="608" y="672" width="116" height="40" rx="7" fill="#fecaca" stroke="#dc2626" stroke-width="1.3"/>
+            <text x="666" y="688" text-anchor="middle" font-size="11" font-weight="600" fill="#7f1d1d">roles</text>
+            <text x="666" y="703" text-anchor="middle" font-size="10" fill="#991b1b">권한 / 역할</text>
+
+            <!-- DB table boxes row 2 -->
+            <rect x="218" y="724" width="116" height="40" rx="7" fill="#fecaca" stroke="#dc2626" stroke-width="1.3"/>
+            <text x="276" y="740" text-anchor="middle" font-size="11" font-weight="600" fill="#7f1d1d">files</text>
+            <text x="276" y="755" text-anchor="middle" font-size="10" fill="#991b1b">자료 파일</text>
+
+            <rect x="348" y="724" width="116" height="40" rx="7" fill="#fecaca" stroke="#dc2626" stroke-width="1.3"/>
+            <text x="406" y="740" text-anchor="middle" font-size="11" font-weight="600" fill="#7f1d1d">messages</text>
+            <text x="406" y="755" text-anchor="middle" font-size="10" fill="#991b1b">채팅/문의</text>
+
+            <rect x="478" y="724" width="116" height="40" rx="7" fill="#fecaca" stroke="#dc2626" stroke-width="1.3"/>
+            <text x="536" y="740" text-anchor="middle" font-size="11" font-weight="600" fill="#7f1d1d">settings</text>
+            <text x="536" y="755" text-anchor="middle" font-size="10" fill="#991b1b">시스템 설정</text>
+
+            <rect x="608" y="724" width="116" height="40" rx="7" fill="#fecaca" stroke="#dc2626" stroke-width="1.3"/>
+            <text x="666" y="740" text-anchor="middle" font-size="11" font-weight="600" fill="#7f1d1d">backups</text>
+            <text x="666" y="755" text-anchor="middle" font-size="10" fill="#991b1b">백업 기록</text>
+
+            <text x="500" y="789" text-anchor="middle" font-size="11" fill="#991b1b">
+              PostgreSQL · Row-Level Security · Realtime CDC · Point-in-Time Recovery
+            </text>
+
+            <!-- Layer 4 label -->
+            <text x="30" y="721" text-anchor="middle" font-size="11" fill="#94a3b8"
+                  transform="rotate(-90,30,721)">Layer 4 · DB</text>
+
+          </svg>
+        </div>
+
+        <!-- 범례 -->
+        <div class="arch-legend">
+          <div class="arch-legend-item">
+            <div class="arch-legend-dot" style="background:#2563eb;"></div>
+            사용자 (Users / Admins)
+          </div>
+          <div class="arch-legend-item">
+            <div class="arch-legend-dot" style="background:#16a34a;"></div>
+            페이지 (HTML Pages)
+          </div>
+          <div class="arch-legend-item">
+            <div class="arch-legend-dot" style="background:#7c3aed;"></div>
+            백엔드 (Supabase BaaS)
+          </div>
+          <div class="arch-legend-item">
+            <div class="arch-legend-dot" style="background:#dc2626;"></div>
+            데이터베이스 (PostgreSQL)
+          </div>
+          <div class="arch-legend-item">
+            <div class="arch-legend-dot" style="background:#ca8a04;"></div>
+            프론트엔드 자산 (CSS/JS)
+          </div>
+        </div>
+
+      </div><!-- /.arch-container -->
+    </div><!-- /.admin-content -->
+  </main>
+
+  <div class="toast-container" id="toastContainer"></div>
+
+  <script src="../js/supabase-client.js"></script>
+  <script src="../js/admin-auth.js"></script>
+  <script>
+    async function init() {
+      if (!AdminAuth.isAuthenticated()) {
+        window.location.href = '/pages/admin-login.html';
+        return;
+      }
+      const admin = AdminAuth.getCurrentAdmin();
+      document.getElementById('sidebarAdminName').textContent = admin.username;
+      document.getElementById('sidebarAdminRole').textContent =
+        admin.role === 'super_admin' ? '🔴 Super Admin' : '🟠 Admin';
+
+      document.getElementById('logoutBtn').addEventListener('click', () => {
+        AdminAuth.logout();
+        window.location.href = '/pages/admin-login.html';
+      });
+
+      await SupabaseDB.init();
+    }
+
+    init();
+  </script>
+</body>
+</html>

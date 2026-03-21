@@ -168,6 +168,7 @@
       <a data-section="sites">🌐 사이트 접속</a>
       <a data-section="settings">⚙️ 시스템 설정</a>
       <a data-section="manual" style="margin-top: 20px; border-top: 1px solid rgba(255,255,255,0.2); padding-top: 12px;">📖 메뉴얼</a>
+      <a data-section="architecture" style="margin-top: 0; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 12px;">📊 구조도</a>
     </nav>
     <div class="sidebar-footer">
       <button class="btn-logout">🚪 로그아웃</button>
@@ -961,6 +962,203 @@
           </div>
         </div>
       </div>
+
+      <!-- Architecture 섹션 -->
+      <div id="section-architecture" class="admin-section">
+        <style>
+          .arch-container { max-width: 1050px; }
+          .arch-guidance { background: var(--bg-primary); border-left: 4px solid var(--primary-color); padding: 18px 20px; border-radius: 8px; margin-bottom: 30px; font-size: 14px; line-height: 1.8; color: var(--text-primary); }
+          .arch-guidance h2 { font-size: 22px; font-weight: 700; color: var(--text-primary); margin-bottom: 14px; }
+          .arch-diagram { display: flex; justify-content: center; overflow-x: auto; }
+          .arch-legend { display: flex; flex-wrap: wrap; gap: 16px; margin-top: 24px; justify-content: center; }
+          .arch-legend-item { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text-primary); }
+          .arch-legend-dot { width: 14px; height: 14px; border-radius: 3px; flex-shrink: 0; }
+        </style>
+        <div class="arch-container">
+          <div class="arch-guidance">
+            <h2>📊 시스템 구조도</h2>
+            <p>
+              선거 워룸 관리자 대시보드는 사용자(관리자·캠프) → HTML 페이지(12개) → Supabase 백엔드 → 데이터베이스로 이어지는
+              4계층 아키텍처로 구성됩니다. 사용자는 브라우저에서 HTML 페이지에 접근하고, 각 페이지는 Supabase JavaScript SDK를 통해
+              백엔드 API를 호출합니다. 백엔드는 candidates, notifications, reports, roles, files 등
+              핵심 테이블을 관리하며, CSS/JS 프론트엔드 자산이 모든 페이지의 공통 스타일과 인증 로직을 제공합니다.
+              이 구조도를 통해 각 컴포넌트 간 데이터 흐름과 의존 관계를 한눈에 파악할 수 있습니다.
+            </p>
+          </div>
+          <div class="arch-diagram">
+            <svg viewBox="0 0 1000 820" width="100%" style="max-width:1000px; height:auto; display:block;" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif">
+              <defs>
+                <marker id="arrowBlue" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                  <polygon points="0 0,10 3.5,0 7" fill="#2563eb"/>
+                </marker>
+                <marker id="arrowGreen" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                  <polygon points="0 0,10 3.5,0 7" fill="#16a34a"/>
+                </marker>
+                <marker id="arrowPurple" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                  <polygon points="0 0,10 3.5,0 7" fill="#7c3aed"/>
+                </marker>
+                <marker id="arrowRed" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                  <polygon points="0 0,10 3.5,0 7" fill="#dc2626"/>
+                </marker>
+                <filter id="shadow" x="-5%" y="-5%" width="110%" height="120%">
+                  <feDropShadow dx="2" dy="3" stdDeviation="4" flood-color="rgba(0,0,0,0.15)"/>
+                </filter>
+              </defs>
+
+              <!-- ─── Layer 1: Users ─── -->
+              <!-- Admin User -->
+              <rect x="160" y="30" width="160" height="72" rx="12" fill="#dbeafe" stroke="#2563eb" stroke-width="2" filter="url(#shadow)"/>
+              <text x="240" y="56" text-anchor="middle" font-size="22">👤</text>
+              <text x="240" y="76" text-anchor="middle" font-size="13" font-weight="700" fill="#1e3a5f">시스템 관리자</text>
+              <text x="240" y="93" text-anchor="middle" font-size="11" fill="#2563eb">Super Admin</text>
+
+              <!-- Camp User -->
+              <rect x="680" y="30" width="160" height="72" rx="12" fill="#dbeafe" stroke="#2563eb" stroke-width="2" filter="url(#shadow)"/>
+              <text x="760" y="56" text-anchor="middle" font-size="22">👤</text>
+              <text x="760" y="76" text-anchor="middle" font-size="13" font-weight="700" fill="#1e3a5f">선거캠프</text>
+              <text x="760" y="93" text-anchor="middle" font-size="11" fill="#2563eb">Camp User</text>
+
+              <!-- ─── Arrow: Users → Pages ─── -->
+              <line x1="240" y1="102" x2="270" y2="168" stroke="#2563eb" stroke-width="1.8" stroke-dasharray="6,3" marker-end="url(#arrowBlue)"/>
+              <line x1="760" y1="102" x2="730" y2="168" stroke="#2563eb" stroke-width="1.8" stroke-dasharray="6,3" marker-end="url(#arrowBlue)"/>
+
+              <!-- ─── CSS/JS Frontend (left sidebar) ─── -->
+              <rect x="22" y="168" width="130" height="200" rx="10" fill="#fef9c3" stroke="#ca8a04" stroke-width="2" filter="url(#shadow)"/>
+              <text x="87" y="194" text-anchor="middle" font-size="16">🎨</text>
+              <text x="87" y="213" text-anchor="middle" font-size="12" font-weight="700" fill="#713f12">Frontend</text>
+              <text x="87" y="231" text-anchor="middle" font-size="11" fill="#854d0e">CSS / JS</text>
+              <line x1="87" y1="243" x2="87" y2="255" stroke="#ca8a04" stroke-width="1"/>
+              <text x="87" y="269" text-anchor="middle" font-size="11" fill="#713f12">theme.css</text>
+              <text x="87" y="286" text-anchor="middle" font-size="11" fill="#713f12">admin-auth.js</text>
+              <text x="87" y="303" text-anchor="middle" font-size="11" fill="#713f12">supabase.js</text>
+              <text x="87" y="320" text-anchor="middle" font-size="11" fill="#713f12">utils.js</text>
+              <text x="87" y="337" text-anchor="middle" font-size="11" fill="#713f12">chart.js</text>
+              <!-- Arrow: Frontend → Pages -->
+              <line x1="152" y1="268" x2="192" y2="268" stroke="#ca8a04" stroke-width="1.6" stroke-dasharray="4,3" marker-end="url(#arrowBlue)"/>
+
+              <!-- ─── Layer 2: HTML Pages ─── -->
+              <rect x="192" y="168" width="616" height="200" rx="14" fill="#dcfce7" stroke="#16a34a" stroke-width="2.5" filter="url(#shadow)"/>
+              <text x="500" y="194" text-anchor="middle" font-size="14" font-weight="700" fill="#14532d">📄 HTML Pages  — 12 Admin Pages</text>
+
+              <!-- Page boxes row 1 -->
+              <rect x="210" y="206" width="120" height="40" rx="7" fill="#bbf7d0" stroke="#16a34a" stroke-width="1.3"/>
+              <text x="270" y="222" text-anchor="middle" font-size="11" font-weight="600" fill="#14532d">admin-dashboard</text>
+              <text x="270" y="237" text-anchor="middle" font-size="10" fill="#166534">.html</text>
+
+              <rect x="346" y="206" width="120" height="40" rx="7" fill="#bbf7d0" stroke="#16a34a" stroke-width="1.3"/>
+              <text x="406" y="222" text-anchor="middle" font-size="11" font-weight="600" fill="#14532d">admin-login</text>
+              <text x="406" y="237" text-anchor="middle" font-size="10" fill="#166534">.html</text>
+
+              <rect x="482" y="206" width="120" height="40" rx="7" fill="#bbf7d0" stroke="#16a34a" stroke-width="1.3"/>
+              <text x="542" y="222" text-anchor="middle" font-size="11" font-weight="600" fill="#14532d">admin-architecture</text>
+              <text x="542" y="237" text-anchor="middle" font-size="10" fill="#166534">.html</text>
+
+              <rect x="618" y="206" width="120" height="40" rx="7" fill="#bbf7d0" stroke="#16a34a" stroke-width="1.3"/>
+              <text x="678" y="222" text-anchor="middle" font-size="11" font-weight="600" fill="#14532d">index / camp</text>
+              <text x="678" y="237" text-anchor="middle" font-size="10" fill="#166534">pages</text>
+
+              <!-- Page boxes row 2 -->
+              <rect x="210" y="258" width="120" height="40" rx="7" fill="#bbf7d0" stroke="#16a34a" stroke-width="1.3"/>
+              <text x="270" y="274" text-anchor="middle" font-size="11" font-weight="600" fill="#14532d">press / policy</text>
+              <text x="270" y="289" text-anchor="middle" font-size="10" fill="#166534">pages</text>
+
+              <rect x="346" y="258" width="120" height="40" rx="7" fill="#bbf7d0" stroke="#16a34a" stroke-width="1.3"/>
+              <text x="406" y="274" text-anchor="middle" font-size="11" font-weight="600" fill="#14532d">schedule</text>
+              <text x="406" y="289" text-anchor="middle" font-size="10" fill="#166534">/ gallery</text>
+
+              <rect x="482" y="258" width="120" height="40" rx="7" fill="#bbf7d0" stroke="#16a34a" stroke-width="1.3"/>
+              <text x="542" y="274" text-anchor="middle" font-size="11" font-weight="600" fill="#14532d">survey / donate</text>
+              <text x="542" y="289" text-anchor="middle" font-size="10" fill="#166534">pages</text>
+
+              <rect x="618" y="258" width="120" height="40" rx="7" fill="#bbf7d0" stroke="#16a34a" stroke-width="1.3"/>
+              <text x="678" y="274" text-anchor="middle" font-size="11" font-weight="600" fill="#14532d">notifications</text>
+              <text x="678" y="289" text-anchor="middle" font-size="10" fill="#166534">/ signup</text>
+
+              <!-- ─── Arrow: Pages → Backend ─── -->
+              <line x1="500" y1="370" x2="500" y2="430" stroke="#16a34a" stroke-width="2" marker-end="url(#arrowPurple)"/>
+              <text x="516" y="406" font-size="11" fill="#16a34a">API calls</text>
+
+              <!-- ─── Layer 3: Backend (Supabase) ─── -->
+              <rect x="192" y="432" width="616" height="130" rx="14" fill="#ede9fe" stroke="#7c3aed" stroke-width="2.5" filter="url(#shadow)"/>
+              <text x="500" y="458" text-anchor="middle" font-size="14" font-weight="700" fill="#3b0764">🗄️ Backend — Supabase</text>
+
+              <rect x="218" y="470" width="140" height="40" rx="7" fill="#ddd6fe" stroke="#7c3aed" stroke-width="1.3"/>
+              <text x="288" y="486" text-anchor="middle" font-size="11" font-weight="600" fill="#3b0764">REST API</text>
+              <text x="288" y="501" text-anchor="middle" font-size="10" fill="#5b21b6">PostgREST</text>
+
+              <rect x="374" y="470" width="140" height="40" rx="7" fill="#ddd6fe" stroke="#7c3aed" stroke-width="1.3"/>
+              <text x="444" y="486" text-anchor="middle" font-size="11" font-weight="600" fill="#3b0764">Auth</text>
+              <text x="444" y="501" text-anchor="middle" font-size="10" fill="#5b21b6">JWT / RLS</text>
+
+              <rect x="530" y="470" width="140" height="40" rx="7" fill="#ddd6fe" stroke="#7c3aed" stroke-width="1.3"/>
+              <text x="600" y="486" text-anchor="middle" font-size="11" font-weight="600" fill="#3b0764">Storage</text>
+              <text x="600" y="501" text-anchor="middle" font-size="10" fill="#5b21b6">File Uploads</text>
+
+              <text x="500" y="548" text-anchor="middle" font-size="11" fill="#5b21b6">Realtime Subscriptions · Edge Functions · Row-Level Security</text>
+
+              <!-- ─── Arrow: Backend → DB ─── -->
+              <line x1="500" y1="564" x2="500" y2="618" stroke="#7c3aed" stroke-width="2" marker-end="url(#arrowRed)"/>
+              <text x="516" y="596" font-size="11" fill="#7c3aed">SQL queries</text>
+
+              <!-- ─── Layer 4: Database ─── -->
+              <rect x="192" y="620" width="616" height="172" rx="14" fill="#fee2e2" stroke="#dc2626" stroke-width="2.5" filter="url(#shadow)"/>
+              <text x="500" y="646" text-anchor="middle" font-size="14" font-weight="700" fill="#7f1d1d">💾 Database — PostgreSQL Tables</text>
+
+              <!-- Table boxes row 1 -->
+              <rect x="218" y="658" width="110" height="38" rx="7" fill="#fecaca" stroke="#dc2626" stroke-width="1.3"/>
+              <text x="273" y="674" text-anchor="middle" font-size="11" font-weight="600" fill="#7f1d1d">candidates</text>
+              <text x="273" y="688" text-anchor="middle" font-size="10" fill="#991b1b">캠프 정보</text>
+
+              <rect x="342" y="658" width="110" height="38" rx="7" fill="#fecaca" stroke="#dc2626" stroke-width="1.3"/>
+              <text x="397" y="674" text-anchor="middle" font-size="11" font-weight="600" fill="#7f1d1d">notifications</text>
+              <text x="397" y="688" text-anchor="middle" font-size="10" fill="#991b1b">알림</text>
+
+              <rect x="466" y="658" width="110" height="38" rx="7" fill="#fecaca" stroke="#dc2626" stroke-width="1.3"/>
+              <text x="521" y="674" text-anchor="middle" font-size="11" font-weight="600" fill="#7f1d1d">reports</text>
+              <text x="521" y="688" text-anchor="middle" font-size="10" fill="#991b1b">신고 내역</text>
+
+              <rect x="590" y="658" width="110" height="38" rx="7" fill="#fecaca" stroke="#dc2626" stroke-width="1.3"/>
+              <text x="645" y="674" text-anchor="middle" font-size="11" font-weight="600" fill="#7f1d1d">roles</text>
+              <text x="645" y="688" text-anchor="middle" font-size="10" fill="#991b1b">권한</text>
+
+              <!-- Table boxes row 2 -->
+              <rect x="218" y="710" width="110" height="38" rx="7" fill="#fecaca" stroke="#dc2626" stroke-width="1.3"/>
+              <text x="273" y="726" text-anchor="middle" font-size="11" font-weight="600" fill="#7f1d1d">files</text>
+              <text x="273" y="740" text-anchor="middle" font-size="10" fill="#991b1b">자료 파일</text>
+
+              <rect x="342" y="710" width="110" height="38" rx="7" fill="#fecaca" stroke="#dc2626" stroke-width="1.3"/>
+              <text x="397" y="726" text-anchor="middle" font-size="11" font-weight="600" fill="#7f1d1d">messages</text>
+              <text x="397" y="740" text-anchor="middle" font-size="10" fill="#991b1b">메시지</text>
+
+              <rect x="466" y="710" width="110" height="38" rx="7" fill="#fecaca" stroke="#dc2626" stroke-width="1.3"/>
+              <text x="521" y="726" text-anchor="middle" font-size="11" font-weight="600" fill="#7f1d1d">settings</text>
+              <text x="521" y="740" text-anchor="middle" font-size="10" fill="#991b1b">시스템 설정</text>
+
+              <rect x="590" y="710" width="110" height="38" rx="7" fill="#fecaca" stroke="#dc2626" stroke-width="1.3"/>
+              <text x="645" y="726" text-anchor="middle" font-size="11" font-weight="600" fill="#7f1d1d">backups</text>
+              <text x="645" y="740" text-anchor="middle" font-size="10" fill="#991b1b">백업</text>
+
+              <text x="500" y="778" text-anchor="middle" font-size="11" fill="#991b1b">PostgreSQL · Row-Level Security · Realtime CDC</text>
+
+              <!-- ─── Layer labels (left side) ─── -->
+              <text x="14" y="72" text-anchor="middle" font-size="11" fill="#64748b" transform="rotate(-90,14,72)">Layer 1</text>
+              <text x="14" y="272" text-anchor="middle" font-size="11" fill="#64748b" transform="rotate(-90,14,272)">Layer 2</text>
+              <text x="14" y="500" text-anchor="middle" font-size="11" fill="#64748b" transform="rotate(-90,14,500)">Layer 3</text>
+              <text x="14" y="706" text-anchor="middle" font-size="11" fill="#64748b" transform="rotate(-90,14,706)">Layer 4</text>
+            </svg>
+          </div>
+
+          <!-- Legend -->
+          <div class="arch-legend">
+            <div class="arch-legend-item"><div class="arch-legend-dot" style="background:#2563eb;"></div>사용자 (Users / Admins)</div>
+            <div class="arch-legend-item"><div class="arch-legend-dot" style="background:#16a34a;"></div>페이지 (HTML Pages)</div>
+            <div class="arch-legend-item"><div class="arch-legend-dot" style="background:#7c3aed;"></div>백엔드 (Supabase)</div>
+            <div class="arch-legend-item"><div class="arch-legend-dot" style="background:#dc2626;"></div>데이터베이스 (Tables)</div>
+            <div class="arch-legend-item"><div class="arch-legend-dot" style="background:#ca8a04;"></div>프론트엔드 (CSS/JS)</div>
+          </div>
+        </div>
+      </div>
+
     </div>
   </main>
 
@@ -1123,9 +1321,11 @@
           email: '📧 이메일 설정',
           backup: '💾 백업/복구',
           sites: '🌐 사이트 접속',
-          settings: '⚙️ 시스템 설정'
+          settings: '⚙️ 시스템 설정',
+          manual: '📖 메뉴얼',
+          architecture: '📊 구조도'
         };
-        document.getElementById('topbarTitle').textContent = titles[id];
+        document.getElementById('topbarTitle').textContent = titles[id] || id;
         this.currentSection = id;
 
         if (id === 'overview') this.loadOverview();
@@ -2507,7 +2707,8 @@
         else if (section === 'sites') this.loadSites();
         else if (section === 'settings') this.loadSettings();
         else if (section === 'manual') {} // 메뉴얼은 정적 콘텐츠
-        if (section !== 'manual') this.toast('새로고침 완료', 'success');
+        else if (section === 'architecture') {} // 구조도는 정적 SVG
+        if (section !== 'manual' && section !== 'architecture') this.toast('새로고침 완료', 'success');
       },
 
       // PDF 다운로드 함수
