@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>통계 분석 — 시스템 관리</title>
+  <link rel="stylesheet" href="../css/theme.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg-primary); color: var(--text-primary); }
+    body { display: flex; min-height: 100vh; }
+    .admin-sidebar { width: 260px; position: fixed; left: 0; top: 0; height: 100vh; background: var(--primary-color); color: white; overflow-y: auto; padding: 20px 0; z-index: 100; }
+    .admin-main { margin-left: 260px; flex: 1; display: flex; flex-direction: column; }
+    .admin-topbar { background: var(--bg-secondary); border-bottom: 1px solid var(--border-color); padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; }
+    .admin-content { flex: 1; overflow-y: auto; padding: 30px; }
+    .sidebar-header { padding: 0 20px 20px; border-bottom: 1px solid rgba(255,255,255,0.2); font-size: 16px; font-weight: 700; margin-bottom: 20px; }
+    .admin-profile { padding: 15px 20px; margin-bottom: 20px; font-size: 13px; border-top: 1px solid rgba(255,255,255,0.1); }
+    .admin-profile-name { font-weight: 700; margin-bottom: 4px; }
+    .admin-profile-role { opacity: 0.8; font-size: 12px; }
+    .sidebar-nav { list-style: none; }
+    .sidebar-nav a { display: block; padding: 12px 20px; color: rgba(255,255,255,0.8); text-decoration: none; cursor: pointer; transition: all 0.2s; border-left: 3px solid transparent; margin-bottom: 2px; }
+    .sidebar-nav a:hover { color: white; background: rgba(255,255,255,0.1); }
+    .sidebar-nav a.active { background: rgba(0,0,0,0.3); color: white; border-left-color: white; font-weight: 600; }
+    .sidebar-footer { position: absolute; bottom: 20px; left: 0; right: 0; padding: 0 20px; }
+    .btn-logout { width: 100%; padding: 10px; background: rgba(0,0,0,0.3); color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; transition: background 0.2s; }
+    .btn-logout:hover { background: rgba(0,0,0,0.5); }
+    .topbar-title { font-size: 20px; font-weight: 700; color: var(--text-primary); }
+    .btn-refresh { padding: 8px 16px; background: var(--primary-color); color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; }
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 30px; }
+    .stat-card { background: linear-gradient(135deg, var(--bg-secondary), var(--bg-primary)); border: 1px solid var(--border-color); border-radius: 10px; padding: 20px; }
+    .stat-label { font-size: 13px; color: var(--text-secondary); margin-bottom: 8px; font-weight: 600; }
+    .stat-value { font-size: 32px; font-weight: 700; color: var(--primary-color); }
+    .toast-container { position: fixed; bottom: 20px; right: 20px; z-index: 300; }
+    .toast { background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 8px; padding: 15px 20px; margin-bottom: 10px; animation: slideIn 0.3s ease; }
+    .toast-success { border-left: 4px solid #4caf50; }
+    .toast-error { border-left: 4px solid #f44336; }
+    @keyframes slideIn { from { transform: translateX(400px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+    @media (max-width: 768px) { .admin-sidebar { width: 0; } .admin-main { margin-left: 0; } .stats-grid { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <aside class="admin-sidebar">
+    <div class="sidebar-header">🔧 시스템 관리</div>
+    <div class="admin-profile">
+      <div class="admin-profile-name" id="sidebarAdminName">로딩 중</div>
+      <div class="admin-profile-role" id="sidebarAdminRole"></div>
+    </div>
+    <nav class="sidebar-nav">
+      <a href="admin-overview.html">📊 대시보드</a>
+      <a href="admin-statistics.html" class="active">📈 통계 분석</a>
+      <a href="admin-members.html">👥 회원 관리</a>
+      <a href="admin-files.html">📁 자료 관리</a>
+      <a href="admin-messages.html">💬 메시지</a>
+      <a href="admin-reports.html">🚨 신고 관리</a>
+      <a href="admin-permissions.html">🔐 권한 관리</a>
+      <a href="admin-email.html">📧 이메일 설정</a>
+      <a href="admin-backup.html">💾 백업/복구</a>
+      <a href="admin-sites.html">🌐 사이트 접속</a>
+      <a href="admin-settings.html">⚙️ 시스템 설정</a>
+      <a href="admin-manual.html" style="margin-top: 20px; border-top: 1px solid rgba(255,255,255,0.2); padding-top: 12px;">📖 메뉴얼</a>
+    </nav>
+    <div class="sidebar-footer">
+      <button class="btn-logout" id="logoutBtn">🚪 로그아웃</button>
+    </div>
+  </aside>
+
+  <main class="admin-main">
+    <div class="admin-topbar">
+      <div class="topbar-title">📈 통계 분석</div>
+      <button class="btn-refresh" onclick="loadStatistics()">🔄 새로고침</button>
+    </div>
+    <div class="admin-content">
+      <div style="background: var(--bg-secondary); border-left: 4px solid var(--primary-color); padding: 20px; border-radius: 8px; font-size: 14px; color: var(--text-primary); margin: 20px 0 30px 0;">
+        캠프 가입, 승인, 활동 등의 추이를 시각화한 차트와 그래프를 제공합니다. 월별, 일별 데이터 분석을 통해 플랫폼의 성장 추세와 관리자 활동 패턴을 파악할 수 있습니다. 경영진 보고서나 분석 자료 작성 시 이 통계를 활용하세요. Chart.js를 이용한 인터랙티브 차트로 다양한 관점의 데이터 분석이 가능합니다.
+      </div>
+      <div id="statsExtraSummary" class="stats-grid"></div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 30px;">
+        <div class="stat-card">
+          <h3 style="margin-bottom: 20px; color: var(--text-primary);">📝 가입 현황</h3>
+          <canvas id="signupChart"></canvas>
+        </div>
+        <div class="stat-card">
+          <h3 style="margin-bottom: 20px; color: var(--text-primary);">✅ 승인 현황</h3>
+          <canvas id="approvalChart"></canvas>
+        </div>
+      </div>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+        <div class="stat-card">
+          <h3 style="margin-bottom: 20px; color: var(--text-primary);">🏛️ 정당별 분포</h3>
+          <canvas id="partyChart"></canvas>
+        </div>
+        <div class="stat-card">
+          <h3 style="margin-bottom: 20px; color: var(--text-primary);">📊 월별 활동</h3>
+          <canvas id="activityChart"></canvas>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <div class="toast-container" id="toastContainer"></div>
+
+  <script src="../js/supabase-client.js"></script>
+  <script src="../js/admin-auth.js"></script>
+  <script>
+    const _charts = {};
+
+    function toast(message, type = 'info') {
+      const container = document.getElementById('toastContainer');
+      const el = document.createElement('div');
+      el.className = `toast toast-${type}`;
+      el.textContent = message;
+      container.appendChild(el);
+      setTimeout(() => el.remove(), 3000);
+    }
+
+    function _makeChart(id, config) {
+      if (_charts[id]) { _charts[id].destroy(); delete _charts[id]; }
+      const canvas = document.getElementById(id);
+      if (!canvas) return;
+      canvas.style.display = '';
+      const emptyMsg = canvas.parentElement.querySelector('.chart-empty');
+      if (emptyMsg) emptyMsg.remove();
+      _charts[id] = new Chart(canvas.getContext('2d'), config);
+    }
+
+    function createCharts(monthlySignups, approvalData, partyData, activityData, activityLabel = '활동') {
+      _makeChart('signupChart', {
+        type: 'line',
+        data: {
+          labels: Object.keys(monthlySignups),
+          datasets: [{ label: '월별 가입자', data: Object.values(monthlySignups), borderColor: '#007bff', backgroundColor: 'rgba(0,123,255,0.1)', tension: 0.4, fill: true, pointRadius: 5, pointHoverRadius: 7 }]
+        },
+        options: { responsive: true, plugins: { legend: { display: true, position: 'top' } }, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } }
+      });
+
+      _makeChart('approvalChart', {
+        type: 'doughnut',
+        data: {
+          labels: ['대기 중', '승인됨', '거부됨'],
+          datasets: [{ data: [approvalData.pending, approvalData.approved, approvalData.rejected], backgroundColor: ['#ffc107', '#4caf50', '#f44336'], borderWidth: 2 }]
+        },
+        options: { responsive: true, plugins: { legend: { display: true, position: 'right' } } }
+      });
+
+      _makeChart('partyChart', {
+        type: 'bar',
+        data: {
+          labels: Object.keys(partyData),
+          datasets: [{ label: '정당별 후보자 수', data: Object.values(partyData), backgroundColor: 'rgba(0,123,255,0.7)', borderColor: '#007bff', borderWidth: 1 }]
+        },
+        options: { responsive: true, indexAxis: 'y', plugins: { legend: { display: false } }, scales: { x: { beginAtZero: true, ticks: { stepSize: 1 } } } }
+      });
+
+      const sortedKeys = Object.keys(activityData).sort().slice(-30);
+      _makeChart('activityChart', {
+        type: 'bar',
+        data: {
+          labels: sortedKeys,
+          datasets: [{ label: activityLabel, data: sortedKeys.map(k => activityData[k] || 0), backgroundColor: 'rgba(76,175,80,0.7)', borderColor: '#4caf50', borderWidth: 1 }]
+        },
+        options: { responsive: true, plugins: { legend: { display: true } }, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } }
+      });
+    }
+
+    async function loadStatistics() {
+      try {
+        const { data: candidates } = await SupabaseDB.client.from('candidates').select('created_at, approval_status, party').order('created_at');
+        const { data: activityLogs } = await SupabaseDB.client.from('admin_activity_logs').select('created_at, action').order('created_at', { ascending: false }).limit(500);
+        const { data: sharedFiles } = await SupabaseDB.client.from('shared_files').select('created_at, file_size').order('created_at', { ascending: false }).limit(500);
+
+        const totalCandidates = (candidates || []).length;
+        const totalFiles = (sharedFiles || []).length;
+        const totalLogs = (activityLogs || []).length;
+        const approvedCount = (candidates || []).filter(c => c.approval_status === 'approved').length;
+        const approvalRate = totalCandidates ? Math.round((approvedCount / totalCandidates) * 100) : 0;
+
+        document.getElementById('statsExtraSummary').innerHTML = `
+          <div class="stat-card"><div class="stat-label">👤 총 캠프</div><div class="stat-value">${totalCandidates}</div></div>
+          <div class="stat-card"><div class="stat-label">📁 업로드 파일</div><div class="stat-value">${totalFiles}</div></div>
+          <div class="stat-card"><div class="stat-label">📋 활동 로그</div><div class="stat-value">${totalLogs}</div></div>
+          <div class="stat-card"><div class="stat-label">✅ 승인률</div><div class="stat-value">${approvalRate}%</div></div>
+        `;
+
+        if (!candidates || candidates.length === 0) {
+          ['signupChart','approvalChart','partyChart','activityChart'].forEach(id => {
+            const canvas = document.getElementById(id);
+            if (!canvas) return;
+            canvas.style.display = 'none';
+            const parent = canvas.parentElement;
+            if (!parent.querySelector('.chart-empty')) {
+              const msg = document.createElement('div');
+              msg.className = 'chart-empty';
+              msg.style.cssText = 'padding:40px;text-align:center;color:var(--text-secondary);font-size:14px;';
+              msg.textContent = '데이터가 없습니다';
+              parent.appendChild(msg);
+            }
+          });
+          return;
+        }
+
+        const monthlySignups = {};
+        candidates.forEach(c => {
+          const month = c.created_at ? new Date(c.created_at).toLocaleString('ko-KR', { year: 'numeric', month: '2-digit' }) : '미정';
+          monthlySignups[month] = (monthlySignups[month] || 0) + 1;
+        });
+
+        const approvalData = {
+          pending: (candidates || []).filter(c => !c.approval_status || c.approval_status === 'pending').length,
+          approved: approvedCount,
+          rejected: (candidates || []).filter(c => c.approval_status === 'rejected').length
+        };
+
+        const partyData = {};
+        candidates.forEach(c => {
+          const party = c.party || '미지정';
+          partyData[party] = (partyData[party] || 0) + 1;
+        });
+
+        const monthlyActivity = {};
+        (activityLogs || []).forEach(log => {
+          if (log.created_at) {
+            const month = new Date(log.created_at).toLocaleString('ko-KR', { year: 'numeric', month: '2-digit' });
+            monthlyActivity[month] = (monthlyActivity[month] || 0) + 1;
+          }
+        });
+
+        let activityChartData = monthlyActivity;
+        let activityLabel = '월별 관리 활동';
+        if (Object.keys(monthlyActivity).length === 0) {
+          const dailyActivity = {};
+          candidates.forEach(c => {
+            if (c.created_at) {
+              const date = new Date(c.created_at).toISOString().split('T')[0];
+              dailyActivity[date] = (dailyActivity[date] || 0) + 1;
+            }
+          });
+          activityChartData = dailyActivity;
+          activityLabel = '일별 캠프 가입';
+        }
+
+        createCharts(monthlySignups, approvalData, partyData, activityChartData, activityLabel);
+      } catch (err) {
+        console.error('통계 로드 실패:', err);
+        toast('통계 로드 실패: ' + err.message, 'error');
+      }
+    }
+
+    async function init() {
+      if (!AdminAuth.isAuthenticated()) {
+        window.location.href = '/pages/admin-login.html';
+        return;
+      }
+      const admin = AdminAuth.getCurrentAdmin();
+      document.getElementById('sidebarAdminName').textContent = admin.username;
+      document.getElementById('sidebarAdminRole').textContent = admin.role === 'super_admin' ? '🔴 Super Admin' : '🟠 Admin';
+
+      document.getElementById('logoutBtn').addEventListener('click', () => {
+        AdminAuth.logout();
+        window.location.href = '/pages/admin-login.html';
+      });
+
+      await SupabaseDB.init();
+      await loadStatistics();
+    }
+
+    init();
+  </script>
+</body>
+</html>

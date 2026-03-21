@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>대시보드 — 시스템 관리</title>
+  <link rel="stylesheet" href="../css/theme.css">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg-primary); color: var(--text-primary); }
+    body { display: flex; min-height: 100vh; }
+    .admin-sidebar { width: 260px; position: fixed; left: 0; top: 0; height: 100vh; background: var(--primary-color); color: white; overflow-y: auto; padding: 20px 0; z-index: 100; }
+    .admin-main { margin-left: 260px; flex: 1; display: flex; flex-direction: column; }
+    .admin-topbar { background: var(--bg-secondary); border-bottom: 1px solid var(--border-color); padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; }
+    .admin-content { flex: 1; overflow-y: auto; padding: 30px; }
+    .sidebar-header { padding: 0 20px 20px; border-bottom: 1px solid rgba(255,255,255,0.2); font-size: 16px; font-weight: 700; margin-bottom: 20px; }
+    .admin-profile { padding: 15px 20px; margin-bottom: 20px; font-size: 13px; border-top: 1px solid rgba(255,255,255,0.1); }
+    .admin-profile-name { font-weight: 700; margin-bottom: 4px; }
+    .admin-profile-role { opacity: 0.8; font-size: 12px; }
+    .sidebar-nav { list-style: none; }
+    .sidebar-nav a { display: block; padding: 12px 20px; color: rgba(255,255,255,0.8); text-decoration: none; cursor: pointer; transition: all 0.2s; border-left: 3px solid transparent; margin-bottom: 2px; }
+    .sidebar-nav a:hover { color: white; background: rgba(255,255,255,0.1); }
+    .sidebar-nav a.active { background: rgba(0,0,0,0.3); color: white; border-left-color: white; font-weight: 600; }
+    .sidebar-footer { position: absolute; bottom: 20px; left: 0; right: 0; padding: 0 20px; }
+    .btn-logout { width: 100%; padding: 10px; background: rgba(0,0,0,0.3); color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; transition: background 0.2s; }
+    .btn-logout:hover { background: rgba(0,0,0,0.5); }
+    .topbar-title { font-size: 20px; font-weight: 700; color: var(--text-primary); }
+    .btn-refresh { padding: 8px 16px; background: var(--primary-color); color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; }
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 30px; }
+    .stat-card { background: linear-gradient(135deg, var(--bg-secondary), var(--bg-primary)); border: 1px solid var(--border-color); border-radius: 10px; padding: 20px; }
+    .stat-label { font-size: 13px; color: var(--text-secondary); margin-bottom: 8px; font-weight: 600; }
+    .stat-value { font-size: 32px; font-weight: 700; color: var(--primary-color); }
+    .activity-item { background: var(--bg-primary); border-left: 3px solid var(--primary-color); padding: 12px 15px; margin-bottom: 10px; border-radius: 6px; font-size: 13px; }
+    .activity-time { color: var(--text-secondary); font-size: 12px; }
+    .toast-container { position: fixed; bottom: 20px; right: 20px; z-index: 300; }
+    .toast { background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 8px; padding: 15px 20px; margin-bottom: 10px; animation: slideIn 0.3s ease; display: flex; align-items: center; gap: 10px; }
+    .toast-success { border-left: 4px solid #4caf50; }
+    .toast-error { border-left: 4px solid #f44336; }
+    @keyframes slideIn { from { transform: translateX(400px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+    @media (max-width: 768px) { .admin-sidebar { width: 0; } .admin-main { margin-left: 0; } .stats-grid { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <aside class="admin-sidebar">
+    <div class="sidebar-header">🔧 시스템 관리</div>
+    <div class="admin-profile">
+      <div class="admin-profile-name" id="sidebarAdminName">로딩 중</div>
+      <div class="admin-profile-role" id="sidebarAdminRole"></div>
+    </div>
+    <nav class="sidebar-nav">
+      <a href="admin-overview.html" class="active">📊 대시보드</a>
+      <a href="admin-statistics.html">📈 통계 분석</a>
+      <a href="admin-members.html">👥 회원 관리</a>
+      <a href="admin-files.html">📁 자료 관리</a>
+      <a href="admin-messages.html">💬 메시지</a>
+      <a href="admin-reports.html">🚨 신고 관리</a>
+      <a href="admin-permissions.html">🔐 권한 관리</a>
+      <a href="admin-email.html">📧 이메일 설정</a>
+      <a href="admin-backup.html">💾 백업/복구</a>
+      <a href="admin-sites.html">🌐 사이트 접속</a>
+      <a href="admin-settings.html">⚙️ 시스템 설정</a>
+      <a href="admin-manual.html" style="margin-top: 20px; border-top: 1px solid rgba(255,255,255,0.2); padding-top: 12px;">📖 메뉴얼</a>
+    </nav>
+    <div class="sidebar-footer">
+      <button class="btn-logout" id="logoutBtn">🚪 로그아웃</button>
+    </div>
+  </aside>
+
+  <main class="admin-main">
+    <div class="admin-topbar">
+      <div class="topbar-title">📊 대시보드</div>
+      <button class="btn-refresh" onclick="loadOverview()">🔄 새로고침</button>
+    </div>
+    <div class="admin-content">
+      <div style="background: var(--bg-secondary); border-left: 4px solid var(--primary-color); padding: 20px; border-radius: 8px; font-size: 14px; color: var(--text-primary); margin: 20px 0 30px 0;">
+        시스템 전체의 상태와 주요 지표를 한눈에 파악할 수 있는 메인 페이지입니다. 총 캠프 수, 승인 현황, 최근 활동 등을 통해 전체 시스템의 건강 상태를 모니터링합니다. 매일 아침 첫 업무로 이 페이지를 확인하여 어제의 활동과 오늘의 진행 상황을 파악하세요. 각 통계 카드는 실시간 데이터를 반영하므로 정기적으로 새로고침하여 최신 정보를 유지할 수 있습니다.
+      </div>
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-label">📊 총 캠프</div>
+          <div class="stat-value" id="statTotal">0</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">⏳ 대기 중</div>
+          <div class="stat-value" id="statPending">0</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">✅ 승인됨</div>
+          <div class="stat-value" id="statApproved">0</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">❌ 거부됨</div>
+          <div class="stat-value" id="statRejected">0</div>
+        </div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+        <div>
+          <h3 style="margin-bottom: 15px; color: var(--text-primary);">최근 가입 캠프</h3>
+          <div id="recentCampaigns"></div>
+        </div>
+        <div>
+          <h3 style="margin-bottom: 15px; color: var(--text-primary);">최근 활동</h3>
+          <div id="recentActivity"></div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <div class="toast-container" id="toastContainer"></div>
+
+  <script src="../js/supabase-client.js"></script>
+  <script src="../js/admin-auth.js"></script>
+  <script>
+    function formatDate(date) {
+      return new Date(date).toLocaleDateString('ko-KR');
+    }
+
+    function toast(message, type = 'info') {
+      const container = document.getElementById('toastContainer');
+      const el = document.createElement('div');
+      el.className = `toast toast-${type}`;
+      el.textContent = message;
+      container.appendChild(el);
+      setTimeout(() => el.remove(), 3000);
+    }
+
+    async function loadOverview() {
+      try {
+        const { data: candidates } = await SupabaseDB.client.from('candidates').select('*').order('created_at', { ascending: false });
+
+        const pending = candidates.filter(c => !c.approval_status || c.approval_status === 'pending').length;
+        const approved = candidates.filter(c => c.approval_status === 'approved').length;
+        const rejected = candidates.filter(c => c.approval_status === 'rejected').length;
+
+        document.getElementById('statTotal').textContent = candidates.length;
+        document.getElementById('statPending').textContent = pending;
+        document.getElementById('statApproved').textContent = approved;
+        document.getElementById('statRejected').textContent = rejected;
+
+        document.getElementById('recentCampaigns').innerHTML = candidates.slice(0, 5).map(c => `
+          <div class="activity-item">
+            <div style="font-weight: 600;">${c.name}</div>
+            <div class="activity-time">${formatDate(c.created_at)}</div>
+          </div>
+        `).join('') || '<div style="color: var(--text-secondary);">데이터가 없습니다.</div>';
+
+        const { data: logs } = await SupabaseDB.client.from('admin_activity_logs').select('*').order('created_at', { ascending: false }).limit(10);
+        document.getElementById('recentActivity').innerHTML = (logs || []).map(log => `
+          <div class="activity-item">
+            <div>${log.action}</div>
+            <div class="activity-time">${formatDate(log.created_at)}</div>
+          </div>
+        `).join('') || '<div style="color: var(--text-secondary);">활동이 없습니다.</div>';
+      } catch (err) {
+        console.error('Overview 로드 실패:', err);
+        toast('데이터 로드 실패: ' + err.message, 'error');
+      }
+    }
+
+    async function init() {
+      if (!AdminAuth.isAuthenticated()) {
+        window.location.href = '/pages/admin-login.html';
+        return;
+      }
+      const admin = AdminAuth.getCurrentAdmin();
+      document.getElementById('sidebarAdminName').textContent = admin.username;
+      document.getElementById('sidebarAdminRole').textContent = admin.role === 'super_admin' ? '🔴 Super Admin' : '🟠 Admin';
+
+      document.getElementById('logoutBtn').addEventListener('click', () => {
+        AdminAuth.logout();
+        window.location.href = '/pages/admin-login.html';
+      });
+
+      await SupabaseDB.init();
+      await loadOverview();
+    }
+
+    init();
+  </script>
+</body>
+</html>

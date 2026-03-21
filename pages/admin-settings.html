@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>시스템 설정 — 시스템 관리</title>
+  <link rel="stylesheet" href="../css/theme.css">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg-primary); color: var(--text-primary); }
+    body { display: flex; min-height: 100vh; }
+    .admin-sidebar { width: 260px; position: fixed; left: 0; top: 0; height: 100vh; background: var(--primary-color); color: white; overflow-y: auto; padding: 20px 0; z-index: 100; }
+    .admin-main { margin-left: 260px; flex: 1; display: flex; flex-direction: column; }
+    .admin-topbar { background: var(--bg-secondary); border-bottom: 1px solid var(--border-color); padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; }
+    .admin-content { flex: 1; overflow-y: auto; padding: 30px; }
+    .sidebar-header { padding: 0 20px 20px; border-bottom: 1px solid rgba(255,255,255,0.2); font-size: 16px; font-weight: 700; margin-bottom: 20px; }
+    .admin-profile { padding: 15px 20px; margin-bottom: 20px; font-size: 13px; border-top: 1px solid rgba(255,255,255,0.1); }
+    .admin-profile-name { font-weight: 700; margin-bottom: 4px; }
+    .admin-profile-role { opacity: 0.8; font-size: 12px; }
+    .sidebar-nav { list-style: none; }
+    .sidebar-nav a { display: block; padding: 12px 20px; color: rgba(255,255,255,0.8); text-decoration: none; cursor: pointer; transition: all 0.2s; border-left: 3px solid transparent; margin-bottom: 2px; }
+    .sidebar-nav a:hover { color: white; background: rgba(255,255,255,0.1); }
+    .sidebar-nav a.active { background: rgba(0,0,0,0.3); color: white; border-left-color: white; font-weight: 600; }
+    .sidebar-footer { position: absolute; bottom: 20px; left: 0; right: 0; padding: 0 20px; }
+    .btn-logout { width: 100%; padding: 10px; background: rgba(0,0,0,0.3); color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; transition: background 0.2s; }
+    .btn-logout:hover { background: rgba(0,0,0,0.5); }
+    .topbar-title { font-size: 20px; font-weight: 700; color: var(--text-primary); }
+    .btn-refresh { padding: 8px 16px; background: var(--primary-color); color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; }
+    .btn { padding: 6px 12px; border: none; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 600; transition: all 0.2s; margin-right: 5px; }
+    .btn-primary { background: var(--primary-color); color: white; }
+    .btn-primary:hover { opacity: 0.9; }
+    .btn-sm { padding: 4px 8px; font-size: 11px; }
+    .tabs { display: flex; border-bottom: 2px solid var(--border-color); margin-bottom: 20px; }
+    .tab-btn { flex: 1; padding: 12px; text-align: center; background: none; border: none; cursor: pointer; font-weight: 600; color: var(--text-secondary); border-bottom: 3px solid transparent; margin-bottom: -2px; transition: all 0.2s; }
+    .tab-btn.active { color: var(--primary-color); border-bottom-color: var(--primary-color); }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+    .form-group { margin-bottom: 15px; }
+    .form-label { display: block; margin-bottom: 5px; font-weight: 600; font-size: 13px; }
+    .form-control { width: 100%; padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 13px; background: var(--bg-primary); color: var(--text-primary); }
+    .form-control:focus { outline: none; border-color: var(--primary-color); }
+    select.form-control { cursor: pointer; }
+    .table-container { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; background: var(--bg-secondary); border-radius: 8px; overflow: hidden; }
+    th { background: var(--primary-color); color: white; padding: 12px; text-align: left; font-weight: 600; font-size: 13px; }
+    td { padding: 12px; border-bottom: 1px solid var(--border-color); font-size: 13px; }
+    tr:hover { background: rgba(0,0,0,0.02); }
+    .activity-item { background: var(--bg-primary); border-left: 3px solid var(--primary-color); padding: 12px 15px; margin-bottom: 10px; border-radius: 6px; font-size: 13px; }
+    .activity-time { color: var(--text-secondary); font-size: 12px; }
+    .pagination { display: flex; justify-content: center; gap: 5px; margin-top: 20px; }
+    .page-btn { padding: 6px 10px; border: 1px solid var(--border-color); background: var(--bg-secondary); border-radius: 4px; cursor: pointer; font-size: 12px; }
+    .page-btn.active { background: var(--primary-color); color: white; border-color: var(--primary-color); }
+    .modal { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 200; justify-content: center; align-items: center; }
+    .modal.show { display: flex; }
+    .modal-content { background: var(--bg-secondary); border-radius: 10px; padding: 30px; max-width: 500px; width: 90%; position: relative; }
+    .modal-header { font-size: 18px; font-weight: 700; margin-bottom: 20px; color: var(--text-primary); }
+    .modal-close { position: absolute; top: 10px; right: 10px; background: none; border: none; font-size: 24px; cursor: pointer; color: var(--text-secondary); }
+    .toast-container { position: fixed; bottom: 20px; right: 20px; z-index: 300; }
+    .toast { background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 8px; padding: 15px 20px; margin-bottom: 10px; animation: slideIn 0.3s ease; }
+    .toast-success { border-left: 4px solid #4caf50; }
+    .toast-error { border-left: 4px solid #f44336; }
+    @keyframes slideIn { from { transform: translateX(400px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+    @media (max-width: 768px) { .admin-sidebar { width: 0; } .admin-main { margin-left: 0; } table { font-size: 12px; } th, td { padding: 8px; } }
+  </style>
+</head>
+<body>
+  <aside class="admin-sidebar">
+    <div class="sidebar-header">🔧 시스템 관리</div>
+    <div class="admin-profile">
+      <div class="admin-profile-name" id="sidebarAdminName">로딩 중</div>
+      <div class="admin-profile-role" id="sidebarAdminRole"></div>
+    </div>
+    <nav class="sidebar-nav">
+      <a href="admin-overview.html">📊 대시보드</a>
+      <a href="admin-statistics.html">📈 통계 분석</a>
+      <a href="admin-members.html">👥 회원 관리</a>
+      <a href="admin-files.html">📁 자료 관리</a>
+      <a href="admin-messages.html">💬 메시지</a>
+      <a href="admin-reports.html">🚨 신고 관리</a>
+      <a href="admin-permissions.html">🔐 권한 관리</a>
+      <a href="admin-email.html">📧 이메일 설정</a>
+      <a href="admin-backup.html">💾 백업/복구</a>
+      <a href="admin-sites.html">🌐 사이트 접속</a>
+      <a href="admin-settings.html" class="active">⚙️ 시스템 설정</a>
+      <a href="admin-manual.html" style="margin-top: 20px; border-top: 1px solid rgba(255,255,255,0.2); padding-top: 12px;">📖 메뉴얼</a>
+    </nav>
+    <div class="sidebar-footer">
+      <button class="btn-logout" id="logoutBtn">🚪 로그아웃</button>
+    </div>
+  </aside>
+
+  <main class="admin-main">
+    <div class="admin-topbar">
+      <div class="topbar-title">⚙️ 시스템 설정</div>
+      <button class="btn-refresh" onclick="loadSettings()">🔄 새로고침</button>
+    </div>
+    <div class="admin-content">
+      <div style="background: var(--bg-secondary); border-left: 4px solid var(--primary-color); padding: 20px; border-radius: 8px; font-size: 14px; color: var(--text-primary); margin: 20px 0 30px 0;">
+        플랫폼 전체의 기본 설정, 관리자 계정, 활동 로그를 관리하는 페이지입니다. 앱 이름, 설명, 유지보수 모드 등을 설정하고, 새로운 관리자를 추가하며, 모든 관리자의 활동을 기록하고 추적합니다. Super Admin만 이 페이지의 전체 기능을 사용할 수 있습니다. 정기적으로 활동 로그를 검토하여 보안 문제를 사전에 예방하세요.
+      </div>
+      <div class="tabs">
+        <button class="tab-btn active" onclick="switchTab(event, 'tab-basic')">기본 설정</button>
+        <button class="tab-btn" onclick="switchTab(event, 'tab-admins')">관리자 계정</button>
+        <button class="tab-btn" onclick="switchTab(event, 'tab-logs')">활동 로그</button>
+      </div>
+
+      <div id="tab-basic" class="tab-content active">
+        <div class="form-group">
+          <label class="form-label">앱 이름</label>
+          <input type="text" id="appName" class="form-control">
+        </div>
+        <div class="form-group">
+          <label class="form-label">앱 설명</label>
+          <textarea id="appDescription" class="form-control" rows="3"></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">유지보수 모드</label>
+          <select id="maintenanceMode" class="form-control">
+            <option value="false">비활성화</option>
+            <option value="true">활성화</option>
+          </select>
+        </div>
+        <button class="btn btn-primary" onclick="saveBasicSettings()">💾 저장</button>
+      </div>
+
+      <div id="tab-admins" class="tab-content">
+        <button class="btn btn-primary" style="margin-bottom: 20px;" onclick="showAddAdminModal()">➕ 관리자 추가</button>
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>사용자명</th>
+                <th>역할</th>
+                <th>가입일</th>
+                <th>상태</th>
+                <th>액션</th>
+              </tr>
+            </thead>
+            <tbody id="adminsTable"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div id="tab-logs" class="tab-content">
+        <div id="logsContainer"></div>
+        <div class="pagination" id="logsPagination"></div>
+      </div>
+    </div>
+  </main>
+
+  <div id="addAdminModal" class="modal">
+    <div class="modal-content">
+      <button class="modal-close" onclick="closeModal()">&times;</button>
+      <div class="modal-header">관리자 추가</div>
+      <div class="form-group">
+        <label class="form-label">사용자명</label>
+        <input type="text" id="newAdminUsername" class="form-control">
+      </div>
+      <div class="form-group">
+        <label class="form-label">역할</label>
+        <select id="newAdminRole" class="form-control">
+          <option value="admin">Admin</option>
+          <option value="super_admin">Super Admin</option>
+        </select>
+      </div>
+      <button class="btn btn-primary" onclick="addAdmin()">추가</button>
+    </div>
+  </div>
+
+  <div class="toast-container" id="toastContainer"></div>
+
+  <script src="../js/supabase-client.js"></script>
+  <script src="../js/admin-auth.js"></script>
+  <script>
+    function formatDate(date) { return new Date(date).toLocaleDateString('ko-KR'); }
+
+    function toast(message, type = 'info') {
+      const container = document.getElementById('toastContainer');
+      const el = document.createElement('div');
+      el.className = `toast toast-${type}`;
+      el.textContent = message;
+      container.appendChild(el);
+      setTimeout(() => el.remove(), 3000);
+    }
+
+    function switchTab(e, tabId) {
+      e.target.parentElement.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+      e.target.classList.add('active');
+      document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+      document.getElementById(tabId).classList.add('active');
+    }
+
+    function closeModal() {
+      document.querySelectorAll('.modal').forEach(m => m.classList.remove('show'));
+    }
+
+    async function loadSettings() {
+      try {
+        const { data: settings } = await SupabaseDB.client.from('app_settings').select('*').limit(1).single();
+        if (settings) {
+          document.getElementById('appName').value = settings.app_name || '';
+          document.getElementById('appDescription').value = settings.app_description || '';
+          document.getElementById('maintenanceMode').value = settings.maintenance_mode ? 'true' : 'false';
+        }
+
+        const canManageAdmins = AdminAuth.hasPermission('super_admin');
+        if (canManageAdmins) {
+          const { data: admins } = await SupabaseDB.client.from('admins').select('*').order('created_at', { ascending: false });
+          document.getElementById('adminsTable').innerHTML = (admins || []).map(a => `
+            <tr>
+              <td>${a.username}</td>
+              <td>${a.role === 'super_admin' ? '🔴 Super Admin' : '🟠 Admin'}</td>
+              <td>${formatDate(a.created_at)}</td>
+              <td>${a.is_active ? '✅ 활성' : '❌ 비활성'}</td>
+              <td><button class="btn btn-sm" onclick="toggleAdminStatus('${a.id}', ${!a.is_active})">${a.is_active ? '비활성화' : '활성화'}</button></td>
+            </tr>
+          `).join('');
+        }
+
+        loadActivityLogs();
+      } catch (err) {
+        console.error('Settings 로드 실패:', err);
+      }
+    }
+
+    async function saveBasicSettings() {
+      try {
+        const data = {
+          app_name: document.getElementById('appName').value,
+          app_description: document.getElementById('appDescription').value,
+          maintenance_mode: document.getElementById('maintenanceMode').value === 'true'
+        };
+
+        const { data: existing } = await SupabaseDB.client.from('app_settings').select('id').limit(1);
+        if (existing && existing.length > 0) {
+          await SupabaseDB.client.from('app_settings').update(data).eq('id', existing[0].id);
+        } else {
+          await SupabaseDB.client.from('app_settings').insert([data]);
+        }
+
+        AdminAuth.logActivity('기본 설정 저장');
+        toast('저장되었습니다', 'success');
+      } catch (err) {
+        toast('저장 실패: ' + err.message, 'error');
+      }
+    }
+
+    function showAddAdminModal() {
+      if (!AdminAuth.hasPermission('super_admin')) {
+        toast('권한이 없습니다', 'error');
+        return;
+      }
+      document.getElementById('addAdminModal').classList.add('show');
+    }
+
+    async function addAdmin() {
+      const username = document.getElementById('newAdminUsername').value;
+      const role = document.getElementById('newAdminRole').value;
+      if (!username) { toast('사용자명을 입력해주세요', 'error'); return; }
+      try {
+        const defaultPassword = 'admin123';
+        await SupabaseDB.client.from('admins').insert([{ username, role, is_active: true, password_hash: defaultPassword }]);
+        AdminAuth.logActivity(`관리자 추가 - ${username}`);
+        closeModal();
+        loadSettings();
+        toast('추가되었습니다', 'success');
+      } catch (err) {
+        toast('추가 실패: ' + err.message, 'error');
+      }
+    }
+
+    async function toggleAdminStatus(adminId, active) {
+      try {
+        await SupabaseDB.client.from('admins').update({ is_active: active }).eq('id', adminId);
+        AdminAuth.logActivity(`관리자 상태 변경 - ${active ? '활성화' : '비활성화'}`);
+        loadSettings();
+        toast('변경되었습니다', 'success');
+      } catch (err) {
+        toast('변경 실패: ' + err.message, 'error');
+      }
+    }
+
+    async function loadActivityLogs(page = 1) {
+      try {
+        const pageSize = 20;
+        const { data: logs, count } = await SupabaseDB.client
+          .from('admin_activity_logs')
+          .select('*', { count: 'exact' })
+          .order('created_at', { ascending: false })
+          .range((page - 1) * pageSize, page * pageSize - 1);
+
+        const totalPages = Math.ceil((count || 0) / pageSize);
+
+        document.getElementById('logsContainer').innerHTML = (logs || []).map(log => `
+          <div class="activity-item">
+            <div>${log.action}</div>
+            <div class="activity-time">${formatDate(log.created_at)}</div>
+          </div>
+        `).join('');
+
+        let paginationHTML = '';
+        for (let i = 1; i <= totalPages; i++) {
+          paginationHTML += `<button class="page-btn ${i === page ? 'active' : ''}" onclick="loadActivityLogs(${i})">${i}</button>`;
+        }
+        document.getElementById('logsPagination').innerHTML = paginationHTML;
+      } catch (err) {
+        console.error('Logs 로드 실패:', err);
+      }
+    }
+
+    async function init() {
+      if (!AdminAuth.isAuthenticated()) {
+        window.location.href = '/pages/admin-login.html';
+        return;
+      }
+      const admin = AdminAuth.getCurrentAdmin();
+      document.getElementById('sidebarAdminName').textContent = admin.username;
+      document.getElementById('sidebarAdminRole').textContent = admin.role === 'super_admin' ? '🔴 Super Admin' : '🟠 Admin';
+
+      document.getElementById('logoutBtn').addEventListener('click', () => {
+        AdminAuth.logout();
+        window.location.href = '/pages/admin-login.html';
+      });
+
+      await SupabaseDB.init();
+      await loadSettings();
+    }
+
+    init();
+  </script>
+</body>
+</html>

@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>신고 관리 — 시스템 관리</title>
+  <link rel="stylesheet" href="../css/theme.css">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg-primary); color: var(--text-primary); }
+    body { display: flex; min-height: 100vh; }
+    .admin-sidebar { width: 260px; position: fixed; left: 0; top: 0; height: 100vh; background: var(--primary-color); color: white; overflow-y: auto; padding: 20px 0; z-index: 100; }
+    .admin-main { margin-left: 260px; flex: 1; display: flex; flex-direction: column; }
+    .admin-topbar { background: var(--bg-secondary); border-bottom: 1px solid var(--border-color); padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; }
+    .admin-content { flex: 1; overflow-y: auto; padding: 30px; }
+    .sidebar-header { padding: 0 20px 20px; border-bottom: 1px solid rgba(255,255,255,0.2); font-size: 16px; font-weight: 700; margin-bottom: 20px; }
+    .admin-profile { padding: 15px 20px; margin-bottom: 20px; font-size: 13px; border-top: 1px solid rgba(255,255,255,0.1); }
+    .admin-profile-name { font-weight: 700; margin-bottom: 4px; }
+    .admin-profile-role { opacity: 0.8; font-size: 12px; }
+    .sidebar-nav { list-style: none; }
+    .sidebar-nav a { display: block; padding: 12px 20px; color: rgba(255,255,255,0.8); text-decoration: none; cursor: pointer; transition: all 0.2s; border-left: 3px solid transparent; margin-bottom: 2px; }
+    .sidebar-nav a:hover { color: white; background: rgba(255,255,255,0.1); }
+    .sidebar-nav a.active { background: rgba(0,0,0,0.3); color: white; border-left-color: white; font-weight: 600; }
+    .sidebar-footer { position: absolute; bottom: 20px; left: 0; right: 0; padding: 0 20px; }
+    .btn-logout { width: 100%; padding: 10px; background: rgba(0,0,0,0.3); color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; transition: background 0.2s; }
+    .btn-logout:hover { background: rgba(0,0,0,0.5); }
+    .topbar-title { font-size: 20px; font-weight: 700; color: var(--text-primary); }
+    .btn-refresh { padding: 8px 16px; background: var(--primary-color); color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; }
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 30px; }
+    .stat-card { background: linear-gradient(135deg, var(--bg-secondary), var(--bg-primary)); border: 1px solid var(--border-color); border-radius: 10px; padding: 20px; }
+    .stat-label { font-size: 13px; color: var(--text-secondary); margin-bottom: 8px; font-weight: 600; }
+    .stat-value { font-size: 32px; font-weight: 700; color: var(--primary-color); }
+    .table-container { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; background: var(--bg-secondary); border-radius: 8px; overflow: hidden; }
+    th { background: var(--primary-color); color: white; padding: 12px; text-align: left; font-weight: 600; font-size: 13px; }
+    td { padding: 12px; border-bottom: 1px solid var(--border-color); font-size: 13px; }
+    tr:hover { background: rgba(0,0,0,0.02); }
+    .btn { padding: 6px 12px; border: none; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 600; transition: all 0.2s; margin-right: 5px; }
+    .btn-primary { background: var(--primary-color); color: white; }
+    .btn-success { background: #4caf50; color: white; }
+    .btn-danger { background: #f44336; color: white; }
+    .btn-sm { padding: 4px 8px; font-size: 11px; }
+    .search-bar { display: flex; gap: 10px; margin-bottom: 20px; }
+    .search-bar input { flex: 1; padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 13px; background: var(--bg-secondary); color: var(--text-primary); }
+    .search-bar select { padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 13px; background: var(--bg-secondary); color: var(--text-primary); }
+    .report-status-badge { padding: 4px 8px; border-radius: 12px; font-size: 11px; font-weight: 600; }
+    .report-status-pending { background: rgba(255,193,7,0.2); color: #ffc107; }
+    .report-status-approved { background: rgba(76,175,80,0.2); color: #4caf50; }
+    .report-status-rejected { background: rgba(244,67,54,0.2); color: #f44336; }
+    .report-status-resolved { background: rgba(33,150,243,0.2); color: #2196f3; }
+    .modal { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 200; justify-content: center; align-items: center; }
+    .modal.show { display: flex; }
+    .modal-content { background: var(--bg-secondary); border-radius: 10px; padding: 30px; max-width: 600px; width: 90%; max-height: 80vh; overflow-y: auto; position: relative; }
+    .modal-header { font-size: 18px; font-weight: 700; margin-bottom: 20px; color: var(--text-primary); }
+    .modal-close { position: absolute; top: 10px; right: 10px; background: none; border: none; font-size: 24px; cursor: pointer; color: var(--text-secondary); }
+    .form-group { margin-bottom: 15px; }
+    .form-label { display: block; margin-bottom: 5px; font-weight: 600; font-size: 13px; }
+    .form-control { width: 100%; padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 13px; background: var(--bg-primary); color: var(--text-primary); }
+    .form-control:focus { outline: none; border-color: var(--primary-color); }
+    .toast-container { position: fixed; bottom: 20px; right: 20px; z-index: 300; }
+    .toast { background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 8px; padding: 15px 20px; margin-bottom: 10px; animation: slideIn 0.3s ease; }
+    .toast-success { border-left: 4px solid #4caf50; }
+    .toast-error { border-left: 4px solid #f44336; }
+    @keyframes slideIn { from { transform: translateX(400px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+    @media (max-width: 768px) { .admin-sidebar { width: 0; } .admin-main { margin-left: 0; } table { font-size: 12px; } th, td { padding: 8px; } }
+  </style>
+</head>
+<body>
+  <aside class="admin-sidebar">
+    <div class="sidebar-header">🔧 시스템 관리</div>
+    <div class="admin-profile">
+      <div class="admin-profile-name" id="sidebarAdminName">로딩 중</div>
+      <div class="admin-profile-role" id="sidebarAdminRole"></div>
+    </div>
+    <nav class="sidebar-nav">
+      <a href="admin-overview.html">📊 대시보드</a>
+      <a href="admin-statistics.html">📈 통계 분석</a>
+      <a href="admin-members.html">👥 회원 관리</a>
+      <a href="admin-files.html">📁 자료 관리</a>
+      <a href="admin-messages.html">💬 메시지</a>
+      <a href="admin-reports.html" class="active">🚨 신고 관리</a>
+      <a href="admin-permissions.html">🔐 권한 관리</a>
+      <a href="admin-email.html">📧 이메일 설정</a>
+      <a href="admin-backup.html">💾 백업/복구</a>
+      <a href="admin-sites.html">🌐 사이트 접속</a>
+      <a href="admin-settings.html">⚙️ 시스템 설정</a>
+      <a href="admin-manual.html" style="margin-top: 20px; border-top: 1px solid rgba(255,255,255,0.2); padding-top: 12px;">📖 메뉴얼</a>
+    </nav>
+    <div class="sidebar-footer">
+      <button class="btn-logout" id="logoutBtn">🚪 로그아웃</button>
+    </div>
+  </aside>
+
+  <main class="admin-main">
+    <div class="admin-topbar">
+      <div class="topbar-title">🚨 신고 관리</div>
+      <button class="btn-refresh" onclick="loadReports()">🔄 새로고침</button>
+    </div>
+    <div class="admin-content">
+      <div style="background: var(--bg-secondary); border-left: 4px solid var(--primary-color); padding: 20px; border-radius: 8px; font-size: 14px; color: var(--text-primary); margin: 20px 0 30px 0;">
+        캠프에서 제기한 문제, 부정행위 신고 등을 처리하는 페이지입니다. 신고 내용 검토, 담당자 배정, 조사 진행, 최종 결정 및 결과 통보 등의 전 과정을 관리합니다. 심각도별 필터링으로 우선순위 높은 신고부터 처리하세요. 각 신고의 진행 상황을 기록하여 투명한 운영을 유지합니다.
+      </div>
+      <div class="stats-grid" style="margin-bottom: 20px;">
+        <div class="stat-card" style="padding: 12px 15px;">
+          <div class="stat-label" style="font-size: 12px;">전체 신고</div>
+          <div class="stat-value" style="font-size: 24px;" id="rptStatTotal">0</div>
+        </div>
+        <div class="stat-card" style="padding: 12px 15px;">
+          <div class="stat-label" style="font-size: 12px;">검토 중</div>
+          <div class="stat-value" style="font-size: 24px; color: #ffc107;" id="rptStatPending">0</div>
+        </div>
+        <div class="stat-card" style="padding: 12px 15px;">
+          <div class="stat-label" style="font-size: 12px;">승인됨</div>
+          <div class="stat-value" style="font-size: 24px; color: #4caf50;" id="rptStatApproved">0</div>
+        </div>
+        <div class="stat-card" style="padding: 12px 15px;">
+          <div class="stat-label" style="font-size: 12px;">해결됨</div>
+          <div class="stat-value" style="font-size: 24px; color: #2196f3;" id="rptStatResolved">0</div>
+        </div>
+      </div>
+
+      <div class="search-bar">
+        <input type="text" id="reportSearchInput" placeholder="신고 내용/사유 검색...">
+        <select id="reportStatusFilter">
+          <option value="">상태: 전체</option>
+          <option value="pending">검토 중</option>
+          <option value="approved">승인됨</option>
+          <option value="rejected">거부됨</option>
+          <option value="resolved">해결됨</option>
+        </select>
+        <select id="reportTypeFilter">
+          <option value="">유형: 전체</option>
+          <option value="spam">스팸</option>
+          <option value="inappropriate">부적절한 콘텐츠</option>
+          <option value="fake">거짓 정보</option>
+          <option value="abuse">욕설/폭력</option>
+          <option value="other">기타</option>
+        </select>
+      </div>
+
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>신고자 ID</th>
+              <th>신고 대상 ID</th>
+              <th>유형</th>
+              <th>사유</th>
+              <th>신고일</th>
+              <th>상태</th>
+              <th>액션</th>
+            </tr>
+          </thead>
+          <tbody id="reportsTable"></tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+
+  <div id="viewReportModal" class="modal">
+    <div class="modal-content">
+      <button class="modal-close" onclick="closeModal()">&times;</button>
+      <div class="modal-header">🚨 신고 상세</div>
+      <div id="viewReportBody"></div>
+      <div style="margin-top: 20px; border-top: 1px solid var(--border-color); padding-top: 20px;">
+        <label class="form-label">관리자 응답</label>
+        <textarea id="reportAdminResponse" class="form-control" rows="3" placeholder="신고에 대한 응답을 입력하세요..."></textarea>
+        <div style="display: flex; gap: 8px; margin-top: 12px;">
+          <button class="btn btn-success" onclick="updateReportStatus('approved')">✅ 승인</button>
+          <button class="btn btn-danger" onclick="updateReportStatus('rejected')">❌ 거부</button>
+          <button class="btn" style="background: #2196f3; color: white;" onclick="updateReportStatus('resolved')">🔵 해결</button>
+          <button class="btn" style="background: var(--bg-primary); border: 1px solid var(--border-color);" onclick="closeModal()">닫기</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast-container" id="toastContainer"></div>
+
+  <script src="../js/supabase-client.js"></script>
+  <script src="../js/admin-auth.js"></script>
+  <script>
+    let _currentViewReportId = null;
+
+    function formatDate(date) { return new Date(date).toLocaleDateString('ko-KR'); }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+    }
+
+    function toast(message, type = 'info') {
+      const container = document.getElementById('toastContainer');
+      const el = document.createElement('div');
+      el.className = `toast toast-${type}`;
+      el.textContent = message;
+      container.appendChild(el);
+      setTimeout(() => el.remove(), 3000);
+    }
+
+    function closeModal() {
+      document.querySelectorAll('.modal').forEach(m => m.classList.remove('show'));
+    }
+
+    async function loadReports() {
+      try {
+        const searchTerm = document.getElementById('reportSearchInput').value.trim();
+        const statusFilter = document.getElementById('reportStatusFilter').value;
+        const typeFilter = document.getElementById('reportTypeFilter').value;
+
+        const { data: allReports } = await SupabaseDB.client.from('reports').select('status');
+        const ar = allReports || [];
+        document.getElementById('rptStatTotal').textContent = ar.length;
+        document.getElementById('rptStatPending').textContent = ar.filter(r => !r.status || r.status === 'pending').length;
+        document.getElementById('rptStatApproved').textContent = ar.filter(r => r.status === 'approved').length;
+        document.getElementById('rptStatResolved').textContent = ar.filter(r => r.status === 'resolved').length;
+
+        let query = SupabaseDB.client.from('reports').select('*').order('created_at', { ascending: false });
+        if (statusFilter) query = query.eq('status', statusFilter);
+        if (typeFilter) query = query.eq('type', typeFilter);
+        if (searchTerm) query = query.or(`reason.ilike.%${searchTerm}%,target_id.ilike.%${searchTerm}%`);
+
+        const { data, error } = await query;
+        if (error) throw error;
+
+        const reports = data || [];
+        if (reports.length === 0) {
+          document.getElementById('reportsTable').innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--text-secondary);padding:30px;">신고가 없습니다.</td></tr>';
+          return;
+        }
+
+        const typeLabels = { spam: '스팸', inappropriate: '부적절', fake: '거짓정보', abuse: '욕설/폭력', other: '기타' };
+        const statusLabels = { pending: '검토 중', approved: '승인됨', rejected: '거부됨', resolved: '해결됨' };
+
+        document.getElementById('reportsTable').innerHTML = reports.map(report => {
+          const st = report.status || 'pending';
+          const typeText = typeLabels[report.type] || report.type || '-';
+          const reporterDisplay = report.reporter_id ? `<span style="font-size:11px;">${report.reporter_id.substring(0, 8)}...</span>` : '<span style="color:var(--text-secondary);">익명</span>';
+          const targetDisplay = report.target_id ? `<span style="font-size:11px;">${report.target_id.substring(0, 8)}...</span>` : '-';
+          return `<tr>
+            <td>${reporterDisplay}</td>
+            <td>${targetDisplay}</td>
+            <td><span style="background:rgba(0,123,255,0.15);color:#007bff;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600;">${typeText}</span></td>
+            <td style="max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${escapeHtml(report.reason || '')}">${escapeHtml((report.reason || '').substring(0, 30))}${(report.reason || '').length > 30 ? '...' : ''}</td>
+            <td>${formatDate(report.created_at)}</td>
+            <td><span class="report-status-badge report-status-${st}">${statusLabels[st] || st}</span></td>
+            <td><button class="btn btn-sm btn-primary" onclick="viewReport('${report.id}')">상세</button></td>
+          </tr>`;
+        }).join('');
+      } catch (err) {
+        console.error('신고 로드 실패:', err);
+        toast('신고 로드 실패: ' + err.message, 'error');
+        document.getElementById('reportsTable').innerHTML = `<tr><td colspan="7" style="text-align:center;color:#f44336;padding:20px;">로드 실패: ${escapeHtml(err.message)}</td></tr>`;
+      }
+    }
+
+    async function viewReport(reportId) {
+      try {
+        const { data: report, error } = await SupabaseDB.client.from('reports').select('*').eq('id', reportId).single();
+        if (error) throw error;
+        _currentViewReportId = reportId;
+
+        const typeLabels = { spam: '스팸', inappropriate: '부적절한 콘텐츠', fake: '거짓 정보', abuse: '욕설/폭력', other: '기타' };
+        const statusLabels = { pending: '검토 중', approved: '승인됨', rejected: '거부됨', resolved: '해결됨' };
+        const st = report.status || 'pending';
+
+        document.getElementById('viewReportBody').innerHTML = `
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:15px;">
+            <div class="form-group" style="margin-bottom:0;">
+              <label class="form-label">신고자 ID</label>
+              <div style="padding:8px 12px;background:var(--bg-primary);border-radius:6px;border:1px solid var(--border-color);font-size:12px;word-break:break-all;">${report.reporter_id || '익명'}</div>
+            </div>
+            <div class="form-group" style="margin-bottom:0;">
+              <label class="form-label">신고 대상 ID</label>
+              <div style="padding:8px 12px;background:var(--bg-primary);border-radius:6px;border:1px solid var(--border-color);font-size:12px;word-break:break-all;">${report.target_id || '-'}</div>
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:15px;">
+            <div class="form-group" style="margin-bottom:0;">
+              <label class="form-label">신고 유형</label>
+              <div style="padding:8px 12px;background:var(--bg-primary);border-radius:6px;border:1px solid var(--border-color);">${typeLabels[report.type] || report.type || '-'}</div>
+            </div>
+            <div class="form-group" style="margin-bottom:0;">
+              <label class="form-label">현재 상태</label>
+              <div style="padding:8px 12px;background:var(--bg-primary);border-radius:6px;border:1px solid var(--border-color);">
+                <span class="report-status-badge report-status-${st}">${statusLabels[st] || st}</span>
+              </div>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">신고 사유</label>
+            <div style="padding:12px;background:var(--bg-primary);border-radius:6px;border:1px solid var(--border-color);white-space:pre-wrap;line-height:1.6;min-height:60px;">${escapeHtml(report.reason || '사유 없음')}</div>
+          </div>
+          ${report.admin_response ? `<div class="form-group"><label class="form-label">이전 관리자 응답</label><div style="padding:12px;background:rgba(33,150,243,0.05);border-radius:6px;border:1px solid rgba(33,150,243,0.3);white-space:pre-wrap;line-height:1.6;font-size:13px;color:var(--text-secondary);">${escapeHtml(report.admin_response)}</div></div>` : ''}
+          <div style="font-size:12px;color:var(--text-secondary);margin-top:5px;">신고일: ${formatDate(report.created_at)}</div>`;
+        document.getElementById('reportAdminResponse').value = report.admin_response || '';
+        document.getElementById('viewReportModal').classList.add('show');
+      } catch (err) { toast('신고 상세 로드 실패: ' + err.message, 'error'); }
+    }
+
+    async function updateReportStatus(newStatus) {
+      const reportId = _currentViewReportId;
+      if (!reportId) { toast('신고 ID가 없습니다', 'error'); return; }
+      const adminResponse = document.getElementById('reportAdminResponse').value.trim();
+      const statusLabels = { pending: '검토 중', approved: '승인됨', rejected: '거부됨', resolved: '해결됨' };
+      try {
+        const updateData = { status: newStatus, updated_at: new Date().toISOString() };
+        if (adminResponse) updateData.admin_response = adminResponse;
+        const { error } = await SupabaseDB.client.from('reports').update(updateData).eq('id', reportId);
+        if (error) throw error;
+        AdminAuth.logActivity(`신고 상태 변경 - ${reportId} → ${newStatus}`);
+        _currentViewReportId = null;
+        closeModal();
+        loadReports();
+        toast(`신고가 "${statusLabels[newStatus]}" 처리되었습니다`, 'success');
+      } catch (err) { toast('상태 변경 실패: ' + err.message, 'error'); }
+    }
+
+    async function init() {
+      if (!AdminAuth.isAuthenticated()) {
+        window.location.href = '/pages/admin-login.html';
+        return;
+      }
+      const admin = AdminAuth.getCurrentAdmin();
+      document.getElementById('sidebarAdminName').textContent = admin.username;
+      document.getElementById('sidebarAdminRole').textContent = admin.role === 'super_admin' ? '🔴 Super Admin' : '🟠 Admin';
+
+      document.getElementById('logoutBtn').addEventListener('click', () => {
+        AdminAuth.logout();
+        window.location.href = '/pages/admin-login.html';
+      });
+
+      document.getElementById('reportSearchInput').addEventListener('input', loadReports);
+      document.getElementById('reportStatusFilter').addEventListener('change', loadReports);
+      document.getElementById('reportTypeFilter').addEventListener('change', loadReports);
+
+      await SupabaseDB.init();
+      await loadReports();
+    }
+
+    init();
+  </script>
+</body>
+</html>

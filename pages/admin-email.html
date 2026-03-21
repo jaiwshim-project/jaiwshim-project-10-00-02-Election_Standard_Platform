@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>이메일 설정 — 시스템 관리</title>
+  <link rel="stylesheet" href="../css/theme.css">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg-primary); color: var(--text-primary); }
+    body { display: flex; min-height: 100vh; }
+    .admin-sidebar { width: 260px; position: fixed; left: 0; top: 0; height: 100vh; background: var(--primary-color); color: white; overflow-y: auto; padding: 20px 0; z-index: 100; }
+    .admin-main { margin-left: 260px; flex: 1; display: flex; flex-direction: column; }
+    .admin-topbar { background: var(--bg-secondary); border-bottom: 1px solid var(--border-color); padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; }
+    .admin-content { flex: 1; overflow-y: auto; padding: 30px; }
+    .sidebar-header { padding: 0 20px 20px; border-bottom: 1px solid rgba(255,255,255,0.2); font-size: 16px; font-weight: 700; margin-bottom: 20px; }
+    .admin-profile { padding: 15px 20px; margin-bottom: 20px; font-size: 13px; border-top: 1px solid rgba(255,255,255,0.1); }
+    .admin-profile-name { font-weight: 700; margin-bottom: 4px; }
+    .admin-profile-role { opacity: 0.8; font-size: 12px; }
+    .sidebar-nav { list-style: none; }
+    .sidebar-nav a { display: block; padding: 12px 20px; color: rgba(255,255,255,0.8); text-decoration: none; cursor: pointer; transition: all 0.2s; border-left: 3px solid transparent; margin-bottom: 2px; }
+    .sidebar-nav a:hover { color: white; background: rgba(255,255,255,0.1); }
+    .sidebar-nav a.active { background: rgba(0,0,0,0.3); color: white; border-left-color: white; font-weight: 600; }
+    .sidebar-footer { position: absolute; bottom: 20px; left: 0; right: 0; padding: 0 20px; }
+    .btn-logout { width: 100%; padding: 10px; background: rgba(0,0,0,0.3); color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; transition: background 0.2s; }
+    .btn-logout:hover { background: rgba(0,0,0,0.5); }
+    .topbar-title { font-size: 20px; font-weight: 700; color: var(--text-primary); }
+    .btn-refresh { padding: 8px 16px; background: var(--primary-color); color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; }
+    .btn { padding: 6px 12px; border: none; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 600; transition: all 0.2s; margin-right: 5px; }
+    .btn-primary { background: var(--primary-color); color: white; }
+    .btn-primary:hover { opacity: 0.9; }
+    .card { background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 10px; padding: 20px; margin-bottom: 20px; }
+    .card-title { font-weight: 700; margin-bottom: 10px; color: var(--text-primary); font-size: 16px; }
+    .form-group { margin-bottom: 15px; }
+    .form-label { display: block; margin-bottom: 5px; font-weight: 600; font-size: 13px; }
+    .form-control { width: 100%; padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 13px; background: var(--bg-primary); color: var(--text-primary); }
+    .form-control:focus { outline: none; border-color: var(--primary-color); }
+    .toast-container { position: fixed; bottom: 20px; right: 20px; z-index: 300; }
+    .toast { background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 8px; padding: 15px 20px; margin-bottom: 10px; animation: slideIn 0.3s ease; }
+    .toast-success { border-left: 4px solid #4caf50; }
+    .toast-error { border-left: 4px solid #f44336; }
+    @keyframes slideIn { from { transform: translateX(400px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+    @media (max-width: 768px) { .admin-sidebar { width: 0; } .admin-main { margin-left: 0; } }
+  </style>
+</head>
+<body>
+  <aside class="admin-sidebar">
+    <div class="sidebar-header">🔧 시스템 관리</div>
+    <div class="admin-profile">
+      <div class="admin-profile-name" id="sidebarAdminName">로딩 중</div>
+      <div class="admin-profile-role" id="sidebarAdminRole"></div>
+    </div>
+    <nav class="sidebar-nav">
+      <a href="admin-overview.html">📊 대시보드</a>
+      <a href="admin-statistics.html">📈 통계 분석</a>
+      <a href="admin-members.html">👥 회원 관리</a>
+      <a href="admin-files.html">📁 자료 관리</a>
+      <a href="admin-messages.html">💬 메시지</a>
+      <a href="admin-reports.html">🚨 신고 관리</a>
+      <a href="admin-permissions.html">🔐 권한 관리</a>
+      <a href="admin-email.html" class="active">📧 이메일 설정</a>
+      <a href="admin-backup.html">💾 백업/복구</a>
+      <a href="admin-sites.html">🌐 사이트 접속</a>
+      <a href="admin-settings.html">⚙️ 시스템 설정</a>
+      <a href="admin-manual.html" style="margin-top: 20px; border-top: 1px solid rgba(255,255,255,0.2); padding-top: 12px;">📖 메뉴얼</a>
+    </nav>
+    <div class="sidebar-footer">
+      <button class="btn-logout" id="logoutBtn">🚪 로그아웃</button>
+    </div>
+  </aside>
+
+  <main class="admin-main">
+    <div class="admin-topbar">
+      <div class="topbar-title">📧 이메일 설정</div>
+      <button class="btn-refresh" onclick="loadEmailTemplate()">🔄 새로고침</button>
+    </div>
+    <div class="admin-content">
+      <div style="background: var(--bg-secondary); border-left: 4px solid var(--primary-color); padding: 20px; border-radius: 8px; font-size: 14px; color: var(--text-primary); margin: 20px 0 30px 0;">
+        캠프에 발송할 이메일 템플릿을 작성하고 관리합니다. 동적 변수(캠프명, 날짜, 담당자 등)를 활용하여 개인화된 이메일을 자동 생성할 수 있습니다. 템플릿 저장, 테스트 발송, 미리보기 등의 기능으로 안정적인 메일 운영이 가능합니다. 실제 이메일 API(SendGrid 등) 연동 시 모든 기능을 활용할 수 있습니다.
+      </div>
+      <h3 style="margin-bottom:20px;">📧 이메일 설정</h3>
+
+      <div class="card">
+        <div class="card-title">📝 공지 메일 템플릿</div>
+        <div id="emailVarGuide" style="margin: 15px 0; padding: 12px 15px; background: rgba(0,123,255,0.05); border: 1px solid rgba(0,123,255,0.2); border-radius: 8px; font-size: 12px; color: var(--text-secondary);">
+          <strong style="color:var(--text-primary);">사용 가능한 변수:</strong><br>
+          <code style="background:var(--bg-primary);padding:2px 5px;border-radius:3px;margin:2px;display:inline-block;">{{캠프명}}</code>
+          <code style="background:var(--bg-primary);padding:2px 5px;border-radius:3px;margin:2px;display:inline-block;">{{후보자명}}</code>
+          <code style="background:var(--bg-primary);padding:2px 5px;border-radius:3px;margin:2px;display:inline-block;">{{날짜}}</code>
+          <code style="background:var(--bg-primary);padding:2px 5px;border-radius:3px;margin:2px;display:inline-block;">{{시간}}</code>
+          <code style="background:var(--bg-primary);padding:2px 5px;border-radius:3px;margin:2px;display:inline-block;">{{지역}}</code>
+          <code style="background:var(--bg-primary);padding:2px 5px;border-radius:3px;margin:2px;display:inline-block;">{{정당}}</code>
+          <code style="background:var(--bg-primary);padding:2px 5px;border-radius:3px;margin:2px;display:inline-block;">{{관리자}}</code>
+        </div>
+        <div class="form-group">
+          <label class="form-label">템플릿 내용</label>
+          <textarea id="emailTemplate" class="form-control" rows="10" placeholder="이메일 내용을 작성하세요. {{캠프명}}, {{날짜}} 등 변수를 사용할 수 있습니다."></textarea>
+        </div>
+        <div style="display:flex;gap:10px;align-items:center;">
+          <button class="btn btn-primary" onclick="saveEmailTemplate()">💾 템플릿 저장</button>
+          <button class="btn" style="background:var(--bg-primary);border:1px solid var(--border-color);" onclick="loadEmailTemplate()">🔄 초기화</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">✉️ 테스트 메일 발송</div>
+        <div class="form-group">
+          <label class="form-label">수신 이메일 주소</label>
+          <div style="display:flex;gap:10px;">
+            <input type="email" id="testEmail" class="form-control" placeholder="test@example.com" style="flex:1;">
+            <button class="btn btn-primary" onclick="sendTestEmail()">📤 발송</button>
+          </div>
+        </div>
+        <div style="font-size:12px;color:var(--text-secondary);">
+          현재 실제 이메일 API 없이 시뮬레이션 모드로 동작합니다. 실제 발송은 SendGrid / Supabase Edge Function 연동이 필요합니다.
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <div class="toast-container" id="toastContainer"></div>
+
+  <script src="../js/supabase-client.js"></script>
+  <script src="../js/admin-auth.js"></script>
+  <script>
+    const _emailVariables = ['{{캠프명}}', '{{후보자명}}', '{{날짜}}', '{{시간}}', '{{지역}}', '{{정당}}', '{{관리자}}'];
+
+    function toast(message, type = 'info') {
+      const container = document.getElementById('toastContainer');
+      const el = document.createElement('div');
+      el.className = `toast toast-${type}`;
+      el.textContent = message;
+      container.appendChild(el);
+      setTimeout(() => el.remove(), 3000);
+    }
+
+    async function loadEmailTemplate() {
+      try {
+        const template = await SupabaseDB.getSetting('email_template');
+        const el = document.getElementById('emailTemplate');
+        if (template) {
+          el.value = template;
+        } else {
+          el.value = [
+            '안녕하세요, {{캠프명}} 담당자님.',
+            '',
+            '선거 워룸 플랫폼에서 {{날짜}} {{시간}}에 중요한 알림이 있습니다.',
+            '',
+            '▶ 후보자: {{후보자명}} ({{정당}} / {{지역}})',
+            '',
+            '문의사항이 있으시면 관리자 {{관리자}}에게 연락해주세요.',
+            '',
+            '감사합니다.',
+            '선거 워룸 시스템 드림'
+          ].join('\n');
+        }
+      } catch (err) {
+        console.error('이메일 템플릿 로드 실패:', err);
+      }
+    }
+
+    async function saveEmailTemplate() {
+      const template = document.getElementById('emailTemplate').value.trim();
+      const usedVars = (template.match(/\{\{[^}]+\}\}/g) || []);
+      const unknownVars = usedVars.filter(v => !_emailVariables.includes(v));
+      if (unknownVars.length > 0) {
+        toast(`알 수 없는 변수: ${unknownVars.join(', ')}`, 'error');
+        return;
+      }
+      if (!template) {
+        toast('템플릿 내용을 입력해주세요', 'error');
+        return;
+      }
+      try {
+        await SupabaseDB.setSetting('email_template', template);
+        AdminAuth.logAdminAction('email_template_saved', 'settings:email_template');
+        toast('이메일 템플릿 저장됨', 'success');
+      } catch (err) {
+        console.error('이메일 템플릿 저장 실패:', err);
+        toast('이메일 템플릿 저장 실패', 'error');
+      }
+    }
+
+    async function sendTestEmail() {
+      const testEmail = document.getElementById('testEmail').value.trim();
+      if (!testEmail) { toast('테스트 메일 주소를 입력해주세요', 'error'); return; }
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(testEmail)) { toast('올바른 이메일 주소를 입력해주세요', 'error'); return; }
+
+      try {
+        const admin = AdminAuth.getCurrentAdmin();
+        const now = new Date();
+        const rawTemplate = document.getElementById('emailTemplate').value;
+
+        let candidateInfo = { name: '후보자', party: '-', region: '-' };
+        try {
+          const { data: cand } = await SupabaseDB.client.from('candidates').select('name, party, region').limit(1).single();
+          if (cand) candidateInfo = cand;
+        } catch (_) {}
+
+        const previewBody = rawTemplate
+          .replace(/\{\{캠프명\}\}/g, candidateInfo.name || '테스트캠프')
+          .replace(/\{\{후보자명\}\}/g, candidateInfo.name || '테스트후보')
+          .replace(/\{\{날짜\}\}/g, now.toLocaleDateString('ko-KR'))
+          .replace(/\{\{시간\}\}/g, now.toLocaleTimeString('ko-KR'))
+          .replace(/\{\{지역\}\}/g, candidateInfo.region || '-')
+          .replace(/\{\{정당\}\}/g, candidateInfo.party || '-')
+          .replace(/\{\{관리자\}\}/g, admin?.username || 'admin');
+
+        try {
+          await SupabaseDB.client.from('admin_activity_logs').insert([{
+            admin_id: admin?.adminId || null,
+            action: `테스트 이메일 발송 → ${testEmail}`,
+            target_type: 'email',
+            target_id: testEmail,
+            details: { recipient: testEmail, template_length: rawTemplate.length, sent_at: now.toISOString() }
+          }]);
+        } catch (logErr) { console.debug('이메일 로그 기록 실패 (무시):', logErr.message); }
+
+        const prevBox = document.getElementById('emailPreviewBox');
+        if (prevBox) prevBox.remove();
+
+        const box = document.createElement('div');
+        box.id = 'emailPreviewBox';
+        box.style.cssText = 'margin-top:20px;padding:20px;background:var(--bg-primary);border:1px solid var(--border-color);border-radius:8px;font-size:13px;';
+        box.innerHTML = `
+          <div style="font-weight:700;margin-bottom:10px;color:var(--text-primary);">
+            📧 발송 시뮬레이션 미리보기
+            <span style="font-size:11px;color:var(--text-secondary);font-weight:400;margin-left:10px;">→ ${testEmail}</span>
+          </div>
+          <div style="color:var(--text-secondary);font-size:12px;margin-bottom:8px;">제목: 선거 워룸 — 테스트 메일 (${now.toLocaleString('ko-KR')})</div>
+          <pre style="white-space:pre-wrap;word-break:break-word;color:var(--text-primary);line-height:1.6;">${previewBody.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</pre>
+          <div style="margin-top:10px;padding:8px;background:rgba(255,193,7,0.1);border-radius:4px;font-size:12px;color:#b8860b;">
+            ⚠️ 현재 이메일 API가 연동되지 않았습니다. 실제 발송을 위해 Supabase Edge Function 또는 SendGrid를 연동하세요.
+          </div>
+        `;
+        document.querySelector('.admin-content').appendChild(box);
+
+        AdminAuth.logAdminAction('test_email_simulated', `email:${testEmail}`);
+        toast(`테스트 메일 시뮬레이션 완료 → ${testEmail}`, 'success');
+      } catch (err) {
+        console.error('테스트 메일 발송 실패:', err);
+        toast('테스트 메일 발송 실패: ' + err.message, 'error');
+      }
+    }
+
+    async function init() {
+      if (!AdminAuth.isAuthenticated()) {
+        window.location.href = '/pages/admin-login.html';
+        return;
+      }
+      const admin = AdminAuth.getCurrentAdmin();
+      document.getElementById('sidebarAdminName').textContent = admin.username;
+      document.getElementById('sidebarAdminRole').textContent = admin.role === 'super_admin' ? '🔴 Super Admin' : '🟠 Admin';
+
+      document.getElementById('logoutBtn').addEventListener('click', () => {
+        AdminAuth.logout();
+        window.location.href = '/pages/admin-login.html';
+      });
+
+      await SupabaseDB.init();
+      await loadEmailTemplate();
+    }
+
+    init();
+  </script>
+</body>
+</html>
