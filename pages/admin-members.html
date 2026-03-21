@@ -123,6 +123,7 @@
               <th>지역</th>
               <th>등록일</th>
               <th>상태</th>
+              <th>관리자 비밀번호</th>
               <th>액션</th>
             </tr>
           </thead>
@@ -190,10 +191,13 @@
             <td>${formatDate(m.created_at)}</td>
             <td>${getStatusBadge(m.approval_status)}</td>
             <td>
+              ${m.admin_password ? '<span style="color: #4caf50; font-weight: 600;">🔐 설정됨</span>' : '<span style="color: var(--text-secondary);">⚪ 미설정</span>'}
+            </td>
+            <td>
               ${canEdit ? `<button class="btn btn-sm btn-primary" onclick="openMemberModal('${m.id}')">수정</button>` : ''}
             </td>
           </tr>
-        `).join('') || '<tr><td colspan="6" style="text-align: center; color: var(--text-secondary);">데이터가 없습니다.</td></tr>';
+        `).join('') || '<tr><td colspan="7" style="text-align: center; color: var(--text-secondary);">데이터가 없습니다.</td></tr>';
       } catch (err) {
         console.error('Members 로드 실패:', err);
         toast('로드 실패: ' + err.message, 'error');
