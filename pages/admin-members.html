@@ -282,8 +282,14 @@
 
         const { error } = await SupabaseDB.client.from('candidates').update(updateData).eq('id', id);
         if (error) {
-          console.error('업데이트 오류:', error);
-          toast('저장 실패: ' + error.message, 'error');
+          console.error('업데이트 오류 상세:', {
+            message: error.message,
+            details: error.details,
+            hint: error.hint,
+            code: error.code,
+            full: error
+          });
+          toast('저장 실패: ' + (error.message || error.details || '알 수 없는 오류'), 'error');
           return;
         }
 
