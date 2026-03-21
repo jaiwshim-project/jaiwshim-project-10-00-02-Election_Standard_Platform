@@ -29,12 +29,23 @@ const AdminAuth = {
       // 비밀번호 해싱
       const passwordHash = await this.hashPassword(password);
 
-      // Supabase에서 관리자 조회
-      const { data, error } = await SupabaseDB.client
+      // Supabase에서 관리자 조회 (username으로 먼저 검색)
+      let { data, error } = await SupabaseDB.client
         .from('admins')
         .select('id, username, email, role, is_active')
-        .or(`username.eq.${username},email.eq.${username}`)
+        .eq('username', username)
         .single();
+
+      // username 없으면 email로 검색
+      if (error || !data) {
+        const result = await SupabaseDB.client
+          .from('admins')
+          .select('id, username, email, role, is_active')
+          .eq('email', username)
+          .single();
+        data = result.data;
+        error = result.error;
+      }
 
       if (error || !data) {
         return { success: false, message: '존재하지 않는 관리자입니다.' };
