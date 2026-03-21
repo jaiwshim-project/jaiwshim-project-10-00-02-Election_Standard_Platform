@@ -24,10 +24,10 @@
     .header { padding: var(--space-lg); background: linear-gradient(135deg, var(--primary-color), var(--primary-light)); color: white; }
     .header h1 { margin: 0; }
     .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: var(--space-lg); margin-top: var(--space-lg); }
-    footer { background-color: var(--bg-secondary); border-top: 1px solid var(--border-color); padding: var(--space-lg) 0; margin-top: var(--space-xl); }
-    footer .container { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: var(--space-lg); }
-    .footer-text { color: var(--text-secondary); font-size: var(--font-size-sm); }
-    .footer-btn { display: inline-block; background-color: var(--primary-color); color: white; padding: var(--space-sm) var(--space-lg); border-radius: var(--radius-md); text-decoration: none; font-weight: 600; transition: opacity var(--transition-base); }
+    footer { background-color: var(--bg-secondary); border-top: 2px solid #ddd; padding: 24px 0; margin-top: 32px; width: 100%; }
+    footer .container { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 24px; }
+    .footer-text { color: var(--text-secondary); font-size: 14px; }
+    .footer-btn { display: inline-block; background-color: var(--primary-color); color: white; padding: 8px 24px; border-radius: 8px; text-decoration: none; font-weight: 600; transition: opacity 0.3s; }
     .footer-btn:hover { opacity: 0.9; }
     @media (max-width: 768px) {
       .navbar ul { flex-wrap: wrap; gap: var(--space-sm); }
