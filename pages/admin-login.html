@@ -149,6 +149,31 @@
     @keyframes spin {
       to { transform: rotate(360deg); }
     }
+
+    .home-button {
+      width: 100%;
+      padding: 14px;
+      background: transparent;
+      color: var(--primary-color);
+      border: 2px solid var(--primary-color);
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 15px;
+      cursor: pointer;
+      transition: all 0.2s;
+      margin-top: 15px;
+    }
+
+    .home-button:hover {
+      background: var(--primary-color);
+      color: white;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(25, 83, 124, 0.2);
+    }
+
+    .home-button:active {
+      transform: translateY(0);
+    }
   </style>
 </head>
 <body>
@@ -190,6 +215,8 @@
       </form>
 
       <div id="message" class="message"></div>
+
+      <button type="button" class="home-button" onclick="window.location.href = '../index.html'">🏠 홈 이동</button>
     </div>
   </div>
 
