@@ -923,22 +923,12 @@
     let _pendingPhotoFile = null;
 
     /**
-     * 페이지 진입 시 인증 + 게이트 표시 결정
-     * - AuthManager.isAuthenticated() 확인
-     * - admin 역할이면 게이트 모달만 통과 → 콘텐츠 표시
-     * - 미인증이면 login.html 리다이렉트
+     * 페이지 진입 시 관리자 게이트 표시 (비밀번호 확인)
+     * - 로그인 없이도 접근 가능
+     * - 비밀번호로 추가 보안 제공
      */
     function initAdminGate() {
-      // 인증 미완료 → 로그인 페이지로
-      if (!AuthManager.isAuthenticated()) {
-        window.location.href = '../pages/login.html';
-        return;
-      }
-
-      // admin 역할이 아닌 경우 → 비밀번호 게이트 표시 (staff는 비밀번호 모름)
-      // admin이라도 비밀번호 재확인 요구 (추가 보안)
-      // → 게이트를 항상 표시하되, admin 세션이 있으면 게이트 통과 가능하게 둠
-      // 게이트는 항상 표시 (이미 admin 역할인 경우 비밀번호 확인으로 추가 보안)
+      // 게이트를 항상 표시 (보안용)
       document.getElementById('adminGateOverlay').style.display = 'flex';
       document.getElementById('mainContent').classList.add('content-locked');
 
