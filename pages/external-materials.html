@@ -841,89 +841,107 @@ $auth_script
 
     // 업로드된 자료 요약 업데이트
     async function updateUploadedFilesSummary() {
-      const candidateId = localStorage.getItem('candidateId') || 'local-user';
-      const summaryDiv = document.getElementById('uploadedFilesSummary');
-      const recentContainer = document.getElementById('recentUploadsContainer');
-      const recentList = document.getElementById('recentUploadsList');
+      try {
+        const candidateId = localStorage.getItem('candidateId') || 'local-user';
 
-      let totalFiles = 0;
-      const summaryCards = [];
-      let allFiles = [];
+        if (!candidateId || candidateId === 'local-user') {
+          return; // 로그인하지 않았으면 표시 안 함
+        }
 
-      // 1~8 타입별 파일 수집
-      for (const type of Object.keys(typeInfo)) {
-        const files = await CloudFileStore.getFilesByType(type, candidateId);
-        totalFiles += files.length;
+        const summaryDiv = document.getElementById('uploadedFilesSummary');
+        const recentContainer = document.getElementById('recentUploadsContainer');
+        const recentList = document.getElementById('recentUploadsList');
 
-        if (files.length > 0) {
-          const typeInfo_item = typeInfo[type];
+        if (!summaryDiv) return; // 요소가 없으면 종료
+
+        let totalFiles = 0;
+        const summaryCards = [];
+        let allFiles = [];
+
+        // 1~8 타입별 파일 수집 (동시 실행)
+        const typePromises = Object.entries(typeInfo).map(async ([type, typeInfo_item]) => {
+          try {
+            const files = await CloudFileStore.getFilesByType(type, candidateId);
+            return { type, files, typeInfo_item };
+          } catch (err) {
+            console.error(`파일 조회 실패 (${type}):`, err);
+            return { type, files: [], typeInfo_item };
+          }
+        });
+
+        const typeResults = await Promise.all(typePromises);
+
+        for (const { type, files, typeInfo_item } of typeResults) {
+          totalFiles += files.length;
+          if (files.length > 0) {
+            summaryCards.push(`
+              <div style="padding: var(--space-md); background: var(--bg-primary); border-radius: var(--radius-sm); border-left: 4px solid #22c55e; text-align: center;">
+                <div style="font-size: 24px; margin-bottom: var(--space-sm);">${typeInfo_item.emoji}</div>
+                <div style="font-weight: 600; color: var(--text-primary); margin-bottom: var(--space-xs);">${typeInfo_item.name}</div>
+                <div style="font-size: 18px; color: #22c55e; font-weight: 700;">${files.length}개</div>
+              </div>
+            `);
+            allFiles.push(...files.map(f => ({ ...f, type, typeName: typeInfo_item.name })));
+          }
+        }
+
+        // RAG 파일
+        const ragFiles = await CloudFileStore.getFilesByType('rag-only', candidateId);
+        totalFiles += ragFiles.length;
+
+        if (ragFiles.length > 0) {
           summaryCards.push(`
-            <div style="padding: var(--space-md); background: var(--bg-primary); border-radius: var(--radius-sm); border-left: 4px solid #22c55e; text-align: center;">
-              <div style="font-size: 24px; margin-bottom: var(--space-sm);">${typeInfo_item.emoji}</div>
-              <div style="font-weight: 600; color: var(--text-primary); margin-bottom: var(--space-xs);">${typeInfo_item.name}</div>
-              <div style="font-size: 18px; color: #22c55e; font-weight: 700;">${files.length}개</div>
+            <div style="padding: var(--space-md); background: var(--bg-primary); border-radius: var(--radius-sm); border-left: 4px solid #3b82f6; text-align: center;">
+              <div style="font-size: 24px; margin-bottom: var(--space-sm);">🤖</div>
+              <div style="font-weight: 600; color: var(--text-primary); margin-bottom: var(--space-xs);">RAG 참고자료</div>
+              <div style="font-size: 18px; color: #3b82f6; font-weight: 700;">${ragFiles.length}개</div>
             </div>
           `);
-
-          allFiles.push(...files.map(f => ({ ...f, type, typeName: typeInfo_item.name })));
+          allFiles.push(...ragFiles.map(f => ({ ...f, type: 'rag-only', typeName: 'RAG 참고자료' })));
         }
-      }
 
-      // RAG 파일
-      const ragFiles = await CloudFileStore.getFilesByType('rag-only', candidateId);
-      totalFiles += ragFiles.length;
+        // 요약 섹션 업데이트
+        if (totalFiles > 0) {
+          summaryDiv.innerHTML = `
+            <div style="grid-column: 1 / -1; padding: var(--space-lg); background: var(--bg-primary); border-radius: var(--radius-sm); border-left: 4px solid #22c55e; text-align: center;">
+              <div style="font-size: 32px; margin-bottom: var(--space-sm);">✅</div>
+              <div style="font-size: 18px; font-weight: 700; color: #22c55e; margin-bottom: var(--space-xs);">총 ${totalFiles}개 자료 업로드됨</div>
+              <div style="font-size: 13px; color: var(--text-secondary);">아래 카테고리별로 정리되어 있습니다</div>
+            </div>
+            ${summaryCards.join('')}
+          `;
 
-      if (ragFiles.length > 0) {
-        summaryCards.push(`
-          <div style="padding: var(--space-md); background: var(--bg-primary); border-radius: var(--radius-sm); border-left: 4px solid #3b82f6; text-align: center;">
-            <div style="font-size: 24px; margin-bottom: var(--space-sm);">🤖</div>
-            <div style="font-weight: 600; color: var(--text-primary); margin-bottom: var(--space-xs);">RAG 참고자료</div>
-            <div style="font-size: 18px; color: #3b82f6; font-weight: 700;">${ragFiles.length}개</div>
-          </div>
-        `);
+          // 최근 업로드 파일 목록 (최근 5개) - 시간순 정렬
+          const recentFiles = allFiles
+            .sort((a, b) => new Date(b.upload_date || b.created_at) - new Date(a.upload_date || a.created_at))
+            .slice(0, 5);
 
-        allFiles.push(...ragFiles.map(f => ({ ...f, type: 'rag-only', typeName: 'RAG 참고자료' })));
-      }
-
-      // 요약 섹션 업데이트
-      if (totalFiles > 0) {
-        summaryDiv.innerHTML = `
-          <div style="grid-column: 1 / -1; padding: var(--space-lg); background: var(--bg-primary); border-radius: var(--radius-sm); border-left: 4px solid #22c55e; text-align: center;">
-            <div style="font-size: 32px; margin-bottom: var(--space-sm);">✅</div>
-            <div style="font-size: 18px; font-weight: 700; color: #22c55e; margin-bottom: var(--space-xs);">총 ${totalFiles}개 자료 업로드됨</div>
-            <div style="font-size: 13px; color: var(--text-secondary);">아래 카테고리별로 정리되어 있습니다</div>
-          </div>
-          ${summaryCards.join('')}
-        `;
-
-        // 최근 업로드 파일 목록 (최근 5개)
-        const recentFiles = allFiles
-          .sort((a, b) => new Date(b.upload_date) - new Date(a.upload_date))
-          .slice(0, 5);
-
-        recentList.innerHTML = recentFiles.map(file => `
-          <div style="padding: var(--space-md); background: var(--bg-primary); border-radius: var(--radius-sm); border-left: 3px solid #22c55e; display: flex; justify-content: space-between; align-items: center;">
-            <div style="flex: 1;">
-              <div style="font-weight: 600; color: var(--text-primary); margin-bottom: var(--space-xs);">📄 ${file.file_name}</div>
-              <div style="font-size: 12px; color: var(--text-secondary);">
-                ${file.typeName} • ${(file.file_size / 1024 / 1024).toFixed(2)}MB • ${new Date(file.upload_date).toLocaleDateString('ko-KR')}
+          recentList.innerHTML = recentFiles.map(file => `
+            <div style="padding: var(--space-md); background: var(--bg-primary); border-radius: var(--radius-sm); border-left: 3px solid #22c55e; display: flex; justify-content: space-between; align-items: center;">
+              <div style="flex: 1;">
+                <div style="font-weight: 600; color: var(--text-primary); margin-bottom: var(--space-xs);">📄 ${file.file_name || file.name}</div>
+                <div style="font-size: 12px; color: var(--text-secondary);">
+                  ${file.typeName} • ${(file.file_size / 1024 / 1024).toFixed(2)}MB • ${new Date(file.upload_date || file.created_at).toLocaleDateString('ko-KR')}
+                </div>
+              </div>
+              <div style="display: flex; gap: var(--space-sm); margin-left: var(--space-md);">
+                <button class="btn btn-secondary" style="padding: 4px 8px; font-size: 12px;" onclick="downloadMaterial('${file.id}', '${file.type}')">📥</button>
+                <button class="btn btn-secondary" style="padding: 4px 8px; font-size: 12px; background: #ef4444; color: white;" onclick="deleteMaterial('${file.id}', '${file.type}')">🗑️</button>
               </div>
             </div>
-            <div style="display: flex; gap: var(--space-sm); margin-left: var(--space-md);">
-              <button class="btn btn-secondary" style="padding: 4px 8px; font-size: 12px;" onclick="downloadMaterial('${file.id}', '${file.type}')">📥</button>
-              <button class="btn btn-secondary" style="padding: 4px 8px; font-size: 12px; background: #ef4444; color: white;" onclick="deleteMaterial('${file.id}', '${file.type}')">🗑️</button>
-            </div>
-          </div>
-        `).join('');
+          `).join('');
 
-        recentContainer.style.display = 'block';
-      } else {
-        summaryDiv.innerHTML = `
-          <div style="text-align: center; padding: var(--space-lg); color: var(--text-secondary); grid-column: 1 / -1;">
-            📭 아직 업로드된 자료가 없습니다.
-          </div>
-        `;
-        recentContainer.style.display = 'none';
+          recentContainer.style.display = 'block';
+        } else {
+          summaryDiv.innerHTML = `
+            <div style="text-align: center; padding: var(--space-lg); color: var(--text-secondary); grid-column: 1 / -1;">
+              📭 아직 업로드된 자료가 없습니다.
+            </div>
+          `;
+          recentContainer.style.display = 'none';
+        }
+      } catch (error) {
+        console.error('업로드 파일 요약 오류:', error);
       }
     }
 
