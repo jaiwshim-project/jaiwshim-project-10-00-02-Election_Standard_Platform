@@ -1153,15 +1153,24 @@ $auth_script
 
     // 초기화: 자료 목록 표시
     window.addEventListener('DOMContentLoaded', async () => {
-      // 사이드바 제목 업데이트
-      const candidateName = localStorage.getItem('candidateName') || '후보자';
-      const sidebarTitle = document.getElementById('sidebarTitle');
-      if (sidebarTitle) {
-        sidebarTitle.textContent = `🚨 ${candidateName} 선거 워룸`;
-      }
+      try {
+        // Supabase 먼저 초기화
+        if (typeof SupabaseDB !== 'undefined') {
+          await SupabaseDB.init();
+        }
 
-      // 자료 목록 로드
-      await updateMaterialsList();
+        // 사이드바 제목 업데이트
+        const candidateName = localStorage.getItem('candidateName') || '후보자';
+        const sidebarTitle = document.getElementById('sidebarTitle');
+        if (sidebarTitle) {
+          sidebarTitle.textContent = `🚨 ${candidateName} 선거 워룸`;
+        }
+
+        // 자료 목록 로드
+        await updateMaterialsList();
+      } catch (error) {
+        console.error('페이지 초기화 오류:', error);
+      }
     });
   </script>
   <script src="../js/party-theme.js"></script>
