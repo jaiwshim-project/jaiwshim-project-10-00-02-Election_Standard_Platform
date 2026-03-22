@@ -7,6 +7,7 @@
   <link rel="preload" href="../css/theme.css" as="style">
   <link rel="stylesheet" href="../css/theme.css">
   <link rel="stylesheet" href="../css/responsive.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
   <style>
     body { margin: 0; background-color: var(--bg-primary); display: flex; }
 
@@ -262,25 +263,28 @@
 
   <script src="../js/ui.js"></script>
   <script src="../js/api-client.js"></script>
-  <script src="../js/file-store.js"></script>
+  <script src="../js/supabase-client.js"></script>
+  <script src="../js/file-store-cloud.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
     const CURRENT_TYPE = 'type-6'; // 선거차량 동선최적화
+    let allFiles = []; // 파일 목록 저장
 
     async function initFileDisplay() {
       try {
-        await FileStore.init();
-        const files = await FileStore.getFilesByType(CURRENT_TYPE);
+        await SupabaseDB.init();
+        const candidateId = localStorage.getItem('candidateId');
 
-        const emptyState = document.getElementById('emptyStateContainer');
-        const content = document.getElementById('contentContainer');
+        if (!candidateId) {
+          document.getElementById('emptyStateContainer').style.display = 'block';
+          return;
+        }
 
-        if (false) { // 기본 콘텐츠 항상 표시
-          emptyState.style.display = "none"; // 파일이 없어도 기본 콘텐츠 표시
-          content.style.display = 'none';
-        } else {
-          emptyState.style.display = 'none';
-          content.style.display = 'block';
-          // 파일 목록 표시
+        const files = await CloudFileStore.getFilesByType(CURRENT_TYPE, candidateId);
+        allFiles = files;
+        document.getElementById('emptyStateContainer').style.display = 'none';
+
+        if (files.length > 0) {
           displayFileList(files);
         }
       } catch (error) {
@@ -294,18 +298,20 @@
         <h2 style="margin-top: var(--space-xl);">📂 업로드된 자료</h2>
         <div style="display: grid; gap: var(--space-lg); margin-top: var(--space-lg);">
           ${files.map(file => `
-            <div style="padding: var(--space-lg); background-color: var(--bg-secondary); border-radius: var(--radius-md); border-left: 4px solid var(--primary-color);">
+            <div id="file-card-${file.id}" style="padding: var(--space-lg); background-color: var(--bg-secondary); border-radius: var(--radius-md); border-left: 4px solid var(--primary-color);">
               <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: var(--space-lg);">
                 <div style="flex: 1;">
                   <h4 style="margin: 0 0 var(--space-sm) 0; color: var(--primary-color);">📄 ${file.name}</h4>
                   <p style="margin: 0; font-size: var(--font-size-sm); color: var(--text-secondary);">업로드: ${file.uploadDate} • 크기: ${(file.size / 1024 / 1024).toFixed(2)}MB</p>
                 </div>
                 <div style="display: flex; gap: var(--space-sm);">
-                  <button class="btn btn-primary" onclick="viewFile(${file.id}, '${CURRENT_TYPE}')">보기</button>
-                  <button class="btn btn-secondary" onclick="downloadFile(${file.id}, '${CURRENT_TYPE}')">다운로드</button>
-                  <button class="btn btn-secondary" onclick="deleteFile(${file.id}, '${CURRENT_TYPE}')">삭제</button>
+                  <button class="btn btn-primary" onclick="viewFile('${file.storagePath}')">보기</button>
+                  <button class="btn btn-secondary" onclick="downloadFile('${file.storagePath}', '${file.name}')">다운로드</button>
+                  <button class="btn btn-secondary" onclick="analyzeFileWithAI('${file.id}', '${file.storagePath}', '${file.name}')">🤖 AI 분석</button>
+                  <button class="btn btn-secondary" onclick="deleteFile('${file.id}')">삭제</button>
                 </div>
               </div>
+              <div id="analysis-result-${file.id}"></div>
             </div>
           `).join('')}
         </div>
@@ -314,14 +320,15 @@
       const fileSection = document.createElement('div');
       fileSection.innerHTML = fileListHtml;
 
-      // 기존 콘텐츠 맨 앞에 파일 리스트 추가
-      container.insertBefore(fileSection, container.firstChild);
+      const firstSection = container.querySelector('h2') || container.querySelector('.stats-grid');
+      if (firstSection) {
+        firstSection.parentNode.insertBefore(fileSection, firstSection);
+      }
     }
 
-    async function viewFile(id, type) {
+    async function viewFile(storagePath) {
       try {
-        const blob = await FileStore.getFileBlob(id);
-        const url = URL.createObjectURL(blob);
+        const url = await CloudFileStore.getSignedUrl(storagePath);
         window.open(url, '_blank');
       } catch (error) {
         console.error('파일 보기 실패:', error);
@@ -329,37 +336,214 @@
       }
     }
 
-    async function downloadFile(id, type) {
+    async function downloadFile(storagePath, fileName) {
       try {
-        const files = await FileStore.getFilesByType(type);
-        const file = files.find(f => f.id === id);
-        if (file) {
-          const blob = await FileStore.getFileBlob(id);
-          const url = URL.createObjectURL(blob);
-          const link = document.createElement('a');
-          link.href = url;
-          link.download = file.name;
-          document.body.appendChild(link);
-          link.click();
-          document.body.removeChild(link);
-          URL.revokeObjectURL(url);
-        }
+        const url = await CloudFileStore.getSignedUrl(storagePath);
+        const resp = await fetch(url);
+        const blob = await resp.blob();
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = fileName;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
       } catch (error) {
         console.error('다운로드 실패:', error);
         alert('다운로드에 실패했습니다.');
       }
     }
 
-    async function deleteFile(id, type) {
+    async function deleteFile(fileId) {
       if (confirm('파일을 삭제하시겠습니까?')) {
         try {
-          await FileStore.deleteFile(id);
-          alert('파일이 삭제되었습니다.');
-          location.reload();
+          const file = allFiles.find(f => f.id === fileId);
+          if (file) {
+            await CloudFileStore.deleteFile(fileId, file.storagePath);
+            alert('파일이 삭제되었습니다.');
+            location.reload();
+          }
         } catch (error) {
           console.error('삭제 실패:', error);
           alert('삭제에 실패했습니다.');
         }
+      }
+    }
+
+    // PDF 텍스트 추출 (pdf.js 사용)
+    async function extractTextFromPDF(arrayBuffer) {
+      pdfjsLib.GlobalWorkerOptions.workerSrc =
+        'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+      const pdf = await pdfjsLib.getDocument({data: arrayBuffer}).promise;
+      let fullText = '';
+
+      // 최대 20페이지 추출
+      for (let i = 1; i <= Math.min(pdf.numPages, 20); i++) {
+        const page = await pdf.getPage(i);
+        const content = await page.getTextContent();
+        fullText += content.items.map(item => item.str).join(' ') + '\n';
+      }
+
+      return fullText;
+    }
+
+    // Gemini API 호출
+    async function callGeminiAPI(prompt) {
+      const apiKey = localStorage.getItem('geminiApiKey');
+      const model = localStorage.getItem('geminiModel') || 'gemini-2.0-flash';
+
+      if (!apiKey) {
+        throw new Error('Gemini API 키가 설정되지 않았습니다. 설정 페이지에서 API 키를 입력해주세요.');
+      }
+
+      const response = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: prompt }] }],
+            generationConfig: {
+              temperature: 0.7,
+              topK: 40,
+              topP: 0.95,
+              maxOutputTokens: 2048
+            }
+          })
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error?.message || 'API 호출 실패');
+      }
+
+      return data.candidates[0]?.content?.parts[0]?.text || '';
+    }
+
+    // 분석 프롬프트 생성
+    function buildAnalysisPrompt(pdfText, fileName) {
+      return `다음은 선거 차량 동선 및 후보자 연설 전략 리포트입니다. 내용을 분석하고 JSON 형식으로 반환하세요.
+
+파일명: ${fileName}
+내용:
+${pdfText.substring(0, 3000)}...
+
+다음 JSON 형식으로 반환하세요 (필드가 없으면 null 또는 기본값 사용):
+{
+  "totalRoute": "X시간",
+  "scheduledLocations": X,
+  "expectedReach": "X명",
+  "plannedSpeeches": X,
+  "efficiency": "X%",
+  "routeOptimization": ["거리감소 X%", "시간절감 X시간"],
+  "keyLocations": [{"location":"장소명", "time":"시간", "expectedReach":"인원"}],
+  "recommendations": ["전략적 권고사항1", "전략적 권고사항2"]
+}`;
+    }
+
+    // AI 분석 실행
+    async function analyzeFileWithAI(fileId, storagePath, fileName) {
+      const resultDiv = document.getElementById(`analysis-result-${fileId}`);
+
+      try {
+        // 로딩 표시
+        resultDiv.innerHTML = `
+          <div style="margin-top: var(--space-lg); padding: var(--space-lg); background-color: var(--bg-primary); border-radius: var(--radius-md); text-align: center;">
+            <div style="font-size: 24px; margin-bottom: var(--space-md);">⏳</div>
+            <p style="color: var(--text-secondary);">AI 분석 중...</p>
+          </div>
+        `;
+
+        // 1. Signed URL 생성
+        const url = await CloudFileStore.getSignedUrl(storagePath);
+
+        // 2. PDF 다운로드
+        const resp = await fetch(url);
+        const arrayBuffer = await resp.arrayBuffer();
+
+        // 3. 텍스트 추출
+        const pdfText = await extractTextFromPDF(arrayBuffer);
+
+        // 4. Gemini API 호출
+        const prompt = buildAnalysisPrompt(pdfText, fileName);
+        const analysisResult = await callGeminiAPI(prompt);
+
+        // 5. 결과 파싱 및 표시
+        showAnalysisResult(fileId, analysisResult);
+      } catch (error) {
+        console.error('AI 분석 실패:', error);
+        resultDiv.innerHTML = `
+          <div style="margin-top: var(--space-lg); padding: var(--space-lg); background-color: #fee; border-radius: var(--radius-md); border-left: 4px solid #ef4444;">
+            <p style="margin: 0; color: #dc2626;"><strong>❌ 분석 실패:</strong> ${error.message}</p>
+          </div>
+        `;
+      }
+    }
+
+    // 분석 결과 표시
+    function showAnalysisResult(fileId, analysisText) {
+      const resultDiv = document.getElementById(`analysis-result-${fileId}`);
+
+      try {
+        // JSON 파싱 시도
+        const jsonMatch = analysisText.match(/\{[\s\S]*\}/);
+        const analysisData = jsonMatch ? JSON.parse(jsonMatch[0]) : null;
+
+        if (analysisData) {
+          const html = `
+            <div style="margin-top: var(--space-lg); padding: var(--space-lg); background-color: #f0fdf4; border-radius: var(--radius-md); border-left: 4px solid #10b981;">
+              <h5 style="margin-top: 0; color: #10b981;">🤖 AI 분석 결과</h5>
+
+              <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: var(--space-md); margin-bottom: var(--space-lg);">
+                ${analysisData.totalRoute ? `<div><strong>총 이동시간</strong><div style="font-size: 20px; color: #10b981;">${analysisData.totalRoute}</div></div>` : ''}
+                ${analysisData.scheduledLocations ? `<div><strong>예정 지역</strong><div style="font-size: 20px; color: #10b981;">${analysisData.scheduledLocations}</div></div>` : ''}
+                ${analysisData.expectedReach ? `<div><strong>예상 도달</strong><div style="font-size: 20px; color: #10b981;">${analysisData.expectedReach}</div></div>` : ''}
+                ${analysisData.efficiency ? `<div><strong>효율성</strong><div style="font-size: 20px; color: #10b981;">${analysisData.efficiency}</div></div>` : ''}
+              </div>
+
+              ${analysisData.routeOptimization && analysisData.routeOptimization.length > 0 ? `
+                <div style="margin-bottom: var(--space-lg);">
+                  <strong>📍 경로 최적화:</strong>
+                  <ul style="margin: var(--space-sm) 0 0 var(--space-lg); padding: 0;">
+                    ${analysisData.routeOptimization.map(opt => `<li style="margin-bottom: 4px;">${opt}</li>`).join('')}
+                  </ul>
+                </div>
+              ` : ''}
+
+              ${analysisData.keyLocations && analysisData.keyLocations.length > 0 ? `
+                <div style="margin-bottom: var(--space-lg);">
+                  <strong>🗺️ 주요 지역:</strong>
+                  <ul style="margin: var(--space-sm) 0 0 var(--space-lg); padding: 0;">
+                    ${analysisData.keyLocations.map(loc => `<li style="margin-bottom: 4px;">${loc.location} (${loc.time}) - ${loc.expectedReach} 도달</li>`).join('')}
+                  </ul>
+                </div>
+              ` : ''}
+
+              ${analysisData.recommendations && analysisData.recommendations.length > 0 ? `
+                <div>
+                  <strong>💡 권고사항:</strong>
+                  <ul style="margin: var(--space-sm) 0 0 var(--space-lg); padding: 0;">
+                    ${analysisData.recommendations.map(rec => `<li style="margin-bottom: 4px;">${rec}</li>`).join('')}
+                  </ul>
+                </div>
+              ` : ''}
+            </div>
+          `;
+          resultDiv.innerHTML = html;
+        } else {
+          // JSON 파싱 실패 시 원문 표시
+          throw new Error('분석 결과를 파싱할 수 없습니다');
+        }
+      } catch (error) {
+        resultDiv.innerHTML = `
+          <div style="margin-top: var(--space-lg); padding: var(--space-lg); background-color: #fef2f2; border-radius: var(--radius-md); border-left: 4px solid #ef4444;">
+            <p style="margin: 0; color: #dc2626;"><strong>⚠️ 결과 처리 오류:</strong> ${error.message}</p>
+            <p style="margin: var(--space-sm) 0 0 0; font-size: var(--font-size-sm); color: var(--text-secondary);">AI 응답:</p>
+            <pre style="margin: var(--space-sm) 0 0 0; padding: var(--space-sm); background-color: var(--bg-secondary); border-radius: var(--radius-sm); overflow-x: auto; font-size: 12px;">${analysisText.substring(0, 500)}</pre>
+          </div>
+        `;
       }
     }
 
