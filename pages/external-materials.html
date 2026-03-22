@@ -759,6 +759,14 @@ $auth_script
 
     // 파일 업로드 (비밀번호 확인 후)
     async function uploadFileNow(file, type) {
+      const candidateId = localStorage.getItem('candidateId');
+
+      // 로그인 확인
+      if (!candidateId || candidateId === 'local-user') {
+        alert('❌ 캠프 계정으로 먼저 로그인해주세요.\n\n1. https://10-00-02.vercel.app 방문\n2. 캠프 아이디/비밀번호로 로그인\n3. 선거 워룸에서 외부 자료 업로드');
+        return;
+      }
+
       const progressSection = document.getElementById('progressSection');
       const progressFill = document.getElementById('progressFill');
       const progressText = document.getElementById('progressText');
