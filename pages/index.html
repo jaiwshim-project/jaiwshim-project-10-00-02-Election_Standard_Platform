@@ -1305,7 +1305,7 @@
             staff_account_id: staffId,
             admin_account_id: 'admin_' + staffId,
             staff_password: passwordHash,
-            admin_password: '',
+            admin_password: passwordHash,
             is_active: true
           }])
           .select()
