@@ -189,9 +189,10 @@
 
         console.log('📊 조회 결과:', {
           총개수: data?.length,
-          데이터: data?.map(d => ({ id: d.id, name: d.name })),
+          데이터: data?.map(d => ({ id: d.id, name: d.name, staff_account_id: d.staff_account_id })),
           오류: queryError
         });
+        console.log('📋 전체 조회 데이터:', data);
 
         if (queryError) {
           console.error('❌ 조회 오류:', queryError);
