@@ -209,6 +209,16 @@ $auth_script
       </div>
     </div>
 
+    <!-- 1. 통합분석 업로드 파일 목록 -->
+    <div class="materials-section type-1" id="section-type-1" style="display: none; margin-bottom: var(--space-xl);">
+      <div class="materials-section-title">
+        <span class="section-icon">📊</span>
+        <span class="section-name">1. 통합분석</span>
+        <span class="section-count" id="count-type-1">0개</span>
+      </div>
+      <div id="list-type-1"></div>
+    </div>
+
     <!-- 2. 판세정보 -->
     <div class="upload-section type-2">
       <div class="section-header">
@@ -224,6 +234,16 @@ $auth_script
         <div class="upload-hint">또는 클릭하여 PDF 파일을 선택하세요</div>
         <input type="file" class="file-input-hidden" id="input-type-2" accept=".pdf" multiple onchange="handleFileSelect(event, 'type-2')">
       </div>
+    </div>
+
+    <!-- 2. 판세정보 업로드 파일 목록 -->
+    <div class="materials-section type-2" id="section-type-2" style="display: none; margin-bottom: var(--space-xl);">
+      <div class="materials-section-title">
+        <span class="section-icon">📈</span>
+        <span class="section-name">2. 판세정보</span>
+        <span class="section-count" id="count-type-2">0개</span>
+      </div>
+      <div id="list-type-2"></div>
     </div>
 
     <!-- 3-1. 우리전략 -->
@@ -243,6 +263,16 @@ $auth_script
       </div>
     </div>
 
+    <!-- 3-1. 우리전략 업로드 파일 목록 -->
+    <div class="materials-section type-3" id="section-type-3" style="display: none; margin-bottom: var(--space-xl);">
+      <div class="materials-section-title">
+        <span class="section-icon">📄</span>
+        <span class="section-name">3-1. 우리전략</span>
+        <span class="section-count" id="count-type-3">0개</span>
+      </div>
+      <div id="list-type-3"></div>
+    </div>
+
     <!-- 3-2. 경쟁자전략 -->
     <div class="upload-section type-4">
       <div class="section-header">
@@ -258,6 +288,16 @@ $auth_script
         <div class="upload-hint">또는 클릭하여 PDF 파일을 선택하세요</div>
         <input type="file" class="file-input-hidden" id="input-type-4" accept=".pdf" multiple onchange="handleFileSelect(event, 'type-4')">
       </div>
+    </div>
+
+    <!-- 3-2. 경쟁자전략 업로드 파일 목록 -->
+    <div class="materials-section type-4" id="section-type-4" style="display: none; margin-bottom: var(--space-xl);">
+      <div class="materials-section-title">
+        <span class="section-icon">⚔️</span>
+        <span class="section-name">3-2. 경쟁자전략</span>
+        <span class="section-count" id="count-type-4">0개</span>
+      </div>
+      <div id="list-type-4"></div>
     </div>
 
     <!-- 4. 정책 -->
@@ -277,6 +317,16 @@ $auth_script
       </div>
     </div>
 
+    <!-- 4. 정책 업로드 파일 목록 -->
+    <div class="materials-section type-5" id="section-type-5" style="display: none; margin-bottom: var(--space-xl);">
+      <div class="materials-section-title">
+        <span class="section-icon">📋</span>
+        <span class="section-name">4. 정책</span>
+        <span class="section-count" id="count-type-5">0개</span>
+      </div>
+      <div id="list-type-5"></div>
+    </div>
+
     <!-- 5. 선거차량 동선 & 후보자 연설 최적화 -->
     <div class="upload-section type-6">
       <div class="section-header">
@@ -292,6 +342,16 @@ $auth_script
         <div class="upload-hint">또는 클릭하여 PDF 파일을 선택하세요</div>
         <input type="file" class="file-input-hidden" id="input-type-6" accept=".pdf" multiple onchange="handleFileSelect(event, 'type-6')">
       </div>
+    </div>
+
+    <!-- 5. 선거차량 동선 & 후보자 연설 최적화 업로드 파일 목록 -->
+    <div class="materials-section type-6" id="section-type-6" style="display: none; margin-bottom: var(--space-xl);">
+      <div class="materials-section-title">
+        <span class="section-icon">🚗</span>
+        <span class="section-name">5. 선거차량 동선 & 후보자 연설 최적화</span>
+        <span class="section-count" id="count-type-6">0개</span>
+      </div>
+      <div id="list-type-6"></div>
     </div>
 
     <!-- 6-1. 우리 후보 온라인 여론분석 -->
@@ -311,6 +371,16 @@ $auth_script
       </div>
     </div>
 
+    <!-- 6-1. 우리 후보 온라인 여론분석 업로드 파일 목록 -->
+    <div class="materials-section type-7" id="section-type-7" style="display: none; margin-bottom: var(--space-xl);">
+      <div class="materials-section-title">
+        <span class="section-icon">💬</span>
+        <span class="section-name">6-1. 우리 후보 온라인 여론분석</span>
+        <span class="section-count" id="count-type-7">0개</span>
+      </div>
+      <div id="list-type-7"></div>
+    </div>
+
     <!-- 6-2. 경쟁 후보 온라인 여론분석 -->
     <div class="upload-section type-8">
       <div class="section-header">
@@ -326,6 +396,16 @@ $auth_script
         <div class="upload-hint">또는 클릭하여 PDF 파일을 선택하세요 (여러 개 가능)</div>
         <input type="file" class="file-input-hidden" id="input-type-8" accept=".pdf" multiple onchange="handleFileSelect(event, 'type-8')">
       </div>
+    </div>
+
+    <!-- 6-2. 경쟁 후보 온라인 여론분석 업로드 파일 목록 -->
+    <div class="materials-section type-8" id="section-type-8" style="display: none; margin-bottom: var(--space-xl);">
+      <div class="materials-section-title">
+        <span class="section-icon">⚔️</span>
+        <span class="section-name">6-2. 경쟁 후보 온라인 여론분석</span>
+        <span class="section-count" id="count-type-8">0개</span>
+      </div>
+      <div id="list-type-8"></div>
     </div>
 
     <!-- 진행 상황 -->
@@ -453,106 +533,14 @@ $auth_script
       </div>
     </div>
 
-    <!-- 업로드된 자료 목록 -->
-    <div class="materials-list" id="materialsList">
-      <h2>📚 업로드된 자료</h2>
-
-      <!-- 타입 1 -->
-      <div class="materials-section type-1" id="section-type-1" style="display: none;">
-        <div class="materials-section-title">
-          <span class="section-icon">📊</span>
-          <span class="section-name">1. 통합분석</span>
-          <span class="section-count" id="count-type-1">0개</span>
-        </div>
-        <div id="list-type-1"></div>
+    <!-- RAG 참고자료 업로드 파일 목록 -->
+    <div class="materials-section" id="section-rag-only" style="display: none; margin-bottom: var(--space-xl); border-left-color: #3b82f6;">
+      <div class="materials-section-title">
+        <span class="section-icon">🤖</span>
+        <span class="section-name">7. RAG 참고자료 (AI톡용)</span>
+        <span class="section-count" id="count-rag-only">0개</span>
       </div>
-
-      <!-- 타입 2 -->
-      <div class="materials-section type-2" id="section-type-2" style="display: none;">
-        <div class="materials-section-title">
-          <span class="section-icon">📈</span>
-          <span class="section-name">2. 판세정보</span>
-          <span class="section-count" id="count-type-2">0개</span>
-        </div>
-        <div id="list-type-2"></div>
-      </div>
-
-      <!-- 타입 3 -->
-      <div class="materials-section type-3" id="section-type-3" style="display: none;">
-        <div class="materials-section-title">
-          <span class="section-icon">📄</span>
-          <span class="section-name">3-1. 우리전략</span>
-          <span class="section-count" id="count-type-3">0개</span>
-        </div>
-        <div id="list-type-3"></div>
-      </div>
-
-      <!-- 타입 4 -->
-      <div class="materials-section type-4" id="section-type-4" style="display: none;">
-        <div class="materials-section-title">
-          <span class="section-icon">⚔️</span>
-          <span class="section-name">3-2. 경쟁자전략</span>
-          <span class="section-count" id="count-type-4">0개</span>
-        </div>
-        <div id="list-type-4"></div>
-      </div>
-
-      <!-- 타입 5 -->
-      <div class="materials-section type-5" id="section-type-5" style="display: none;">
-        <div class="materials-section-title">
-          <span class="section-icon">📋</span>
-          <span class="section-name">4. 정책</span>
-          <span class="section-count" id="count-type-5">0개</span>
-        </div>
-        <div id="list-type-5"></div>
-      </div>
-
-      <!-- 타입 6 -->
-      <div class="materials-section type-6" id="section-type-6" style="display: none;">
-        <div class="materials-section-title">
-          <span class="section-icon">🚗</span>
-          <span class="section-name">5. 선거차량 동선 & 후보자 연설 최적화</span>
-          <span class="section-count" id="count-type-6">0개</span>
-        </div>
-        <div id="list-type-6"></div>
-      </div>
-
-      <!-- 타입 7 -->
-      <div class="materials-section type-7" id="section-type-7" style="display: none;">
-        <div class="materials-section-title">
-          <span class="section-icon">💬</span>
-          <span class="section-name">6-1. 우리 후보 온라인 여론분석</span>
-          <span class="section-count" id="count-type-7">0개</span>
-        </div>
-        <div id="list-type-7"></div>
-      </div>
-
-      <!-- 타입 8 -->
-      <div class="materials-section type-8" id="section-type-8" style="display: none;">
-        <div class="materials-section-title">
-          <span class="section-icon">⚔️</span>
-          <span class="section-name">6-2. 경쟁 후보 온라인 여론분석</span>
-          <span class="section-count" id="count-type-8">0개</span>
-        </div>
-        <div id="list-type-8"></div>
-      </div>
-
-      <!-- RAG 참고자료 -->
-      <div class="materials-section" id="section-rag-only" style="display: none; border-left-color: #3b82f6;">
-        <div class="materials-section-title">
-          <span class="section-icon">🤖</span>
-          <span class="section-name">7. RAG 참고자료 (AI톡용)</span>
-          <span class="section-count" id="count-rag-only">0개</span>
-        </div>
-        <div id="list-rag-only"></div>
-      </div>
-
-      <!-- 빈 상태 -->
-      <div id="emptyState" style="text-align: center;">
-        <div class="empty-icon">📁</div>
-        <p>업로드된 자료가 없습니다.</p>
-        <p style="font-size: var(--font-size-sm); color: var(--text-secondary);">위의 섹션에서 파일을 드래그하거나 클릭하여 업로드하세요.</p>
-      </div>
+      <div id="list-rag-only"></div>
     </div>
   </div>
 
