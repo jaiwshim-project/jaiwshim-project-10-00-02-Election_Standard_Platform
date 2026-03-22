@@ -275,13 +275,26 @@
         const admin = AdminAuth.getCurrentAdmin();
         console.log('🗑️ 캠프 삭제 시작:', { id, campName });
 
-        const { data, error } = await SupabaseDB.client
+        const { data, error, status, statusText } = await SupabaseDB.client
           .from('candidates')
           .delete()
           .eq('id', id)
           .select();
 
-        console.log('삭제 결과:', { data, error });
+        console.log('🗑️ DELETE 쿼리 응답:', {
+          data,
+          error,
+          status,
+          statusText,
+          삭제된_레코드_수: data?.length || 0
+        });
+
+        // 실제로 삭제되었는지 확인 (data에 삭제된 레코드가 반환되어야 함)
+        if (!data || data.length === 0) {
+          console.warn('⚠️ 삭제된 레코드 없음 - RLS 정책 확인 필요');
+          toast('삭제 실패: 레코드가 삭제되지 않았습니다. Supabase RLS 정책을 확인하세요.', 'error');
+          return;
+        }
 
         if (error) {
           console.error('❌ 삭제 오류:', error);
