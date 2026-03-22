@@ -1196,7 +1196,6 @@
                   </div>
                   <div style="display: flex; gap: var(--space-sm);">
                     <button class="btn btn-primary" onclick="viewFile('${file.storagePath}')">보기</button>
-                    <button class="btn btn-secondary" onclick="downloadFile('${file.storagePath}', '${file.name}')">다운로드</button>
                     <button class="btn btn-secondary" onclick="analyzeFileWithAI('${file.id}', '${file.storagePath}', '${file.name}', '${type}')">🤖 AI 분석</button>
                     <button class="btn btn-secondary" onclick="deleteFile('${file.id}')">삭제</button>
                   </div>
@@ -1250,7 +1249,30 @@
 
     async function deleteFile(fileId) {
       if (confirm('파일을 삭제하시겠습니까?')) {
+        const password = prompt('캠프 관리자 비밀번호를 입력하세요:');
+        if (!password) return;
+
         try {
+          const candidateId = localStorage.getItem('candidateId');
+          const { data, error } = await SupabaseDB.client.from('candidates').select('admin_password').eq('id', candidateId).single();
+
+          if (error || !data) {
+            alert('❌ 관리자 정보를 조회할 수 없습니다.');
+            return;
+          }
+
+          // 입력한 비밀번호 해싱
+          const encoder = new TextEncoder();
+          const encodedPassword = encoder.encode(password);
+          const hashBuffer = await crypto.subtle.digest('SHA-256', encodedPassword);
+          const hashArray = Array.from(new Uint8Array(hashBuffer));
+          const inputHash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+
+          if (data.admin_password !== inputHash) {
+            alert('❌ 비밀번호가 틀렸습니다.');
+            return;
+          }
+
           // allFiles 배열에서 파일 찾기
           let file = null;
           for (const section of document.querySelectorAll('[id^="fileListSection-"]')) {
@@ -1269,7 +1291,6 @@
 
           // 데이터 속성으로 storagePath를 찾을 수 없으면, 다시 로드해서 찾기
           if (!file) {
-            const candidateId = localStorage.getItem('candidateId');
             const allFiles = await CloudFileStore.getAllFiles(candidateId);
             file = allFiles.find(f => f.id === fileId);
           }
