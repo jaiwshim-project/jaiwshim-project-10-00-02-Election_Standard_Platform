@@ -21,8 +21,9 @@ const AdminAuth = {
     }
 
     try {
-      // Supabase 클라이언트 확인
-      if (!window.supabase) {
+      // Supabase 클라이언트 초기화
+      await SupabaseDB.init();
+      if (!SupabaseDB.client) {
         return { success: false, message: '시스템 초기화 중입니다. 잠시만 기다려주세요.' };
       }
 
@@ -30,7 +31,7 @@ const AdminAuth = {
       const passwordHash = await this.hashPassword(password);
 
       // Supabase에서 관리자 조회 (username으로 먼저 검색)
-      let { data, error } = await window.supabase
+      let { data, error } = await SupabaseDB.client
         .from('admins')
         .select('id, username, email, role, is_active')
         .eq('username', username)
@@ -38,7 +39,7 @@ const AdminAuth = {
 
       // username 없으면 email로 검색
       if (error || !data) {
-        const result = await window.supabase
+        const result = await SupabaseDB.client
           .from('admins')
           .select('id, username, email, role, is_active')
           .eq('email', username)
@@ -56,7 +57,7 @@ const AdminAuth = {
       }
 
       // 실제 비밀번호 검증 (DB에서 조회 후 비교)
-      const { data: adminData, error: pwError } = await window.supabase
+      const { data: adminData, error: pwError } = await SupabaseDB.client
         .from('admins')
         .select('password_hash')
         .eq('id', data.id)
@@ -80,7 +81,7 @@ const AdminAuth = {
       sessionStorage.setItem(this.SESSION_KEY, JSON.stringify(session));
 
       // 마지막 로그인 시간 업데이트
-      await window.supabase
+      await SupabaseDB.client
         .from('admins')
         .update({ last_login_at: new Date().toISOString() })
         .eq('id', data.id);
