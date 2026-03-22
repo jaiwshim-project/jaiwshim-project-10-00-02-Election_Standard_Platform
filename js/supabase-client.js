@@ -399,9 +399,9 @@ const SupabaseDB = {
   }
 };
 
-// 페이지 로드 시 자동 초기화 시도
-document.addEventListener('DOMContentLoaded', () => {
-  SupabaseDB.init().catch(err => {
-    console.debug('초기 Supabase 초기화 스킵 (settings에서 설정 필요):', err);
-  });
-});
+// 페이지 로드 시 자동 초기화 시도 (관리자 로그인 필요 시에만 호출)
+// document.addEventListener('DOMContentLoaded', () => {
+//   SupabaseDB.init().catch(err => {
+//     console.debug('초기 Supabase 초기화 스킵 (settings에서 설정 필요):', err);
+//   });
+// });

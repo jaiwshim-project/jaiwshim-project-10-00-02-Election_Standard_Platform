@@ -175,6 +175,10 @@
     // 관리자 로그인 모달 열기
     async function openAdminLoginModal() {
       await loadAdminAuth();
+      // Supabase 초기화
+      if (window.SupabaseDB) {
+        await window.SupabaseDB.init().catch(() => {});
+      }
       document.getElementById('adminLoginModalOverlay').classList.add('show');
       document.getElementById('adminUsername').value = '';
       document.getElementById('adminPassword').value = '';
