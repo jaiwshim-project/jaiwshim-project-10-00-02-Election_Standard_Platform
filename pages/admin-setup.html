@@ -152,8 +152,43 @@
     </div>
   </div>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="/js/supabase-client.js"></script>
+  <script src="/js/admin-auth.js"></script>
   <script>
+    // Supabase 초기화
+    function initializeSupabase() {
+      const supabaseUrl = localStorage.getItem('supabaseUrl');
+      const supabaseKey = localStorage.getItem('supabaseKey');
+
+      if (!supabaseUrl || !supabaseKey) {
+        console.warn('⚠️ Supabase 미설정 — settings에서 설정하세요');
+        return;
+      }
+
+      try {
+        const { createClient } = window.supabase;
+        window.supabase = createClient(supabaseUrl, supabaseKey);
+        console.log('✅ Supabase 클라이언트 초기화 완료');
+      } catch (error) {
+        console.error('❌ Supabase 초기화 실패:', error);
+      }
+    }
+
+    const initSupabaseWhenReady = () => {
+      if (window.supabase && window.supabase.createClient) {
+        initializeSupabase();
+      } else {
+        setTimeout(initSupabaseWhenReady, 100);
+      }
+    };
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initSupabaseWhenReady);
+    } else {
+      initSupabaseWhenReady();
+    }
+
     const AdminSetup = {
       async init() {
         await SupabaseDB.init();
