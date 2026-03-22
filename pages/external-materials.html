@@ -717,8 +717,8 @@ $auth_script
 
         let isValid = false;
 
-        if (connected && window.supabase) {
-          const { data, error } = await window.supabase
+        if (connected && SupabaseDB.client) {
+          const { data, error } = await SupabaseDB.client
             .from('candidates')
             .select('admin_password')
             .eq('id', candidateId)
