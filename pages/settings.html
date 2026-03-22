@@ -1582,6 +1582,27 @@
   <script src="../js/auth-manager.js"></script>
 
   <script>
+    // Supabase 정보 자동 저장
+    (function() {
+      const supabaseUrl = 'https://najtwocfrlguctmduvfs.supabase.co';
+      const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5hanR3b2NmcmxndWN0bWR1dmZzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQwMTU5NDcsImV4cCI6MjA4OTU5MTk0N30.-6P6xxqJHv30DgzqwTgOS4vhnzA3NZlI8WsX691px8Q';
+
+      if (!localStorage.getItem('supabaseUrl')) {
+        localStorage.setItem('supabaseUrl', supabaseUrl);
+      }
+      if (!localStorage.getItem('supabaseKey')) {
+        localStorage.setItem('supabaseKey', supabaseKey);
+      }
+
+      // 입력 필드에도 자동으로 채우기
+      setTimeout(() => {
+        const urlInput = document.getElementById('supabaseUrl');
+        const keyInput = document.getElementById('supabaseKey');
+        if (urlInput && !urlInput.value) urlInput.value = supabaseUrl;
+        if (keyInput && !keyInput.value) keyInput.value = supabaseKey;
+      }, 500);
+    })();
+
     // Supabase 설정 저장
     function saveSupabaseSettings() {
       const url = document.getElementById('supabaseUrl').value.trim();

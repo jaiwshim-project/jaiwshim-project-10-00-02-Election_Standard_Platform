@@ -142,6 +142,19 @@
   <script src="../js/supabase-client.js"></script>
   <script src="../js/admin-auth.js"></script>
   <script>
+    // Supabase 정보 자동 저장
+    (function() {
+      const supabaseUrl = 'https://najtwocfrlguctmduvfs.supabase.co';
+      const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5hanR3b2NmcmxndWN0bWR1dmZzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQwMTU5NDcsImV4cCI6MjA4OTU5MTk0N30.-6P6xxqJHv30DgzqwTgOS4vhnzA3NZlI8WsX691px8Q';
+
+      if (!localStorage.getItem('supabaseUrl')) {
+        localStorage.setItem('supabaseUrl', supabaseUrl);
+      }
+      if (!localStorage.getItem('supabaseKey')) {
+        localStorage.setItem('supabaseKey', supabaseKey);
+      }
+    })();
+
     // 관리자 로그인 모달 열기
     function openAdminLoginModal() {
       document.getElementById('adminLoginModalOverlay').classList.add('show');
