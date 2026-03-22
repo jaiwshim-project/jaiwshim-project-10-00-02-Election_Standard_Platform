@@ -500,6 +500,18 @@
             <input type="text" id="signupCampName" placeholder="예: 김철수" autocomplete="off" />
           </div>
           <div class="auth-field">
+            <label for="signupElectionType">🗳️ 선거 유형</label>
+            <select id="signupElectionType" style="width: 100%; padding: 10px 12px; border: 1px solid var(--border-color); border-radius: 6px; background: var(--bg-secondary); color: var(--text-primary); font-size: 14px; cursor: pointer;">
+              <option value="">-- 선거 유형 선택 --</option>
+              <option value="대선">🏛️ 대선 (Presidential)</option>
+              <option value="국회의원선">📜 국회의원선 (National Assembly)</option>
+              <option value="지방선거">🏘️ 지방선거 (Local Government)</option>
+              <option value="시장/도지사">🏢 시장/도지사 (Mayor/Governor)</option>
+              <option value="교육감">🎓 교육감 (Superintendent of Education)</option>
+              <option value="기타">기타</option>
+            </select>
+          </div>
+          <div class="auth-field">
             <label for="signupStaffId">👤 캠프 아이디 (영문+숫자, 예: kim2024)</label>
             <input type="text" id="signupStaffId" placeholder="로그인과 관리자 기능에 사용할 아이디" autocomplete="off" />
           </div>
@@ -1226,13 +1238,14 @@
       event.preventDefault();
       clearAuthMessage();
 
-      const campName   = document.getElementById('signupCampName').value.trim();
-      const staffId    = document.getElementById('signupStaffId').value.trim();
-      const password   = document.getElementById('signupPassword').value;
-      const passwordCf = document.getElementById('signupPasswordConfirm').value;
+      const campName      = document.getElementById('signupCampName').value.trim();
+      const electionType  = document.getElementById('signupElectionType').value.trim();
+      const staffId       = document.getElementById('signupStaffId').value.trim();
+      const password      = document.getElementById('signupPassword').value;
+      const passwordCf    = document.getElementById('signupPasswordConfirm').value;
 
       // ── 폼 검증 ──
-      if (!campName || !staffId || !password || !passwordCf) {
+      if (!campName || !electionType || !staffId || !password || !passwordCf) {
         showAuthMessage('모든 항목을 입력해주세요.', 'error');
         return;
       }
@@ -1277,6 +1290,7 @@
           .from('candidates')
           .insert([{
             name: campName,
+            election_type: electionType,
             staff_account_id: staffId,
             admin_account_id: 'admin_' + staffId,
             staff_password: passwordHash,

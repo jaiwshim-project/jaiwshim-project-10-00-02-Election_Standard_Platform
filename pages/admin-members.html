@@ -120,6 +120,7 @@
             <tr>
               <th>이름</th>
               <th>캠프 아이디</th>
+              <th>선거 유형</th>
               <th>정당</th>
               <th>지역</th>
               <th>등록일</th>
@@ -147,6 +148,17 @@
   <script src="../js/admin-auth.js"></script>
   <script>
     function formatDate(date) { return new Date(date).toLocaleDateString('ko-KR'); }
+
+    function getElectionTypeEmoji(type) {
+      const emojis = {
+        '대선': '🏛️',
+        '국회의원선': '📜',
+        '지방선거': '🏘️',
+        '시장/도지사': '🏢',
+        '교육감': '🎓'
+      };
+      return emojis[type] || '🗳️';
+    }
 
     function toast(message, type = 'info') {
       const container = document.getElementById('toastContainer');
@@ -179,6 +191,7 @@
           <tr>
             <td>${m.name}</td>
             <td><code style="background: rgba(0,0,0,0.05); padding: 2px 6px; border-radius: 4px; font-size: 12px;">${m.staff_account_id || '-'}</code></td>
+            <td>${getElectionTypeEmoji(m.election_type)} ${m.election_type || '-'}</td>
             <td>${m.party || '-'}</td>
             <td>${m.region || '-'}</td>
             <td>${formatDate(m.created_at)}</td>
@@ -189,7 +202,7 @@
               ${canEdit ? `<button class="btn btn-sm btn-primary" onclick="openMemberModal('${m.id}')">수정</button>` : ''}
             </td>
           </tr>
-        `).join('') || '<tr><td colspan="7" style="text-align: center; color: var(--text-secondary);">데이터가 없습니다.</td></tr>';
+        `).join('') || '<tr><td colspan="8" style="text-align: center; color: var(--text-secondary);">데이터가 없습니다.</td></tr>';
       } catch (err) {
         console.error('Members 로드 실패:', err);
         toast('로드 실패: ' + err.message, 'error');
