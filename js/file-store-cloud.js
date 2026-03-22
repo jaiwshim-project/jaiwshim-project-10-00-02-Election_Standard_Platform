@@ -14,7 +14,12 @@ const CloudFileStore = {
    * @param {string} adminName - 업로드한 관리자 이름 (선택)
    */
   async saveFile(type, file, candidateId, adminName = 'Unknown') {
-    if (!window.supabase || !candidateId) {
+    // SupabaseDB 초기화
+    if (typeof SupabaseDB !== 'undefined') {
+      await SupabaseDB.init();
+    }
+
+    if (!SupabaseDB || !SupabaseDB.client || !candidateId) {
       throw new Error('Supabase 초기화 필요');
     }
 
@@ -25,7 +30,7 @@ const CloudFileStore = {
       const storagePath = `${candidateId}/${type}/${timestamp}_${sanitizedName}`;
 
       // 2. Supabase Storage에 파일 업로드
-      const { data, error: uploadError } = await window.supabase.storage
+      const { data, error: uploadError } = await SupabaseDB.client.storage
         .from(this.BUCKET_NAME)
         .upload(storagePath, file, {
           cacheControl: '3600',
@@ -37,7 +42,7 @@ const CloudFileStore = {
       }
 
       // 3. 메타데이터를 shared_files 테이블에 저장
-      const { data: metadata, error: metaError } = await window.supabase
+      const { data: metadata, error: metaError } = await SupabaseDB.client
         .from('shared_files')
         .insert([{
           candidate_id: candidateId,
@@ -77,12 +82,12 @@ const CloudFileStore = {
    * @param {string} candidateId - 후보자 ID
    */
   async getFilesByType(type, candidateId) {
-    if (!window.supabase || !candidateId) {
+    if (!SupabaseDB.client || !candidateId) {
       return [];
     }
 
     try {
-      const { data, error } = await window.supabase
+      const { data, error } = await SupabaseDB.client
         .from('shared_files')
         .select('*')
         .eq('candidate_id', candidateId)
@@ -115,12 +120,12 @@ const CloudFileStore = {
    * @param {string} storagePath - Storage 경로
    */
   async getSignedUrl(storagePath) {
-    if (!window.supabase) {
+    if (!SupabaseDB.client) {
       throw new Error('Supabase 초기화 필요');
     }
 
     try {
-      const { data, error } = await window.supabase.storage
+      const { data, error } = await SupabaseDB.client.storage
         .from(this.BUCKET_NAME)
         .createSignedUrl(storagePath, 3600); // 1시간
 
@@ -141,13 +146,13 @@ const CloudFileStore = {
    * @param {string} storagePath - Storage 경로
    */
   async deleteFile(fileId, storagePath) {
-    if (!window.supabase) {
+    if (!SupabaseDB.client) {
       throw new Error('Supabase 초기화 필요');
     }
 
     try {
       // 1. Supabase Storage에서 파일 삭제
-      const { error: storageError } = await window.supabase.storage
+      const { error: storageError } = await SupabaseDB.client.storage
         .from(this.BUCKET_NAME)
         .remove([storagePath]);
 
@@ -156,7 +161,7 @@ const CloudFileStore = {
       }
 
       // 2. shared_files 테이블에서 메타데이터 삭제 (soft delete)
-      const { error: metaError } = await window.supabase
+      const { error: metaError } = await SupabaseDB.client
         .from('shared_files')
         .update({ is_active: false })
         .eq('id', fileId);
@@ -175,12 +180,12 @@ const CloudFileStore = {
    * @param {string} candidateId - 후보자 ID
    */
   async getAllFiles(candidateId) {
-    if (!window.supabase || !candidateId) {
+    if (!SupabaseDB.client || !candidateId) {
       return [];
     }
 
     try {
-      const { data, error } = await window.supabase
+      const { data, error } = await SupabaseDB.client
         .from('shared_files')
         .select('*')
         .eq('candidate_id', candidateId)
