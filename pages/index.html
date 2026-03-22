@@ -140,7 +140,6 @@
   </footer>
 
   <script src="../js/supabase-client.js"></script>
-  <script src="../js/admin-auth.js"></script>
   <script>
     // Supabase 정보 자동 저장
     (function() {
@@ -155,8 +154,27 @@
       }
     })();
 
+    // AdminAuth 동적 로드
+    let AdminAuth = null;
+
+    function loadAdminAuth() {
+      if (!AdminAuth) {
+        const script = document.createElement('script');
+        script.src = '../js/admin-auth.js';
+        document.head.appendChild(script);
+        // script load 대기
+        return new Promise((resolve) => {
+          script.onload = () => {
+            setTimeout(resolve, 100); // AdminAuth 객체 생성 대기
+          };
+        });
+      }
+      return Promise.resolve();
+    }
+
     // 관리자 로그인 모달 열기
-    function openAdminLoginModal() {
+    async function openAdminLoginModal() {
+      await loadAdminAuth();
       document.getElementById('adminLoginModalOverlay').classList.add('show');
       document.getElementById('adminUsername').value = '';
       document.getElementById('adminPassword').value = '';
@@ -172,6 +190,8 @@
 
     // 관리자 로그인
     async function adminLogin() {
+      await loadAdminAuth(); // AdminAuth 로드 보장
+
       const username = document.getElementById('adminUsername').value.trim();
       const password = document.getElementById('adminPassword').value;
       const errorDiv = document.getElementById('adminLoginError');
@@ -187,7 +207,7 @@
       errorDiv.style.display = 'none';
 
       try {
-        const result = await AdminAuth.login(username, password);
+        const result = await window.AdminAuth.login(username, password);
 
         if (result.success) {
           // 로그인 성공 → 관리자 대시보드로 이동
