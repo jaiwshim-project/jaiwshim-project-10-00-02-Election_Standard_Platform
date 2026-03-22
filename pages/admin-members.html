@@ -184,7 +184,8 @@
         const party = document.getElementById('memberPartyFilter').value;
         if (party) query = query.eq('party', party);
 
-        const { data } = await query.order('created_at', { ascending: false });
+        // 캐시 무시하고 최신 데이터 조회
+        const { data } = await query.order('created_at', { ascending: false }).throwOnError();
         const canEdit = AdminAuth.hasPermission('admin');
 
         document.getElementById('membersTable').innerHTML = (data || []).map(m => `
@@ -282,8 +283,10 @@
         closeModal();
 
         // 목록 새로고침 (약간의 지연 추가)
-        await new Promise(resolve => setTimeout(resolve, 500));
+        await new Promise(resolve => setTimeout(resolve, 800));
+        console.log('📝 목록 새로고침 시작...');
         await loadMembers();
+        console.log('📝 목록 새로고침 완료');
 
         toast(`"${campName}" 캠프가 삭제되었습니다.`, 'success');
       } catch (err) {
