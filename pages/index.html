@@ -29,6 +29,24 @@
     .footer-text { color: #666; font-size: 14px; font-weight: 500; }
     .footer-btn { display: inline-block; background-color: var(--primary-color); color: white; padding: 10px 30px; border-radius: 6px; text-decoration: none; font-weight: 600; transition: all 0.3s; border: none; cursor: pointer; }
     .footer-btn:hover { opacity: 0.85; transform: scale(1.02); }
+
+    /* 관리자 로그인 모달 */
+    .admin-login-modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center; }
+    .admin-login-modal-overlay.show { display: flex; }
+    .admin-login-modal { background-color: var(--bg-secondary); border-radius: var(--radius-lg); padding: 40px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); max-width: 400px; width: 90%; }
+    .admin-login-modal h3 { margin: 0 0 var(--space-md) 0; font-size: 24px; color: var(--text-primary); text-align: center; }
+    .admin-login-modal p { margin: 0 0 var(--space-lg) 0; color: var(--text-secondary); font-size: var(--font-size-sm); text-align: center; }
+    .admin-login-modal input { width: 100%; padding: var(--space-md); border: 1px solid var(--border-color); border-radius: var(--radius-md); background-color: var(--bg-primary); color: var(--text-primary); font-size: var(--font-size-base); box-sizing: border-box; margin-bottom: var(--space-md); }
+    .admin-login-modal input:focus { outline: none; border-color: var(--primary-color); box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.1); }
+    .admin-login-modal-buttons { display: flex; gap: var(--space-md); }
+    .admin-login-modal-buttons button { flex: 1; padding: var(--space-md); border: none; border-radius: var(--radius-md); font-size: var(--font-size-base); font-weight: 600; cursor: pointer; transition: all var(--transition-base); }
+    .btn-admin-login { background-color: #1976d2; color: white; }
+    .btn-admin-login:hover { opacity: 0.9; }
+    .btn-admin-cancel { background-color: var(--bg-primary); color: var(--text-primary); border: 1px solid var(--border-color); }
+    .btn-admin-cancel:hover { background-color: var(--border-color); }
+    .admin-login-error { color: #ef4444; font-size: var(--font-size-sm); margin-bottom: var(--space-md); display: none; text-align: center; }
+    .admin-login-loading { display: none; text-align: center; color: var(--primary-color); font-weight: 600; }
+
     @media (max-width: 768px) {
       .navbar ul { flex-wrap: wrap; gap: var(--space-sm); }
       .navbar a { font-size: var(--font-size-sm); padding: var(--space-xs) var(--space-sm); }
@@ -37,6 +55,22 @@
   </style>
 </head>
 <body>
+  <!-- 관리자 로그인 모달 -->
+  <div class="admin-login-modal-overlay" id="adminLoginModalOverlay">
+    <div class="admin-login-modal">
+      <h3>👨‍💼 시스템 관리자</h3>
+      <p>관리자 로그인</p>
+      <div class="admin-login-error" id="adminLoginError"></div>
+      <input type="text" id="adminUsername" placeholder="사용자명 또는 이메일" onkeydown="if(event.key==='Enter') adminLogin()">
+      <input type="password" id="adminPassword" placeholder="비밀번호" onkeydown="if(event.key==='Enter') adminLogin()">
+      <div class="admin-login-loading" id="adminLoginLoading">로그인 중...</div>
+      <div class="admin-login-modal-buttons">
+        <button class="btn-admin-login" onclick="adminLogin()">로그인</button>
+        <button class="btn-admin-cancel" onclick="closeAdminLoginModal()">취소</button>
+      </div>
+    </div>
+  </div>
+
   <nav class="navbar">
     <div class="container">
       <h2>🚨 선거 워룸</h2>
@@ -101,8 +135,72 @@
   <footer style="background: #f9f9f9; border-top: 3px solid #1976d2; padding: 30px 20px; margin-top: 60px; text-align: center; display: block; width: 100%; box-sizing: border-box;">
     <div style="max-width: 1200px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 30px;">
       <div style="color: #666; font-size: 14px; font-weight: 500;">© 2024 선거 워룸 — AI 정치 전략 플랫폼</div>
-      <a href="admin-dashboard.html" style="background: #1976d2; color: white; padding: 10px 30px; border-radius: 6px; text-decoration: none; font-weight: 600; transition: all 0.3s;">🔧 관리자 대시보드</a>
+      <button onclick="openAdminLoginModal()" style="background: #1976d2; color: white; padding: 10px 30px; border-radius: 6px; text-decoration: none; font-weight: 600; transition: all 0.3s; border: none; cursor: pointer;">🔧 관리자 로그인</button>
     </div>
   </footer>
+
+  <script src="../js/supabase-client.js"></script>
+  <script src="../js/admin-auth.js"></script>
+  <script>
+    // 관리자 로그인 모달 열기
+    function openAdminLoginModal() {
+      document.getElementById('adminLoginModalOverlay').classList.add('show');
+      document.getElementById('adminUsername').value = '';
+      document.getElementById('adminPassword').value = '';
+      document.getElementById('adminLoginError').style.display = 'none';
+      document.getElementById('adminLoginLoading').style.display = 'none';
+      document.getElementById('adminUsername').focus();
+    }
+
+    // 관리자 로그인 모달 닫기
+    function closeAdminLoginModal() {
+      document.getElementById('adminLoginModalOverlay').classList.remove('show');
+    }
+
+    // 관리자 로그인
+    async function adminLogin() {
+      const username = document.getElementById('adminUsername').value.trim();
+      const password = document.getElementById('adminPassword').value;
+      const errorDiv = document.getElementById('adminLoginError');
+      const loadingDiv = document.getElementById('adminLoginLoading');
+
+      if (!username || !password) {
+        errorDiv.textContent = '사용자명과 비밀번호를 입력해주세요.';
+        errorDiv.style.display = 'block';
+        return;
+      }
+
+      loadingDiv.style.display = 'block';
+      errorDiv.style.display = 'none';
+
+      try {
+        const result = await AdminAuth.login(username, password);
+
+        if (result.success) {
+          // 로그인 성공 → 관리자 대시보드로 이동
+          window.location.href = './admin-dashboard.html';
+        } else {
+          // 로그인 실패
+          errorDiv.textContent = result.message || '로그인에 실패했습니다.';
+          errorDiv.style.display = 'block';
+          document.getElementById('adminPassword').value = '';
+          document.getElementById('adminPassword').focus();
+        }
+      } catch (err) {
+        errorDiv.textContent = '연결 오류가 발생했습니다. 다시 시도해주세요.';
+        errorDiv.style.display = 'block';
+        console.error('로그인 오류:', err);
+      } finally {
+        loadingDiv.style.display = 'none';
+      }
+    }
+
+    // 모달 외부 클릭 시 닫기
+    document.getElementById('adminLoginModalOverlay')?.addEventListener('click', (e) => {
+      if (e.target.id === 'adminLoginModalOverlay') {
+        closeAdminLoginModal();
+      }
+    });
+  </script>
 </body>
 </html>
