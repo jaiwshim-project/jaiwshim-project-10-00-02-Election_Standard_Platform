@@ -230,6 +230,11 @@
           <input type="text" value="${member.staff_account_id || '-'}" readonly class="form-control" style="background: var(--bg-primary);">
         </div>
         <div class="form-group">
+          <label class="form-label">📝 캠프 로그인 비밀번호</label>
+          <input type="password" id="modalStaffPassword" class="form-control" placeholder="새 로그인 비밀번호 (비워두면 변경 없음)">
+          <small style="color: var(--text-secondary); margin-top: 5px; display: block;">캠프 관리자가 로그인할 때 사용 • 최소 8자</small>
+        </div>
+        <div class="form-group">
           <label class="form-label">🔐 관리자 비밀번호</label>
           <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
             ${hasAdminPassword ? '<span style="color: #4caf50; font-weight: 600;">✅ 설정됨</span>' : '<span style="color: var(--text-secondary);">⚪ 미설정</span>'}
@@ -247,13 +252,24 @@
     }
 
     async function saveMemberStatus(id) {
-      const status = document.getElementById('modalStatus').value;
-      const reason = document.getElementById('modalReason')?.value || '';
+      const newStaffPassword = document.getElementById('modalStaffPassword')?.value || '';
       const newAdminPassword = document.getElementById('modalAdminPassword')?.value || '';
 
       try {
         const admin = AdminAuth.getCurrentAdmin();
         const updateData = {};
+        const actions = [];
+
+        // 캠프 로그인 비밀번호가 입력된 경우 해싱하여 저장
+        if (newStaffPassword.trim()) {
+          if (newStaffPassword.length < 8) {
+            toast('캠프 로그인 비밀번호는 최소 8자 이상이어야 합니다', 'error');
+            return;
+          }
+          const staffPasswordHash = await AdminAuth.hashPassword(newStaffPassword);
+          updateData.staff_password = staffPasswordHash;
+          actions.push('로그인 비밀번호 재설정');
+        }
 
         // 관리자 비밀번호가 입력된 경우 해싱하여 저장
         if (newAdminPassword.trim()) {
@@ -263,6 +279,7 @@
           }
           const adminPasswordHash = await AdminAuth.hashPassword(newAdminPassword);
           updateData.admin_password = adminPasswordHash;
+          actions.push('관리자 비밀번호 설정');
         }
 
         // 업데이트할 데이터가 있는 경우에만 업데이트
@@ -284,7 +301,7 @@
           return;
         }
 
-        await AdminAuth.logActivity(admin.adminId, 'approve_campaign', 'candidate', id, { status });
+        await AdminAuth.logActivity(admin.adminId, 'update_passwords', 'candidate', id, { actions: actions.join(', ') });
         closeModal();
         loadMembers();
         toast('저장되었습니다', 'success');
