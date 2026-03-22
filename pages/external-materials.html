@@ -721,16 +721,32 @@ $auth_script
         if (connected && SupabaseDB.client) {
           const { data, error } = await SupabaseDB.client
             .from('candidates')
-            .select('admin_password, staff_password')
+            .select('admin_password, staff_password, name')
             .eq('id', candidateId)
             .single();
+
+          console.log('🔍 비밀번호 검증 디버그:', {
+            candidateId,
+            inputHash: hash,
+            dbAdminPassword: data?.admin_password ? '(설정됨)' : '(미설정)',
+            dbStaffPassword: data?.staff_password ? '(설정됨)' : '(미설정)',
+            campName: data?.name
+          });
 
           if (!error && data) {
             // admin_password가 있으면 비교, 없으면 staff_password 사용
             const passwordToCheck = data.admin_password || data.staff_password;
             if (passwordToCheck && passwordToCheck === hash) {
               isValid = true;
+              console.log('✅ 비밀번호 일치!');
+            } else {
+              console.log('❌ 비밀번호 불일치', {
+                storedHash: passwordToCheck?.substring(0, 16) + '...',
+                inputHash: hash.substring(0, 16) + '...'
+              });
             }
+          } else {
+            console.error('❌ DB 조회 오류:', error);
           }
         } else {
           // Supabase 미연결 → localStorage fallback
