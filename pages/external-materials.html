@@ -530,6 +530,42 @@ $auth_script
   <script src="../js/file-store-cloud.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
+    // Supabase 초기화
+    function initializeSupabase() {
+      const supabaseUrl = localStorage.getItem('supabaseUrl');
+      const supabaseKey = localStorage.getItem('supabaseKey');
+
+      if (!supabaseUrl || !supabaseKey) {
+        console.warn('⚠️ Supabase 미설정 — settings에서 설정하세요');
+        return;
+      }
+
+      try {
+        // 라이브러리에서 createClient 추출
+        const { createClient } = window.supabase;
+        // window.supabase를 클라이언트 인스턴스로 교체
+        window.supabase = createClient(supabaseUrl, supabaseKey);
+        console.log('✅ Supabase 클라이언트 초기화 완료');
+      } catch (error) {
+        console.error('❌ Supabase 초기화 실패:', error);
+      }
+    }
+
+    // Supabase 라이브러리 로드 후 초기화
+    const initSupabaseWhenReady = () => {
+      if (window.supabase && window.supabase.createClient) {
+        initializeSupabase();
+      } else {
+        setTimeout(initSupabaseWhenReady, 100);
+      }
+    };
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initSupabaseWhenReady);
+    } else {
+      initSupabaseWhenReady();
+    }
+
     const typeInfo = {
       'type-1': { name: '통합분석', icon: '📊', order: '1', page: 'integrated-analysis.html' },
       'type-2': { name: '판세정보', icon: '📈', order: '2', page: 'intelligence.html' },
