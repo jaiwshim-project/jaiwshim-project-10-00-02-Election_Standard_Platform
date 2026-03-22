@@ -62,6 +62,10 @@ const AuthManager = {
       };
       sessionStorage.setItem(this.SESSION_KEY, JSON.stringify(session));
 
+      // external-materials.html에서 사용하기 위해 localStorage에도 저장
+      localStorage.setItem('candidateId', data.id);
+      localStorage.setItem('campName', data.name);
+
       return {
         success: true,
         message: `${data.name} 캠프에 로그인했습니다.`,
