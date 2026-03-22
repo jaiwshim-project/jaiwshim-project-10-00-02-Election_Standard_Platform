@@ -241,9 +241,14 @@
           }
 
           messageEl.className = 'message success';
-          messageEl.textContent = '✅ 관리자가 등록되었습니다!';
+          messageEl.textContent = '✅ 관리자가 등록되었습니다! 로그인 페이지로 이동 중...';
           document.getElementById('adminRegisterForm').reset();
           this.loadAdminList();
+
+          // 3초 후 로그인 페이지로 자동 이동
+          setTimeout(() => {
+            window.location.href = '/pages/admin-login.html';
+          }, 3000);
         } catch (err) {
           messageEl.className = 'message error';
           messageEl.textContent = `❌ ${err.message}`;
