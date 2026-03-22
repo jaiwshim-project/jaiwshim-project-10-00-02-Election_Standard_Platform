@@ -790,8 +790,12 @@ $auth_script
         const typeName = typeInfo[type].name;
         alert(`'${file.name}'이(가) ${typeName}에 업로드되었습니다.`);
       } catch (error) {
-        console.error('파일 저장 실패:', error);
-        alert('파일 저장에 실패했습니다.');
+        console.error('❌ 파일 저장 실패:', {
+          message: error.message,
+          details: error.details || error,
+          stack: error.stack
+        });
+        alert('파일 저장에 실패했습니다.\n\nF12 콘솔을 확인해주세요.');
       } finally {
         setTimeout(() => {
           progressSection.style.display = 'none';
